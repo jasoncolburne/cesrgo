@@ -39,26 +39,22 @@ func NewDiger(ser []byte, opts ...options.MatterOption) (*Diger, error) {
 			return nil, fmt.Errorf("code is required")
 		}
 
-		if !validateCode(*config.Code, validDigerCodes) {
-			return nil, fmt.Errorf("unexpected code: %s", *config.Code)
-		}
-
 		digest, err := crypto.Digest(*config.Code, ser)
 		if err != nil {
 			return nil, err
 		}
 
-		if err := NewMatter(d, options.WithCode(*config.Code), options.WithRaw(digest)); err != nil {
+		if err := NewMatter(d, options.WithCode(*config.Code), options.WithRaw(types.Raw(digest))); err != nil {
 			return nil, err
 		}
 	} else {
 		if err := NewMatter(d, opts...); err != nil {
 			return nil, err
 		}
+	}
 
-		if !validateCode(d.GetCode(), validDigerCodes) {
-			return nil, fmt.Errorf("unexpected code: %s", d.GetCode())
-		}
+	if !validateCode(d.GetCode(), validDigerCodes) {
+		return nil, fmt.Errorf("unexpected code: %s", d.GetCode())
 	}
 
 	return d, nil

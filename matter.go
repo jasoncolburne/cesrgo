@@ -173,8 +173,6 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 			return fmt.Errorf("code and raw cannot be used with qb2, qb64, or qb64b")
 		}
 
-		m := &matter{}
-
 		length := len(*options.Raw)
 		if length > 1<<32-1 {
 			return fmt.Errorf("size too large")
