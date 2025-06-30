@@ -39,6 +39,18 @@ func (m *TestMatter) GetSize() types.Size {
 	return m.size
 }
 
+func (m *TestMatter) Qb2() types.Qb2 {
+	return types.Qb2{}
+}
+
+func (m *TestMatter) Qb64() types.Qb64 {
+	return types.Qb64("")
+}
+
+func (m *TestMatter) Qb64b() types.Qb64b {
+	return types.Qb64b{}
+}
+
 func TestNewMatter(t *testing.T) {
 	m := TestMatter{}
 

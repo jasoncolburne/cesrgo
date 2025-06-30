@@ -114,18 +114,17 @@ func (s *Signer) SignUnindexed(ser []byte) (*Cigar, error) {
 	switch s.code {
 	case mdex.Ed25519_Seed:
 		code = mdex.Ed25519_Sig
-		raw, err = crypto.Sign(s.code, s.raw, ser)
-		if err != nil {
-			return nil, err
-		}
+	case mdex.ECDSA_256k1_Seed:
+		code = mdex.ECDSA_256k1_Sig
 	case mdex.ECDSA_256r1_Seed:
 		code = mdex.ECDSA_256r1_Sig
-		raw, err = crypto.Sign(s.code, s.raw, ser)
-		if err != nil {
-			return nil, err
-		}
 	default:
 		return nil, fmt.Errorf("unexpected code: %s", s.code)
+	}
+
+	raw, err = crypto.Sign(s.code, s.raw, ser)
+	if err != nil {
+		return nil, err
 	}
 
 	c, err := NewCigar(s.verfer, mopts.WithCode(code), mopts.WithRaw(raw))
@@ -159,6 +158,8 @@ func (s *Signer) SignIndexed(
 			switch s.code {
 			case mdex.Ed25519_Seed:
 				code = idex.Ed25519_Crt
+			case mdex.ECDSA_256k1_Seed:
+				code = idex.ECDSA_256k1_Crt
 			case mdex.ECDSA_256r1_Seed:
 				code = idex.ECDSA_256r1_Crt
 			default:
@@ -168,6 +169,8 @@ func (s *Signer) SignIndexed(
 			switch s.code {
 			case mdex.Ed25519_Seed:
 				code = idex.Ed25519_Big_Crt
+			case mdex.ECDSA_256k1_Seed:
+				code = idex.ECDSA_256k1_Big_Crt
 			case mdex.ECDSA_256r1_Seed:
 				code = idex.ECDSA_256r1_Big_Crt
 			default:
@@ -186,6 +189,8 @@ func (s *Signer) SignIndexed(
 			switch s.code {
 			case mdex.Ed25519_Seed:
 				code = idex.Ed25519
+			case mdex.ECDSA_256k1_Seed:
+				code = idex.ECDSA_256k1
 			case mdex.ECDSA_256r1_Seed:
 				code = idex.ECDSA_256r1
 			default:
@@ -195,6 +200,8 @@ func (s *Signer) SignIndexed(
 			switch s.code {
 			case mdex.Ed25519_Seed:
 				code = idex.Ed25519_Big
+			case mdex.ECDSA_256k1_Seed:
+				code = idex.ECDSA_256k1_Big
 			case mdex.ECDSA_256r1_Seed:
 				code = idex.ECDSA_256r1_Big
 			default:

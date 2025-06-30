@@ -47,6 +47,18 @@ func (i *indexer) GetOndex() types.Ondex {
 	return i.ondex
 }
 
+func (i *indexer) Qb2() types.Qb2 {
+	return types.Qb2{}
+}
+
+func (i *indexer) Qb64() types.Qb64 {
+	return types.Qb64("")
+}
+
+func (i *indexer) Qb64b() types.Qb64b {
+	return types.Qb64b{}
+}
+
 func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 	if len(qb2) == 0 {
 		return fmt.Errorf("qb2 is empty")

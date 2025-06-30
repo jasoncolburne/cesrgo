@@ -38,6 +38,18 @@ func (m *matter) GetSize() types.Size {
 	return m.size
 }
 
+func (m *matter) Qb2() types.Qb2 {
+	return types.Qb2([]byte{})
+}
+
+func (m *matter) Qb64() types.Qb64 {
+	return types.Qb64("")
+}
+
+func (m *matter) Qb64b() types.Qb64b {
+	return types.Qb64b([]byte{})
+}
+
 func mbexfil(m types.Matter, qb2 types.Qb2) error {
 	if len(qb2) == 0 {
 		return fmt.Errorf("qb2 is empty")

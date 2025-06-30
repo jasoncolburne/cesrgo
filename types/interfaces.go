@@ -10,6 +10,10 @@ type (
 
 		SetSize(size Size)
 		GetSize() Size
+
+		Qb2() Qb2
+		Qb64() Qb64
+		Qb64b() Qb64b
 	}
 
 	Indexer interface {
@@ -24,5 +28,9 @@ type (
 
 		SetOndex(ondex Ondex)
 		GetOndex() Ondex
+
+		Qb2() Qb2
+		Qb64() Qb64
+		Qb64b() Qb64b
 	}
 )
