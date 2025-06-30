@@ -54,4 +54,4 @@ help:
 	@echo "  vet           - Run go vet"
 	@echo "  deps          - Install dependencies"
 	@echo "  example       - Run the example"
-	@echo "  help          - Show this help" 
+	@echo "  help          - Show this help"
