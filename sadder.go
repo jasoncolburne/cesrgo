@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strconv"
 
-	cbor "github.com/fxamacker/cbor/v2"
-	mgpk "github.com/vmihailenco/msgpack/v5"
+	"github.com/fxamacker/cbor/v2"
+	"github.com/vmihailenco/msgpack/v5"
 
 	codex "github.com/jasoncolburne/cesrgo/matter"
 	"github.com/jasoncolburne/cesrgo/matter/options"
@@ -199,7 +199,7 @@ func unmarshal(kind types.Kind, raw types.Raw) (types.Map, error) {
 			return types.Map{}, err
 		}
 	case Kind_MGPK:
-		err := mgpk.Unmarshal(raw, &ked)
+		err := msgpack.Unmarshal(raw, &ked)
 		if err != nil {
 			return types.Map{}, err
 		}
@@ -460,7 +460,7 @@ func marshal(ked types.Map, kind *types.Kind) (types.Raw, error) {
 			return nil, err
 		}
 	case Kind_MGPK:
-		raw, err = mgpk.Marshal(ked)
+		raw, err = msgpack.Marshal(ked)
 		if err != nil {
 			return nil, err
 		}

@@ -19,7 +19,7 @@ type Signer struct {
 
 var validSignerCodes []types.Code = []types.Code{
 	mdex.Ed25519_Seed,
-	// codex.ECDSA_256k1_Seed,
+	mdex.ECDSA_256k1_Seed,
 	mdex.ECDSA_256r1_Seed,
 }
 

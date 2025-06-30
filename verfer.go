@@ -16,8 +16,8 @@ type Verfer struct {
 var validVerferCodes []types.Code = []types.Code{
 	codex.Ed25519N,
 	codex.Ed25519,
-	// codex.ECDSA_256k1N,
-	// codex.ECDSA_256k1,
+	codex.ECDSA_256k1N,
+	codex.ECDSA_256k1,
 	codex.ECDSA_256r1N,
 	codex.ECDSA_256r1,
 	// codex.Ed448N,
