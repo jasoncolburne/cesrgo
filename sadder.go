@@ -300,6 +300,12 @@ func sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 		return nil, "", "", types.Map{}, types.Version{}, err
 	}
 
+	length := len(raw)
+	if length > 1<<32-1 {
+		return nil, "", "", types.Map{}, types.Version{}, fmt.Errorf("size too large")
+	}
+
+	//nolint:gosec
 	size := types.Size(len(raw))
 
 	re, err := Rever()
@@ -528,6 +534,7 @@ func intToB64(i, length int) (string, error) {
 	s := ""
 
 	for i > 0 {
+		//nolint:gosec
 		c, err := b64IndexToChar(uint8(i % 64))
 		if err != nil {
 			return "", err

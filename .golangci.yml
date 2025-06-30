@@ -24,7 +24,6 @@ linters:
     - nolintlint
     - rowserrcheck
     - staticcheck
-    - stylecheck
     - typecheck
     - unconvert
     - unparam
@@ -81,7 +80,6 @@ issues:
         - nolintlint
         - rowserrcheck
         - staticcheck
-        - stylecheck
         - typecheck
         - unconvert
         - unparam

@@ -175,8 +175,14 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 
 		m := &matter{}
 
+		length := len(*options.Raw)
+		if length > 1<<32-1 {
+			return fmt.Errorf("size too large")
+		}
+
 		m.SetCode(*options.Code)
 		m.SetRaw(*options.Raw)
+		//nolint:gosec
 		m.SetSize(types.Size(len(*options.Raw)))
 
 		return nil
