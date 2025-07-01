@@ -163,7 +163,7 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 
 	if ps != 0 {
 		bytes := [1]byte{trim[bcs-1]}
-		pi := uint8(bytes[0])
+		pi := bytes[0]
 		if pi&(1<<pbs-1) != 0 {
 			return fmt.Errorf("non-zeroed pad bits")
 		}
@@ -268,7 +268,7 @@ func NewIndexer(i types.Indexer, opts ...options.IndexerOption) error {
 		}
 
 		i.SetCode(*config.Code)
-		i.SetRaw(types.Raw((*config.Raw)[:rize]))
+		i.SetRaw((*config.Raw)[:rize])
 		i.SetIndex(*config.Index)
 		if config.Ondex != nil {
 			i.SetOndex(*config.Ondex)

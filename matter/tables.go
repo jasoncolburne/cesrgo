@@ -138,12 +138,10 @@ type Sizage struct {
 	Ls uint32
 }
 
-//nolint:gocyclo
 func GetSizage(code types.Code) (Sizage, error) {
 	var fs uint32
 
 	switch code {
-
 	case Ed25519_Seed, Ed25519N, Ed25519,
 		X25519, X25519_Private,
 		Blake3_256, Blake2b_256, Blake2s_256,
@@ -349,7 +347,6 @@ func GetSizage(code types.Code) (Sizage, error) {
 	}
 }
 
-//nolint:gocyclo
 func Hardage(c string) (uint32, error) {
 	if c >= "A" && c <= "Z" || c >= "a" && c <= "z" {
 		return 1, nil

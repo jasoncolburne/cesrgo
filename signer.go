@@ -162,8 +162,6 @@ func (s *Signer) SignIndexed(
 	)
 
 	if only {
-		ondex = nil
-
 		if index < 64 {
 			switch s.code {
 			case mdex.Ed25519_Seed:

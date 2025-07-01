@@ -212,7 +212,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 	}
 
 	bhs := int(math.Ceil(float64(hs) * 3 / 4))
-	if len(qb2) < int(bhs) {
+	if len(qb2) < bhs {
 		return fmt.Errorf("insufficient material for hard part of code: qb2 size = %d, bhs = %d", len(qb2), bhs)
 	}
 
@@ -229,7 +229,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 	cs := szg.Hs + szg.Ss
 
 	bcs := int(math.Ceil(float64(cs) * 3 / 4))
-	if len(qb2) < int(bcs) {
+	if len(qb2) < bcs {
 		return fmt.Errorf("insufficient material: qb2 size = %d, bcs = %d", len(qb2), bcs)
 	}
 
@@ -242,14 +242,14 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 	xtra := soft[:int(szg.Xs)]
 	soft = soft[int(szg.Xs):]
 
-	if string(xtra) != strings.Repeat(Pad, int(szg.Xs)) {
+	if xtra != strings.Repeat(Pad, int(szg.Xs)) {
 		return fmt.Errorf("invalid prepad extra material: xtra = %s", xtra)
 	}
 
 	var fs uint32
 	var size uint32
 	if szg.Fs == nil {
-		if len(qb2) < int(bcs) {
+		if len(qb2) < bcs {
 			return fmt.Errorf("insufficient material for code: qb2 size = %d, bcs = %d", len(qb2), bcs)
 		}
 
@@ -273,7 +273,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 	pbs := 2 * ps
 
 	pi := int(qb2[bcs-1 : bcs][0])
-	pi = pi & (2<<pbs - 1)
+	pi &= 2<<pbs - 1
 	if pi != 0 {
 		return fmt.Errorf("non-zeroed code midpad bits")
 	}
@@ -290,7 +290,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 	m.SetCode(types.Code(hard))
 	m.SetSize(types.Size(size))
 	m.SetRaw(types.Raw(raw))
-	if len(soft) > 0 {
+	if soft != "" {
 		m.SetSoft(&soft)
 	}
 
@@ -371,7 +371,13 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 		m.SetSoft(&softStr)
 	}
 	m.SetRaw(types.Raw(raw))
-	m.SetSize(types.Size(len(raw)))
+
+	length := len(raw)
+	if length > 1<<32-1 {
+		return fmt.Errorf("size too large")
+	}
+
+	m.SetSize(types.Size(length))
 
 	return nil
 }

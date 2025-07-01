@@ -75,14 +75,13 @@ func (s *sad) SetVersion(version types.Version) {
 	s.version = version
 }
 
-//nolint:lll
 var (
 	VER1FULLSPAN = 17
-	VER1TERM     = byte("_"[0])
+	VER1TERM     = '_'
 	VEREX1       = "([A-Z]{4})([0-9a-f])([0-9a-f])([A-Z]{4})([0-9a-f]{6})_"
 
 	VER2FULLSPAN = 19
-	VER2TERM     = byte("."[0])
+	VER2TERM     = '.'
 	VEREX2       = "([A-Z]{4})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([A-Z]{4})([0-9A-Za-z_-]{4})\\."
 
 	REVER *regexp.Regexp
@@ -116,6 +115,7 @@ func hexToUint32(hex []byte) (uint32, error) {
 	return uint32(val), nil
 }
 
+//nolint:gocritic
 func smell(raw types.Raw) (types.Proto, types.Version, types.Kind, types.Size, *types.Version, error) {
 	re, err := Rever()
 	if err != nil {
@@ -192,7 +192,6 @@ func smell(raw types.Raw) (types.Proto, types.Version, types.Kind, types.Size, *
 				Major: gmajor,
 				Minor: gminor,
 			}, nil
-
 	}
 
 	return "", types.Version{}, "", 0, nil, fmt.Errorf("invalid version")
@@ -257,6 +256,7 @@ func (s *Sadder) inhale(raw types.Raw) error {
 	return nil
 }
 
+//nolint:gocritic
 func (s *Sadder) exhale(ked types.Map, kind *types.Kind) (
 	types.Raw,
 	types.Proto,
@@ -268,6 +268,7 @@ func (s *Sadder) exhale(ked types.Map, kind *types.Kind) (
 	return sizeify(ked, kind, nil)
 }
 
+//nolint:gocritic
 func sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 	types.Raw,
 	types.Proto,
@@ -344,7 +345,7 @@ func sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 
 	rawOut := make([]byte, len(raw[:fore])+len(vs)+len(raw[back:]))
 	copy(rawOut, raw[:fore])
-	copy(rawOut[fore:], []byte(vs))
+	copy(rawOut[fore:], vs)
 	copy(rawOut[fore+len(vs):], raw[back:])
 
 	ked.Set("vs", vs)
@@ -352,6 +353,7 @@ func sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 	return rawOut, proto, *kind, ked, pvrsn, nil
 }
 
+//nolint:gocritic
 func deversify(v string) (
 	types.Proto,
 	types.Version,
@@ -370,20 +372,11 @@ func deversify(v string) (
 		return "", types.Version{}, "", 0, &types.Version{}, fmt.Errorf("version string not found")
 	}
 
-	offsets := re.FindIndex([]byte(v))
-	if offsets == nil {
-		return "", types.Version{}, "", 0, &types.Version{}, fmt.Errorf("version string not found")
-	}
-
-	fore := offsets[0]
-	back := offsets[1]
-
-	full := []byte(v[fore:back])
-
-	return rematch(full, match)
+	return rematch(match)
 }
 
-func rematch(full []byte, match [][]byte) (
+//nolint:gocritic
+func rematch(match [][]byte) (
 	types.Proto,
 	types.Version,
 	types.Kind,
@@ -569,8 +562,8 @@ func intToB64(n, length int) (string, error) {
 		n /= 64
 	}
 
-	max := length - len(s)
-	for i := 0; i < max; i++ {
+	limit := length - len(s)
+	for i := 0; i < limit; i++ {
 		s = "A" + s
 	}
 

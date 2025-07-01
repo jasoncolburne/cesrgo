@@ -80,7 +80,6 @@ type Sizage struct {
 	Fs *uint32
 }
 
-//nolint:gocyclo
 func GetSizage(code types.Code) (Sizage, error) {
 	switch code {
 	case Ed25519:

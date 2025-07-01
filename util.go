@@ -346,16 +346,16 @@ func codeB2ToB64(b2 []byte, length int) (string, error) {
 	}
 }
 
-func codeB64ToB2(code string) ([]byte, error) {
-	i, err := b64ToU64(code)
-	if err != nil {
-		return nil, err
-	}
+// func codeB64ToB2(code string) ([]byte, error) {
+// 	i, err := b64ToU64(code)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	i <<= 2 * (len(code) % 4)
-	n := ((len(code) + 1) * 3) / 4
-	return binary.BigEndian.AppendUint64(make([]byte, 0, 8), i)[8-n:], nil
-}
+// 	i <<= 2 * (len(code) % 4)
+// 	n := ((len(code) + 1) * 3) / 4
+// 	return binary.BigEndian.AppendUint64(make([]byte, 0, 8), i)[8-n:], nil
+// }
 
 func b64ToU32(b64 string) (uint32, error) {
 	var out uint32 = 0

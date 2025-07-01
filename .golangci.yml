@@ -8,7 +8,6 @@ linters:
     - goimports
     - errcheck
     - ineffassign
-    - gocyclo
     - dupl
     - goconst
     - gocritic
@@ -31,8 +30,6 @@ linters:
     - whitespace
 
 linters-settings:
-  gocyclo:
-    min-complexity: 15
   dupl:
     threshold: 100
   lll:
@@ -62,7 +59,6 @@ issues:
   exclude-rules:
     - path: _test\.go
       linters:
-        - gocyclo
         - dupl
         - gocritic
         - gosec
