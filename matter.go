@@ -309,13 +309,14 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 
 	qb64 = qb64[:fs]
 
-	ps := cs % 4                                                  // net prepad bytes to ensure 24 bit align when encodeB64
-	base := strings.Repeat("A", int(ps)) + string(qb64[int(cs):]) // prepad ps 'A's to  B64 of (lead + raw)
-	paw, err := base64.URLEncoding.DecodeString(base)             // now should have ps + ls leading sextexts of zeros
+	ps := cs % 4
+	base := strings.Repeat("A", int(ps)) + string(qb64[int(cs):])
+	paw, err := base64.URLEncoding.DecodeString(base)
 	if err != nil {
 		return err
 	}
-	raw := paw[int(ps+szg.Ls):] // remove prepad midpat bytes to invert back to raw
+	raw := paw[int(ps+szg.Ls):]
+
 	// ensure midpad bytes are zero
 	bytes := make([]byte, 8)
 	copy(bytes[int(8-ps-szg.Ls):], paw[:int(ps+szg.Ls)])

@@ -138,6 +138,7 @@ type Sizage struct {
 	Ls uint32
 }
 
+//nolint:gocyclo
 func GetSizage(code types.Code) (Sizage, error) {
 	var fs uint32
 
@@ -348,6 +349,7 @@ func GetSizage(code types.Code) (Sizage, error) {
 	}
 }
 
+//nolint:gocyclo
 func Hardage(c string) (uint32, error) {
 	if c >= "A" && c <= "Z" || c >= "a" && c <= "z" {
 		return 1, nil
