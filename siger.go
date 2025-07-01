@@ -32,6 +32,10 @@ var validSigerCodes = []types.Code{
 	// codex.Ed448_Big_Crt,
 }
 
+func (s *Siger) GetVerfer() *Verfer {
+	return s.verfer
+}
+
 func NewSiger(verfer *Verfer, opts ...options.IndexerOption) (*Siger, error) {
 	s := &Siger{}
 

@@ -2,7 +2,6 @@ package cesrgo
 
 import (
 	"fmt"
-	"slices"
 
 	"github.com/jasoncolburne/cesrgo/crypto"
 	idex "github.com/jasoncolburne/cesrgo/indexer"
@@ -15,6 +14,10 @@ import (
 type Signer struct {
 	matter
 	verfer *Verfer
+}
+
+func (s *Signer) GetVerfer() *Verfer {
+	return s.verfer
 }
 
 var validSignerCodes []types.Code = []types.Code{
@@ -32,23 +35,30 @@ func NewSigner(transferable bool, opts ...mopts.MatterOption) (*Signer, error) {
 	}
 
 	if config.Qb2 == nil && config.Qb64 == nil && config.Qb64b == nil {
+		var code types.Code
 		if config.Code == nil {
-			return nil, fmt.Errorf("code is required")
+			code = mdex.Ed25519_Seed
+		} else {
+			code = *config.Code
 		}
 
-		if !validateCode(*config.Code, validSignerCodes) {
-			return nil, fmt.Errorf("unexpected code: %s", *config.Code)
+		if !validateCode(code, validSignerCodes) {
+			return nil, fmt.Errorf("unexpected code: %s", code)
 		}
 
+		opts = []mopts.MatterOption{}
 		if config.Raw == nil {
-			raw, err := crypto.GenerateSeed(*config.Code)
+			raw, err := crypto.GenerateSeed(code)
 			if err != nil {
 				return nil, err
 			}
 
-			opts = slices.Clone(opts)
 			opts = append(opts, mopts.WithRaw(raw))
+		} else {
+			opts = append(opts, mopts.WithRaw(*config.Raw))
 		}
+
+		opts = append(opts, mopts.WithCode(code))
 	}
 
 	if config.Qb2 != nil {
@@ -73,7 +83,7 @@ func NewSigner(transferable bool, opts ...mopts.MatterOption) (*Signer, error) {
 		return nil, err
 	}
 
-	if !validateCode(*config.Code, validSignerCodes) {
+	if !validateCode(s.code, validSignerCodes) {
 		return nil, fmt.Errorf("unexpected code: %s", *config.Code)
 	}
 

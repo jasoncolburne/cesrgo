@@ -13,6 +13,10 @@ type Cigar struct {
 	verfer *Verfer
 }
 
+func (c *Cigar) GetVerfer() *Verfer {
+	return c.verfer
+}
+
 var validCigarCodes = []types.Code{
 	codex.Ed25519_Sig,
 	codex.ECDSA_256k1_Sig,

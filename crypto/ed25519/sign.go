@@ -7,7 +7,7 @@ import (
 )
 
 func Sign(sk types.Raw, ser []byte) (types.Raw, error) {
-	var priv = ed25519.PrivateKey(sk)
+	var priv = ed25519.NewKeyFromSeed(sk)
 	sig := ed25519.Sign(priv, ser)
 
 	return types.Raw(sig), nil
