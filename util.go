@@ -52,7 +52,6 @@ func validateCode(code types.Code, validCodes []types.Code) bool {
 
 var b64Runes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 
-//nolint:dupl
 func b64CharToIndex(c byte) (uint8, error) {
 	index := strings.Index(b64Runes, string(c))
 	if index == -1 {
@@ -66,7 +65,6 @@ func b64CharToIndex(c byte) (uint8, error) {
 	return uint8(index), nil
 }
 
-//nolint:dupl
 func b64IndexToChar(i uint8) (byte, error) {
 	if i > 63 {
 		return 0, fmt.Errorf("programmer error:invalid base64 index: %d", i)
