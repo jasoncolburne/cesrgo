@@ -232,6 +232,24 @@ func u64ToB64(n uint64, length int) (string, error) {
 	return out, nil
 }
 
+func bytesToInt(in []byte) int {
+	length := len(in)
+
+	if length <= 4 {
+		bytes := [4]byte{}
+		copy(bytes[4-length:], in)
+		i := binary.BigEndian.Uint32(bytes[:])
+		return int(i)
+	} else if length <= 8 {
+		bytes := [8]byte{}
+		copy(bytes[8-length:], in)
+		i := binary.BigEndian.Uint64(bytes[:])
+		return int(i)
+	} else {
+		return -1
+	}
+}
+
 func intToB64(n, length int) (string, error) {
 	s := ""
 

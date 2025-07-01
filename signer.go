@@ -223,7 +223,17 @@ func (s *Signer) SignIndexed(
 		return nil, err
 	}
 
-	siger, err := NewSiger(s.verfer, iopts.WithCode(code), iopts.WithRaw(raw))
+	opts := []iopts.IndexerOption{
+		iopts.WithCode(code),
+		iopts.WithRaw(raw),
+		iopts.WithIndex(index),
+	}
+
+	if ondex != nil {
+		opts = append(opts, iopts.WithOndex(*ondex))
+	}
+
+	siger, err := NewSiger(s.verfer, opts...)
 	if err != nil {
 		return nil, err
 	}

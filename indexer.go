@@ -1,7 +1,10 @@
 package cesrgo
 
 import (
+	"encoding/base64"
 	"fmt"
+	"slices"
+	"strings"
 
 	tables "github.com/jasoncolburne/cesrgo/indexer"
 	"github.com/jasoncolburne/cesrgo/indexer/options"
@@ -12,7 +15,7 @@ type indexer struct {
 	code  types.Code
 	raw   types.Raw
 	index types.Index
-	ondex types.Ondex
+	ondex *types.Ondex
 }
 
 func (i *indexer) SetCode(code types.Code) {
@@ -39,11 +42,11 @@ func (i *indexer) GetIndex() types.Index {
 	return i.index
 }
 
-func (i *indexer) SetOndex(ondex types.Ondex) {
+func (i *indexer) SetOndex(ondex *types.Ondex) {
 	i.ondex = ondex
 }
 
-func (i *indexer) GetOndex() types.Ondex {
+func (i *indexer) GetOndex() *types.Ondex {
 	return i.ondex
 }
 
@@ -52,11 +55,16 @@ func (i *indexer) Qb2() (types.Qb2, error) {
 }
 
 func (i *indexer) Qb64() (types.Qb64, error) {
-	return types.Qb64(""), nil
+	return iinfil(i)
 }
 
 func (i *indexer) Qb64b() (types.Qb64b, error) {
-	return types.Qb64b{}, nil
+	qb64, err := iinfil(i)
+	if err != nil {
+		return types.Qb64b{}, err
+	}
+
+	return types.Qb64b(qb64), nil
 }
 
 func ibexfil(i types.Indexer, qb2 types.Qb2) error {
@@ -188,10 +196,84 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 	i.SetRaw(types.Raw(raw))
 	i.SetIndex(types.Index(index))
 	if ondex != nil {
-		i.SetOndex(*ondex)
+		i.SetOndex(ondex)
 	}
 
 	return nil
+}
+
+func iinfil(i types.Indexer) (types.Qb64, error) {
+	code := i.GetCode()
+	index := i.GetIndex()
+	ondex := i.GetOndex()
+	raw := i.GetRaw()
+
+	ps := (3 - (len(raw) % 3)) % 3
+	szg, err := tables.GetSizage(code)
+	if err != nil {
+		return "", err
+	}
+
+	cs := szg.Hs + szg.Ss
+	ms := szg.Ss - szg.Os
+
+	var fs uint32
+	if szg.Fs == nil {
+		if cs%4 != 0 {
+			return "", fmt.Errorf("whole code size not multiple of 4 for variable length material. cs=%d", cs)
+		}
+		if szg.Os != 0 {
+			return "", fmt.Errorf("non-zero other index size for variable length material. os=%d", szg.Os)
+		}
+		fs = (uint32(index) * 4) + cs
+	} else {
+		fs = *szg.Fs
+	}
+
+	if index < 0 || index > (1<<(6*ms)-1) {
+		return "", fmt.Errorf("invalid index=%d for code=%s", index, code)
+	}
+
+	if szg.Os != 0 && !(*ondex >= 0 && *ondex <= (1<<(6*szg.Os)-1)) {
+		return "", fmt.Errorf("invalid ondex=%d for os=%d and code=%s", ondex, szg.Os, code)
+	}
+
+	// both is hard code + converted index + converted ondex
+	odx := 0
+	if ondex != nil {
+		odx = int(*ondex)
+	}
+
+	indexB64, err := intToB64(int(index), int(ms))
+	if err != nil {
+		return "", err
+	}
+
+	ondexB64, err := intToB64(odx, int(szg.Os))
+	if err != nil {
+		return "", err
+	}
+
+	both := fmt.Sprintf("%s%s%s", code, indexB64, ondexB64)
+
+	if len(both) != int(cs) {
+		return "", fmt.Errorf("mismatch code size = %d with table = %d", cs, len(both))
+	}
+
+	if (int(cs) % 4) != ps-int(szg.Ls) {
+		return "", fmt.Errorf("invalid code=%s for converted raw pad size=%d", both, ps)
+	}
+	bytes := make([]byte, ps+len(raw))
+
+	copy(bytes[:ps], slices.Repeat([]byte{0}, ps))
+	copy(bytes[ps:], raw)
+	full := both + base64.URLEncoding.EncodeToString(bytes)[ps-int(szg.Ls):]
+
+	if len(full) != int(fs) {
+		return "", fmt.Errorf("invalid code=%s for raw size=%d", both, len(raw))
+	}
+
+	return types.Qb64(full), nil
 }
 
 func iexfil(i types.Indexer, qb64 types.Qb64) error {
@@ -199,7 +281,127 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 		return fmt.Errorf("qb64 is empty")
 	}
 
-	_ = i
+	first := qb64[0]
+	hs, err := tables.GetHardage(first)
+	if err != nil {
+		return err
+	}
+
+	hard := qb64[:hs]
+	szg, err := tables.GetSizage(types.Code(hard))
+	if err != nil {
+		return err
+	}
+
+	cs := szg.Hs + szg.Ss
+	ms := szg.Ss - szg.Os
+
+	if len(qb64) < int(cs) {
+		return fmt.Errorf("insufficient material for code: qb64 size = %d, cs = %d", len(qb64), cs)
+	}
+
+	indexB64 := qb64[hs : hs+ms]
+	index, err := b64ToU32(string(indexB64))
+	if err != nil {
+		return err
+	}
+
+	ondexB64 := qb64[hs+ms : hs+ms+szg.Os]
+
+	var ondex *types.Ondex
+	if slices.Contains(tables.ValidCurrentSigCodes, types.Code(hard)) {
+		if szg.Os != 0 {
+			odx, err := b64ToU32(string(ondexB64))
+			if err != nil {
+				return err
+			}
+
+			if odx != 0 {
+				return fmt.Errorf("invalid ondex = '%d' for code = '%s'", odx, hard)
+			}
+
+			_ondex := types.Ondex(odx)
+			ondex = &_ondex
+		}
+	} else if szg.Os != 0 {
+		odx, err := b64ToU32(string(ondexB64))
+		if err != nil {
+			return err
+		}
+
+		_ondex := types.Ondex(odx)
+		ondex = &_ondex
+	} else {
+		_ondex := types.Ondex(index)
+		ondex = &_ondex
+	}
+
+	var fs uint32
+	if szg.Fs == nil {
+		if cs%4 != 0 {
+			return fmt.Errorf("code size not multiple of 4 for variable length material: cs = %d", cs)
+		}
+
+		if szg.Os != 0 {
+			return fmt.Errorf("non-zero other index size for variable length material: os = %d", szg.Os)
+		}
+
+		fs = (uint32(index) * 4) + cs
+	} else {
+		fs = *szg.Fs
+	}
+
+	if len(qb64) < int(fs) {
+		return fmt.Errorf("insufficient material: qb64 size = %d, fs = %d", len(qb64), fs)
+	}
+
+	qb64 = qb64[:fs]
+
+	ps := cs % 4
+	var pbs uint32
+	if ps != 0 {
+		pbs = 2 * ps
+	} else {
+		pbs = 2 * szg.Ls
+	}
+
+	var raw types.Raw
+	if ps != 0 {
+		base := strings.Repeat("A", int(ps)) + string(qb64[cs:])
+		paw, err := base64.URLEncoding.DecodeString(base)
+		if err != nil {
+			return err
+		}
+
+		pi := bytesToInt(paw[:ps])
+		if pi&(1<<pbs-1) != 0 {
+			return fmt.Errorf("non-zeroed pad bits: %x", pi&(1<<pbs-1))
+		}
+
+		raw = paw[ps:]
+	} else {
+		base := string(qb64[cs:])
+		paw, err := base64.URLEncoding.DecodeString(base)
+		if err != nil {
+			return err
+		}
+
+		li := bytesToInt(paw[:szg.Ls])
+		if li != 0 {
+			return fmt.Errorf("non-zeroed lead byte: %x", li)
+		}
+
+		raw = paw[szg.Ls:]
+	}
+
+	if len(raw) != (len(qb64)-int(cs))*3/4 {
+		return fmt.Errorf("improperly qualified material: qb64 = %s", qb64)
+	}
+
+	i.SetCode(types.Code(hard))
+	i.SetIndex(types.Index(index))
+	i.SetOndex(ondex)
+	i.SetRaw(raw)
 
 	return nil
 }
@@ -270,9 +472,7 @@ func NewIndexer(i types.Indexer, opts ...options.IndexerOption) error {
 		i.SetCode(*config.Code)
 		i.SetRaw((*config.Raw)[:rize])
 		i.SetIndex(*config.Index)
-		if config.Ondex != nil {
-			i.SetOndex(*config.Ondex)
-		}
+		i.SetOndex(config.Ondex)
 
 		return nil
 	}

@@ -277,9 +277,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 		return fmt.Errorf("non-zeroed code midpad bits")
 	}
 
-	bytes := make([]byte, 8)
-	copy(bytes[int(8-szg.Ls):], qb2[bcs:bcs+int(szg.Ls)])
-	li := binary.BigEndian.Uint64(bytes)
+	li := bytesToInt(qb2[bcs : bcs+int(szg.Ls)])
 	if li != 0 {
 		return fmt.Errorf("non-zeroed lead midpad bytes")
 	}
@@ -353,9 +351,7 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 	raw := paw[int(ps+szg.Ls):]
 
 	// ensure midpad bytes are zero
-	bytes := make([]byte, 8)
-	copy(bytes[int(8-ps-szg.Ls):], paw[:int(ps+szg.Ls)])
-	pi := binary.BigEndian.Uint64(bytes)
+	pi := bytesToInt(paw[:int(ps+szg.Ls)])
 	if pi != 0 {
 		return fmt.Errorf("nonzero midpad bytes=0x%x", pi)
 	}

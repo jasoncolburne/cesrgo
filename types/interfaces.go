@@ -31,8 +31,8 @@ type (
 		SetIndex(index Index)
 		GetIndex() Index
 
-		SetOndex(ondex Ondex)
-		GetOndex() Ondex
+		SetOndex(ondex *Ondex)
+		GetOndex() *Ondex
 
 		Qb2() (Qb2, error)
 		Qb64() (Qb64, error)
