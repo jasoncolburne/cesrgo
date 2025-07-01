@@ -35,6 +35,15 @@ func (m Map) _map() orderedmap.OrderedMap[string, any] {
 	return orderedmap.OrderedMap[string, any](m)
 }
 
+func (m Map) Clone() Map {
+	newMap := NewMap()
+	om := m._map()
+	for pair := om.Oldest(); pair != nil; pair = pair.Next() {
+		newMap.Set(pair.Key, pair.Value)
+	}
+	return newMap
+}
+
 func (m Map) Set(key string, value any) (any, bool) {
 	om := m._map()
 	return om.Set(key, value)

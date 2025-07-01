@@ -127,7 +127,7 @@ func derive(sad *types.Map, code *types.Code, kind *types.Kind, label *string, i
 		return nil, types.Map{}, fmt.Errorf("unexpected code: %s", *code)
 	}
 
-	sadCopy := *sad
+	sadCopy := sad.Clone()
 	_, ok := sadCopy.Get(*label)
 	if !ok {
 		return nil, types.Map{}, fmt.Errorf("label not found: %s", *label)

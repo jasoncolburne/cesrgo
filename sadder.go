@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/vmihailenco/msgpack/v5"
@@ -78,11 +79,11 @@ func (s *sad) SetVersion(version types.Version) {
 var (
 	VER1FULLSPAN = 17
 	VER1TERM     = byte("_"[0])
-	VEREX1       = "(?P<proto1>[A-Z]{4})(?P<major1>[0-9a-f])(?P<minor1>[0-9a-f])(?P<kind1>[A-Z]{4})(?P<size1>[0-9a-f]{6})_"
+	VEREX1       = "([A-Z]{4})([0-9a-f])([0-9a-f])([A-Z]{4})([0-9a-f]{6})_"
 
 	VER2FULLSPAN = 19
 	VER2TERM     = byte("."[0])
-	VEREX2       = "(?P<proto2>[A-Z]{4})(?P<pmajor2>[0-9a-f])(?P<pminor2>[0-9a-f]{2})(?P<gmajor2>[0-9a-f])(?P<gminor2>[0-9a-f]{2})(?P<kind2>[A-Z]{4})(?P<size2>[0-9a-f]{6})\\."
+	VEREX2       = "([A-Z]{4})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([A-Z]{4})([0-9A-Za-z_-]{4})\\."
 
 	REVER *regexp.Regexp
 
@@ -122,26 +123,26 @@ func smell(raw types.Raw) (types.Proto, types.Version, types.Kind, types.Size, *
 	}
 
 	match := re.FindSubmatch(raw)
-	if len(match) != 5 && len(match) != 7 {
+	if len(match) != 13 {
 		return "", types.Version{}, "", 0, nil, fmt.Errorf("invalid version")
 	}
 
-	proto := types.Proto(match[0])
+	if len(match[1]) > 0 {
+		proto := types.Proto(match[1])
 
-	pmajor, err := hexToUint32(match[1])
-	if err != nil {
-		return "", types.Version{}, "", 0, nil, err
-	}
+		pmajor, err := hexToUint32(match[2])
+		if err != nil {
+			return "", types.Version{}, "", 0, nil, err
+		}
 
-	pminor, err := hexToUint32(match[2])
-	if err != nil {
-		return "", types.Version{}, "", 0, nil, err
-	}
+		pminor, err := hexToUint32(match[3])
+		if err != nil {
+			return "", types.Version{}, "", 0, nil, err
+		}
 
-	if len(match) == 5 {
-		kind := types.Kind(match[3])
+		kind := types.Kind(match[4])
 
-		sizeInt, err := hexToUint32(match[4])
+		sizeInt, err := hexToUint32(match[5])
 		if err != nil {
 			return "", types.Version{}, "", 0, nil, err
 		}
@@ -152,20 +153,32 @@ func smell(raw types.Raw) (types.Proto, types.Version, types.Kind, types.Size, *
 			Major: pmajor,
 			Minor: pminor,
 		}, kind, size, nil, nil
-	} else if len(match) == 7 {
-		gmajor, err := hexToUint32(match[3])
+	} else if len(match[6]) > 0 {
+		proto := types.Proto(match[6])
+
+		pmajor, err := b64ToU32(string(match[7]))
 		if err != nil {
 			return "", types.Version{}, "", 0, nil, err
 		}
 
-		gminor, err := hexToUint32(match[4])
+		pminor, err := b64ToU32(string(match[8]))
 		if err != nil {
 			return "", types.Version{}, "", 0, nil, err
 		}
 
-		kind := types.Kind(match[5])
+		gmajor, err := b64ToU32(string(match[9]))
+		if err != nil {
+			return "", types.Version{}, "", 0, nil, err
+		}
 
-		sizeInt, err := hexToUint32(match[6])
+		gminor, err := b64ToU32(string(match[10]))
+		if err != nil {
+			return "", types.Version{}, "", 0, nil, err
+		}
+
+		kind := types.Kind(match[11])
+
+		sizeInt, err := b64ToU32(string(match[12]))
 		if err != nil {
 			return "", types.Version{}, "", 0, nil, err
 		}
@@ -263,7 +276,7 @@ func sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 	types.Version,
 	error,
 ) {
-	vAny, ok := ked.Get("v")
+	vAny, ok := ked.Get("vs")
 	if !ok {
 		return nil, "", "", types.Map{}, types.Version{}, fmt.Errorf("version string not found")
 	}
@@ -283,7 +296,7 @@ func sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 	}
 
 	if pvrsn.Major != version.Major || pvrsn.Minor != version.Minor {
-		return nil, "", "", types.Map{}, types.Version{}, fmt.Errorf("protocolversion mismatch")
+		return nil, "", "", types.Map{}, types.Version{}, fmt.Errorf("protocol version mismatch")
 	}
 
 	if gvrsn != nil && (gvrsn.Major != version.Major || gvrsn.Minor != version.Minor) {
@@ -334,6 +347,8 @@ func sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 	copy(rawOut[fore:], []byte(vs))
 	copy(rawOut[fore+len(vs):], raw[back:])
 
+	ked.Set("vs", vs)
+
 	return rawOut, proto, *kind, ked, pvrsn, nil
 }
 
@@ -356,7 +371,6 @@ func deversify(v string) (
 	}
 
 	offsets := re.FindIndex([]byte(v))
-
 	if offsets == nil {
 		return "", types.Version{}, "", 0, &types.Version{}, fmt.Errorf("version string not found")
 	}
@@ -377,35 +391,35 @@ func rematch(full []byte, match [][]byte) (
 	*types.Version,
 	error,
 ) {
-	if len(match) != 5 && len(match) != 7 {
+	if len(match) != 13 {
 		return "", types.Version{}, "", 0, &types.Version{}, fmt.Errorf("invalid version")
 	}
 
-	proto := types.Proto(match[1])
-	pmajor, err := hexToUint32(match[2])
-	if err != nil {
-		return "", types.Version{}, "", 0, &types.Version{}, err
-	}
-
-	pminor, err := hexToUint32(match[3])
-	if err != nil {
-		return "", types.Version{}, "", 0, &types.Version{}, err
-	}
-
-	if len(match) == 7 {
-		gmajor, err := hexToUint32(match[4])
+	if len(match[6]) > 0 {
+		proto := types.Proto(match[6])
+		pmajor, err := b64ToU32(string(match[7]))
 		if err != nil {
 			return "", types.Version{}, "", 0, &types.Version{}, err
 		}
 
-		gminor, err := hexToUint32(match[5])
+		pminor, err := b64ToU32(string(match[8]))
 		if err != nil {
 			return "", types.Version{}, "", 0, &types.Version{}, err
 		}
 
-		kind := types.Kind(match[6])
+		gmajor, err := b64ToU32(string(match[9]))
+		if err != nil {
+			return "", types.Version{}, "", 0, &types.Version{}, err
+		}
 
-		sizeInt, err := hexToUint32(match[7])
+		gminor, err := b64ToU32(string(match[10]))
+		if err != nil {
+			return "", types.Version{}, "", 0, &types.Version{}, err
+		}
+
+		kind := types.Kind(match[11])
+
+		sizeInt, err := b64ToU32(string(match[12]))
 		if err != nil {
 			return "", types.Version{}, "", 0, &types.Version{}, err
 		}
@@ -419,12 +433,21 @@ func rematch(full []byte, match [][]byte) (
 				Major: gmajor,
 				Minor: gminor,
 			}, nil
-	}
+	} else if len(match[1]) > 0 {
+		proto := types.Proto(match[1])
+		pmajor, err := hexToUint32(match[2])
+		if err != nil {
+			return "", types.Version{}, "", 0, &types.Version{}, err
+		}
 
-	if len(match) == 5 {
-		kind := types.Kind(match[6])
+		pminor, err := hexToUint32(match[3])
+		if err != nil {
+			return "", types.Version{}, "", 0, &types.Version{}, err
+		}
 
-		sizeInt, err := hexToUint32(match[7])
+		kind := types.Kind(match[4])
+
+		sizeInt, err := hexToUint32(match[5])
 		if err != nil {
 			return "", types.Version{}, "", 0, &types.Version{}, err
 		}
@@ -533,20 +556,21 @@ func versify(proto *types.Proto, pvrsn *types.Version, kind *types.Kind, size ty
 	return fmt.Sprintf("%s%s%s%s%s%s%s.", *proto, pvmaj, pvmin, gvmaj, gvmin, *kind, sz), nil
 }
 
-func intToB64(i, length int) (string, error) {
+func intToB64(n, length int) (string, error) {
 	s := ""
 
-	for i > 0 {
+	for n > 0 {
 		//nolint:gosec
-		c, err := b64IndexToChar(uint8(i % 64))
+		c, err := b64IndexToChar(uint8(n % 64))
 		if err != nil {
 			return "", err
 		}
 		s = string([]byte{c}) + s
-		i /= 64
+		n /= 64
 	}
 
-	for i = 0; i < length-len(s); i++ {
+	max := length - len(s)
+	for i := 0; i < max; i++ {
 		s = "A" + s
 	}
 
@@ -558,7 +582,7 @@ func NewSadder(
 	kind *types.Kind,
 	saidify bool,
 	opts ...options.MatterOption,
-) error {
+) (*Sadder, error) {
 	config := &options.MatterOptions{}
 
 	for _, opt := range opts {
@@ -581,20 +605,33 @@ func NewSadder(
 	raw := config.Raw
 	if raw != nil {
 		if ked != nil {
-			return fmt.Errorf("both raw and ked cannot be provided")
+			return nil, fmt.Errorf("both raw and ked cannot be provided")
 		}
 
 		if err := s.inhale(*raw); err != nil {
-			return err
+			return nil, err
 		}
 	} else if ked != nil {
 		if raw != nil {
-			return fmt.Errorf("both raw and ked cannot be provided")
+			return nil, fmt.Errorf("both raw and ked cannot be provided")
 		}
 
-		exhaledRaw, proto, kind, ked, pvrsn, err := s.exhale(*ked, kind)
+		szg, err := codex.GetSizage(*code)
 		if err != nil {
-			return err
+			return nil, err
+		}
+
+		kedCopy := ked.Clone()
+		if saidify {
+			_, ok := kedCopy.Set("d", strings.Repeat("#", int(*szg.Fs)))
+			if !ok {
+				return nil, fmt.Errorf("failed to set d")
+			}
+		}
+
+		exhaledRaw, proto, kind, ked, pvrsn, err := s.exhale(kedCopy, kind)
+		if err != nil {
+			return nil, err
 		}
 
 		s.SetKed(ked)
@@ -604,20 +641,27 @@ func NewSadder(
 
 		err = NewMatter(s, options.WithCode(*code), options.WithRaw(exhaledRaw))
 		if err != nil {
-			return err
+			return nil, err
 		}
 	} else {
-		return fmt.Errorf("raw or ked must be provided")
+		return nil, fmt.Errorf("raw or ked must be provided")
 	}
 
 	if saidify {
 		saider, err := NewSaider(&s.ked, nil, nil, options.WithCode(*code))
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		s.saider = saider
+
+		ked := s.GetKed()
+		qb64, err := saider.Qb64()
+		if err != nil {
+			return nil, err
+		}
+		ked.Set("d", qb64)
 	}
 
-	return nil
+	return s, nil
 }
