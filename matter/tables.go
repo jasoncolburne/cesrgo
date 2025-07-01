@@ -388,16 +388,3 @@ func Bardage(b byte) (uint32, error) {
 
 	return 0, fmt.Errorf("unknown bardage: %x", b)
 }
-
-func RawSize(code types.Code) (uint32, error) {
-	szg, err := GetSizage(code)
-	if err != nil {
-		return 0, err
-	}
-	if szg.Fs == nil {
-		return 0, fmt.Errorf("cannot determine raw size for code=%s", code)
-	}
-
-	cs := szg.Hs + szg.Ss
-	return (*szg.Fs-cs)*3/4 - szg.Ls, nil
-}
