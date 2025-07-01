@@ -62,6 +62,7 @@ func b64CharToIndex(c byte) (uint8, error) {
 		return 0, fmt.Errorf("programmer error:invalid base64 character: %c", c)
 	}
 
+	//nolint:gosec
 	return uint8(index), nil
 }
 
@@ -73,16 +74,16 @@ func b64IndexToChar(i uint8) (byte, error) {
 	return b64Runes[i], nil
 }
 
-func nabSextets(binary []byte, count int) ([]byte, error) {
+func nabSextets(bin []byte, count int) ([]byte, error) {
 	n := ((count + 1) * 3) / 4
 
-	if n > len(binary) {
+	if n > len(bin) {
 		return nil, fmt.Errorf("binary is too small")
 	}
 
-	bps := 3 - (len(binary) % 3)
-	padded := make([]byte, len(binary)+bps)
-	copy(padded, binary)
+	bps := 3 - (len(bin) % 3)
+	padded := make([]byte, len(bin)+bps)
+	copy(padded, bin)
 
 	out := make([]byte, len(padded)*4/3)
 	i := 0
@@ -178,10 +179,10 @@ func u32ToB64(n uint32, length int) (string, error) {
 		return "", nil
 	}
 
-	var x uint32 = n
+	x := n
 	out := ""
+	overflow := float64(length) - math.Log2(float64(n))/math.Log2(64)
 
-	var overflow float64 = float64(length) - math.Log2(float64(n))/math.Log2(64)
 	for x > 0 {
 		if overflow >= 0.0 {
 			i, err := b64IndexToChar(byte(x % 64))
@@ -207,10 +208,10 @@ func u64ToB64(n uint64, length int) (string, error) {
 		return "", nil
 	}
 
-	var x uint64 = n
+	x := n
 	out := ""
+	overflow := float64(length) - math.Log2(float64(n))/math.Log2(64)
 
-	var overflow float64 = float64(length) - math.Log2(float64(n))/math.Log2(64)
 	for x > 0 {
 		if overflow >= 0.0 {
 			c, err := b64IndexToChar(byte(x % 64))

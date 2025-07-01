@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	codex "github.com/jasoncolburne/cesrgo/matter"
-	tables "github.com/jasoncolburne/cesrgo/matter"
 	"github.com/jasoncolburne/cesrgo/matter/options"
 	"github.com/jasoncolburne/cesrgo/types"
 )
@@ -206,7 +205,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 	}
 
 	first := sextets[0]
-	hs, err := tables.Bardage(first)
+	hs, err := codex.Bardage(first)
 	if err != nil {
 		return err
 	}
@@ -221,7 +220,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 		return err
 	}
 
-	szg, err := tables.GetSizage(types.Code(hard))
+	szg, err := codex.GetSizage(types.Code(hard))
 	if err != nil {
 		return err
 	}
@@ -303,7 +302,7 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 	}
 
 	first := qb64[:1]
-	hs, err := tables.Hardage(string(first))
+	hs, err := codex.Hardage(string(first))
 	if err != nil {
 		return err
 	}
@@ -314,7 +313,7 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 
 	hard := qb64[:hs]
 
-	szg, err := tables.GetSizage(types.Code(hard))
+	szg, err := codex.GetSizage(types.Code(hard))
 	if err != nil {
 		return err
 	}
@@ -383,53 +382,53 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 }
 
 func NewMatter(m types.Matter, opts ...options.MatterOption) error {
-	options := &options.MatterOptions{}
+	config := &options.MatterOptions{}
 
 	for _, opt := range opts {
-		opt(options)
+		opt(config)
 	}
 
-	if options.Code != nil && options.Raw != nil {
-		if options.Qb2 != nil || options.Qb64 != nil || options.Qb64b != nil {
+	if config.Code != nil && config.Raw != nil {
+		if config.Qb2 != nil || config.Qb64 != nil || config.Qb64b != nil {
 			return fmt.Errorf("code and raw cannot be used with qb2, qb64, or qb64b")
 		}
 
-		length := len(*options.Raw)
+		length := len(*config.Raw)
 		if length > 1<<32-1 {
 			return fmt.Errorf("size too large")
 		}
 
-		m.SetCode(*options.Code)
-		m.SetRaw(*options.Raw)
+		m.SetCode(*config.Code)
+		m.SetRaw(*config.Raw)
 		//nolint:gosec
-		m.SetSize(types.Size(len(*options.Raw)))
-		m.SetSoft(options.Soft)
+		m.SetSize(types.Size(len(*config.Raw)))
+		m.SetSoft(config.Soft)
 
 		return nil
 	}
 
-	if options.Qb2 != nil {
-		if options.Code != nil || options.Raw != nil || options.Qb64 != nil || options.Qb64b != nil {
+	if config.Qb2 != nil {
+		if config.Code != nil || config.Raw != nil || config.Qb64 != nil || config.Qb64b != nil {
 			return fmt.Errorf("qb2 cannot be used with code, raw, qb64, or qb64b")
 		}
 
-		return mbexfil(m, *options.Qb2)
+		return mbexfil(m, *config.Qb2)
 	}
 
-	if options.Qb64 != nil {
-		if options.Code != nil || options.Raw != nil || options.Qb2 != nil || options.Qb64b != nil {
+	if config.Qb64 != nil {
+		if config.Code != nil || config.Raw != nil || config.Qb2 != nil || config.Qb64b != nil {
 			return fmt.Errorf("qb64 cannot be used with code, raw, qb2, or qb64b")
 		}
 
-		return mexfil(m, *options.Qb64)
+		return mexfil(m, *config.Qb64)
 	}
 
-	if options.Qb64b != nil {
-		if options.Code != nil || options.Raw != nil || options.Qb2 != nil || options.Qb64 != nil {
+	if config.Qb64b != nil {
+		if config.Code != nil || config.Raw != nil || config.Qb2 != nil || config.Qb64 != nil {
 			return fmt.Errorf("qb64b cannot be used with code, raw, qb2, or qb64")
 		}
 
-		return mexfil(m, types.Qb64(*options.Qb64b))
+		return mexfil(m, types.Qb64(*config.Qb64b))
 	}
 
 	return fmt.Errorf("no inputs provided")

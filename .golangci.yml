@@ -1,83 +1,86 @@
+version: "2"
 run:
-  timeout: 5m
   go: "1.24"
-
 linters:
   enable:
-    - gofmt
-    - goimports
-    - errcheck
-    - ineffassign
     - dupl
     - goconst
     - gocritic
     - godox
     - goprintffuncname
     - gosec
-    - gosimple
-    - govet
     - lll
     - misspell
     - nakedret
     - noctx
     - nolintlint
     - rowserrcheck
-    - staticcheck
-    - typecheck
     - unconvert
     - unparam
-    - unused
     - whitespace
-
-linters-settings:
-  dupl:
-    threshold: 100
-  lll:
-    line-length: 140
-  goconst:
-    min-len: 2
-    min-occurrences: 3
-  misspell:
-    locale: US
-  gomnd:
-    checks: argument,case,condition,operation,return,assign
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - dupImport # https://github.com/go-critic/go-critic/issues/845
-      - ifElseChain
-      - octalLiteral
-      - whyNoLint
-      - wrapperFunc
-
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - dupl
-        - gocritic
-        - gosec
-        - goconst
-        - gomnd
-        - goprintffuncname
-        - gosec
-        - gosimple
-        - govet
-        - ineffassign
-        - lll
-        - misspell
-        - nakedret
-        - noctx
-        - nolintlint
-        - rowserrcheck
-        - staticcheck
-        - typecheck
-        - unconvert
-        - unparam
-        - unused
-        - whitespace
+  settings:
+    dupl:
+      threshold: 100
+    goconst:
+      min-len: 2
+      min-occurrences: 3
+    gocritic:
+      disabled-checks:
+        - dupImport
+        - ifElseChain
+        - octalLiteral
+        - whyNoLint
+        - wrapperFunc
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+    lll:
+      line-length: 140
+    misspell:
+      locale: US
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - dupl
+          - goconst
+          - gocritic
+          - goprintffuncname
+          - gosec
+          - govet
+          - ineffassign
+          - lll
+          - misspell
+          - mnd
+          - nakedret
+          - noctx
+          - nolintlint
+          - rowserrcheck
+          - staticcheck
+          - unconvert
+          - unparam
+          - unused
+          - whitespace
+        path: _test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

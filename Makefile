@@ -23,7 +23,7 @@ clean:
 
 # Run linter
 lint:
-	docker run -t --rm -v "$(shell pwd):/app" -w /app golangci/golangci-lint:v1.64.8 golangci-lint run
+	docker run -t --rm -v "$(shell pwd):/app" -w /app golangci/golangci-lint:v2.1 golangci-lint run
 
 # Format code
 fmt:
