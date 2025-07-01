@@ -76,58 +76,22 @@ type Sizage struct {
 	Hs uint32
 	Ss uint32
 	Os uint32
-	Ls uint32
 	Fs *uint32
+	Ls uint32
 }
 
 func GetSizage(code types.Code) (Sizage, error) {
 	switch code {
-	case Ed25519:
+	case Ed25519, Ed25519_Crt, ECDSA_256k1, ECDSA_256k1_Crt, ECDSA_256r1, ECDSA_256r1_Crt:
 		fs := uint32(88)
 		return Sizage{Hs: 1, Ss: 1, Os: 0, Fs: &fs, Ls: 0}, nil
-	case Ed25519_Crt:
-		fs := uint32(88)
-		return Sizage{Hs: 1, Ss: 1, Os: 0, Fs: &fs, Ls: 0}, nil
-	case ECDSA_256k1:
-		fs := uint32(88)
-		return Sizage{Hs: 1, Ss: 1, Os: 0, Fs: &fs, Ls: 0}, nil
-	case ECDSA_256k1_Crt:
-		fs := uint32(88)
-		return Sizage{Hs: 1, Ss: 1, Os: 0, Fs: &fs, Ls: 0}, nil
-	case ECDSA_256r1:
-		fs := uint32(88)
-		return Sizage{Hs: 1, Ss: 1, Os: 0, Fs: &fs, Ls: 0}, nil
-	case ECDSA_256r1_Crt:
-		fs := uint32(88)
-		return Sizage{Hs: 1, Ss: 1, Os: 0, Fs: &fs, Ls: 0}, nil
-	case Ed448:
+	case Ed448, Ed448_Crt:
 		fs := uint32(156)
 		return Sizage{Hs: 2, Ss: 2, Os: 1, Fs: &fs, Ls: 0}, nil
-	case Ed448_Crt:
-		fs := uint32(156)
-		return Sizage{Hs: 2, Ss: 2, Os: 1, Fs: &fs, Ls: 0}, nil
-	case Ed25519_Big:
+	case Ed25519_Big, Ed25519_Big_Crt, ECDSA_256k1_Big, ECDSA_256k1_Big_Crt, ECDSA_256r1_Big, ECDSA_256r1_Big_Crt:
 		fs := uint32(92)
 		return Sizage{Hs: 2, Ss: 4, Os: 2, Fs: &fs, Ls: 0}, nil
-	case Ed25519_Big_Crt:
-		fs := uint32(92)
-		return Sizage{Hs: 2, Ss: 4, Os: 2, Fs: &fs, Ls: 0}, nil
-	case ECDSA_256k1_Big:
-		fs := uint32(92)
-		return Sizage{Hs: 2, Ss: 4, Os: 2, Fs: &fs, Ls: 0}, nil
-	case ECDSA_256k1_Big_Crt:
-		fs := uint32(92)
-		return Sizage{Hs: 2, Ss: 4, Os: 2, Fs: &fs, Ls: 0}, nil
-	case ECDSA_256r1_Big:
-		fs := uint32(92)
-		return Sizage{Hs: 2, Ss: 4, Os: 2, Fs: &fs, Ls: 0}, nil
-	case ECDSA_256r1_Big_Crt:
-		fs := uint32(92)
-		return Sizage{Hs: 2, Ss: 4, Os: 2, Fs: &fs, Ls: 0}, nil
-	case Ed448_Big:
-		fs := uint32(160)
-		return Sizage{Hs: 2, Ss: 6, Os: 3, Fs: &fs, Ls: 0}, nil
-	case Ed448_Big_Crt:
+	case Ed448_Big, Ed448_Big_Crt:
 		fs := uint32(160)
 		return Sizage{Hs: 2, Ss: 6, Os: 3, Fs: &fs, Ls: 0}, nil
 	case TBD0:
