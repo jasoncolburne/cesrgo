@@ -146,6 +146,20 @@ func codeB2ToB64(b2 []byte, length int) (string, error) {
 // 	return binary.BigEndian.AppendUint64(make([]byte, 0, 8), i)[8-n:], nil
 // }
 
+func b64ToU16(b64 string) (uint16, error) {
+	var out uint16 = 0
+
+	for _, c := range b64 {
+		i, err := b64CharToIndex(byte(c))
+		if err != nil {
+			return 0, err
+		}
+		out = (out << 6) + uint16(i)
+	}
+
+	return out, nil
+}
+
 func b64ToU32(b64 string) (uint32, error) {
 	var out uint32 = 0
 
@@ -236,6 +250,7 @@ func bytesToInt(in []byte) int {
 		bytes := [8]byte{}
 		copy(bytes[8-length:], in)
 		i := binary.BigEndian.Uint64(bytes[:])
+		//nolint:gosec
 		return int(i)
 	} else {
 		return -1

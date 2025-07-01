@@ -85,7 +85,7 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 	}
 
 	bhs := int(math.Ceil(float64(hs) * 3 / 4))
-	if len(qb2) < int(bhs) {
+	if len(qb2) < bhs {
 		return fmt.Errorf("insufficient material for hard part of code: qb2 size = %d, bhs = %d", len(qb2), bhs)
 	}
 
@@ -220,11 +220,11 @@ func ibinfil(i types.Indexer) (types.Qb2, error) {
 	cs := szg.Hs + szg.Ss
 	ms := szg.Ss - szg.Os
 
-	if index < 0 || index > (1<<(6*szg.Ss)-1) {
+	if index > (1<<(6*szg.Ss) - 1) {
 		return types.Qb2{}, fmt.Errorf("invalid index=%d for code=%s", index, code)
 	}
 
-	if ondex != nil && !(*ondex >= 0 && *ondex <= (1<<(6*szg.Os)-1)) {
+	if ondex != nil && *ondex > (1<<(6*szg.Os)-1) {
 		return types.Qb2{}, fmt.Errorf("invalid ondex=%d for os=%d and code=%s", ondex, szg.Os, code)
 	}
 
@@ -266,12 +266,12 @@ func ibinfil(i types.Indexer) (types.Qb2, error) {
 		return types.Qb2{}, fmt.Errorf("invalid code=%s for converted raw pad size=%d", both, ps)
 	}
 
-	bothU32, err := b64ToU32(both)
+	bothU16, err := b64ToU16(both)
 	if err != nil {
 		return types.Qb2{}, err
 	}
 
-	bcode := binary.BigEndian.AppendUint16([]byte{}, uint16(bothU32<<(2*(ps-int(szg.Ls)))))
+	bcode := binary.BigEndian.AppendUint16([]byte{}, bothU16<<(2*(ps-int(szg.Ls))))
 	full := make([]byte, len(bcode)+int(szg.Ls)+len(raw))
 
 	copy(full[:len(bcode)], bcode)
@@ -314,11 +314,11 @@ func iinfil(i types.Indexer) (types.Qb64, error) {
 		fs = *szg.Fs
 	}
 
-	if index < 0 || index > (1<<(6*ms)-1) {
+	if index > (1<<(6*ms) - 1) {
 		return "", fmt.Errorf("invalid index=%d for code=%s", index, code)
 	}
 
-	if szg.Os != 0 && !(*ondex >= 0 && *ondex <= (1<<(6*szg.Os)-1)) {
+	if szg.Os != 0 && *ondex > (1<<(6*szg.Os)-1) {
 		return "", fmt.Errorf("invalid ondex=%d for os=%d and code=%s", ondex, szg.Os, code)
 	}
 
@@ -430,7 +430,7 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 			return fmt.Errorf("non-zero other index size for variable length material: os = %d", szg.Os)
 		}
 
-		fs = (uint32(index) * 4) + cs
+		fs = (index * 4) + cs
 	} else {
 		fs = *szg.Fs
 	}
