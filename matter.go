@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
+	"math"
 	"slices"
 	"strings"
 
@@ -91,9 +92,55 @@ func (m *matter) Qb64b() (types.Qb64b, error) {
 }
 
 func mbinfil(m types.Matter) (types.Qb2, error) {
-	_ = m
+	code := m.GetCode()
+	both, err := m.Both()
+	if err != nil {
+		return types.Qb2{}, err
+	}
+	raw := m.GetRaw()
 
-	return types.Qb2{}, nil
+	szg, err := codex.GetSizage(code)
+	if err != nil {
+		return types.Qb2{}, err
+	}
+	cs := szg.Hs + szg.Ss
+
+	n := int(math.Ceil(float64(cs) * 3 / 4))
+
+	i, err := b64ToU64(both)
+	if err != nil {
+		return types.Qb2{}, err
+	}
+
+	shifted := i << (2 * (cs % 4))
+	bcode := make([]byte, 8)
+	binary.BigEndian.PutUint64(bcode, shifted)
+	bcode = bcode[8-n:]
+
+	full := make([]byte, len(bcode)+int(szg.Ls)+len(raw))
+	copy(full[:len(bcode)], bcode)
+	copy(full[len(bcode):len(bcode)+int(szg.Ls)], slices.Repeat([]byte{0}, int(szg.Ls)))
+	copy(full[len(bcode)+int(szg.Ls):], raw)
+
+	bfs := len(full)
+	var fs uint32
+	if szg.Fs == nil {
+		i := int(szg.Hs+szg.Ss) + (len(raw)+int(szg.Ls))*4/3
+		if i > 1<<32-1 {
+			return types.Qb2{}, fmt.Errorf("size too large")
+		}
+
+		//nolint:gosec
+		fs = uint32(i)
+	} else {
+		fs = *szg.Fs
+	}
+
+	if bfs%3 != 0 || (bfs*4/3) != int(fs) {
+		return types.Qb2{}, fmt.Errorf("invalid full code '%s' with raw size %d (bfs = %d, fs = %d)", both, len(raw), bfs, fs)
+	}
+
+	return types.Qb2(full), nil
 }
 
 func minfil(m types.Matter) (types.Qb64b, error) {
@@ -164,7 +211,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 		return err
 	}
 
-	bhs := (hs*3 + 3) / 4
+	bhs := int(math.Ceil(float64(hs) * 3 / 4))
 	if len(qb2) < int(bhs) {
 		return fmt.Errorf("insufficient material for hard part of code: qb2 size = %d, bhs = %d", len(qb2), bhs)
 	}
@@ -181,82 +228,71 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 
 	cs := szg.Hs + szg.Ss
 
-	hard, err = codeB2ToB64(qb2, int(hs))
+	bcs := int(math.Ceil(float64(cs) * 3 / 4))
+	if len(qb2) < int(bcs) {
+		return fmt.Errorf("insufficient material: qb2 size = %d, bcs = %d", len(qb2), bcs)
+	}
+
+	both, err := codeB2ToB64(qb2, int(cs))
 	if err != nil {
 		return err
 	}
 
-	szg, err = tables.GetSizage(types.Code(hard))
-	if err != nil {
-		return err
+	soft := both[int(szg.Hs):int(szg.Hs+szg.Ss)]
+	xtra := soft[:int(szg.Xs)]
+	soft = soft[int(szg.Xs):]
+
+	if string(xtra) != strings.Repeat(Pad, int(szg.Xs)) {
+		return fmt.Errorf("invalid prepad extra material: xtra = %s", xtra)
 	}
 
 	var fs uint32
 	var size uint32
-	bcs := ((cs + 1) * 3) / 4
-
 	if szg.Fs == nil {
-		if cs%4 != 0 {
-			return fmt.Errorf("code size not multiple of 4 for variable length material: cs = %d", cs)
-		}
-
 		if len(qb2) < int(bcs) {
 			return fmt.Errorf("insufficient material for code: qb2 size = %d, bcs = %d", len(qb2), bcs)
 		}
 
-		both, err := codeB2ToB64(qb2, int(cs))
+		i, err := b64ToU32(soft)
 		if err != nil {
 			return err
 		}
-
-		size, err = b64ToU32(both[szg.Hs:cs])
-		if err != nil {
-			return err
-		}
-		fs = (size*4 + cs)
+		fs = i*4 + cs
 	} else {
 		fs = *szg.Fs
 	}
 
-	bfs := ((fs + 1) * 3) / 4
-	if len(qb2) < int(bfs) {
+	bfs := int(math.Ceil((float64(fs) * 3) / 4))
+	if len(qb2) < bfs {
 		return fmt.Errorf("insufficient material: qb2 size = %d, bfs = %d", len(qb2), bfs)
 	}
 
-	trim := qb2[:bfs]
+	qb2 = qb2[:bfs]
+
 	ps := cs % 4
+	pbs := 2 * ps
 
-	var pbs uint32
-	if ps != 0 {
-		pbs = 2 * ps
-	} else {
-		pbs = 2 * szg.Ls
+	pi := int(qb2[bcs-1 : bcs][0])
+	pi = pi & (2<<pbs - 1)
+	if pi != 0 {
+		return fmt.Errorf("non-zeroed code midpad bits")
 	}
 
-	if ps != 0 {
-		pi := trim[bcs-1]
-		if pi&(2<<pbs-1) != 0 {
-			return fmt.Errorf("non-zeroed pad bits")
-		}
-	} else {
-		for _, value := range trim[bcs+szg.Ls : bcs+szg.Ls+szg.Ls] {
-			if value != 0 {
-				if szg.Ls == 1 {
-					return fmt.Errorf("non-zeroed lead byte")
-				}
-				return fmt.Errorf("non-zeroed lead bytes")
-			}
-		}
+	bytes := make([]byte, 8)
+	copy(bytes[int(8-szg.Ls):], qb2[bcs:bcs+int(szg.Ls)])
+	li := binary.BigEndian.Uint64(bytes)
+	if li != 0 {
+		return fmt.Errorf("non-zeroed lead midpad bytes")
 	}
 
-	raw := trim[bcs+szg.Ls:]
-	if len(raw) != len(trim)-int(bcs)-int(szg.Ls) {
-		return fmt.Errorf("improperly qualified material: qb2 = %v", qb2)
-	}
+	raw := qb2[bcs+int(szg.Ls):]
 
 	m.SetCode(types.Code(hard))
 	m.SetSize(types.Size(size))
 	m.SetRaw(types.Raw(raw))
+	if len(soft) > 0 {
+		m.SetSoft(&soft)
+	}
 
 	return nil
 }

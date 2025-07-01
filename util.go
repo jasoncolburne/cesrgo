@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"slices"
-	"strings"
 
 	"github.com/jasoncolburne/cesrgo/types"
 )
@@ -321,25 +320,24 @@ func codeB2ToB64(b2 []byte, length int) (string, error) {
 		return "", nil
 	}
 
-	n := ((length + 1) * 3) / 4
+	n := int(math.Ceil(float64(length) * 3 / 4))
 
 	if n > len(b2) {
 		return "", fmt.Errorf("not enough bytes")
 	}
 
+	tbs := 2 * (length % 4)
 	if length <= 4 {
-		bytes := [4]byte{0, 0, 0, 0}
+		bytes := [4]byte{}
 		copy(bytes[:], b2[:n])
 
 		i := binary.BigEndian.Uint32(bytes[:])
-		tbs := 2*(length%4) + (4-n)*8
 		return u32ToB64(i>>tbs, length)
 	} else if length <= 8 {
 		bytes := [8]byte{}
 		copy(bytes[:], b2[:n])
 
 		i := binary.BigEndian.Uint64(bytes[:])
-		tbs := 2*(length%4) + (8-n)*8
 		return u64ToB64(i>>tbs, length)
 	} else {
 		return "", fmt.Errorf("unexpected length")
@@ -391,12 +389,12 @@ func u32ToB64(n uint32, length int) (string, error) {
 	}
 
 	var x uint32 = n
-	var out string = strings.Repeat("A", length)
+	out := ""
 
 	var overflow float64 = float64(length) - math.Log2(float64(n))/math.Log2(64)
 	for x > 0 {
 		if overflow >= 0.0 {
-			i, err := b64CharToIndex(byte(x % 64))
+			i, err := b64IndexToChar(byte(x % 64))
 			if err != nil {
 				return "", err
 			}
@@ -420,16 +418,16 @@ func u64ToB64(n uint64, length int) (string, error) {
 	}
 
 	var x uint64 = n
-	var out string = strings.Repeat("A", length)
+	out := ""
 
 	var overflow float64 = float64(length) - math.Log2(float64(n))/math.Log2(64)
 	for x > 0 {
 		if overflow >= 0.0 {
-			i, err := b64CharToIndex(byte(x % 64))
+			c, err := b64IndexToChar(byte(x % 64))
 			if err != nil {
 				return "", err
 			}
-			out = string(i) + out
+			out = string([]byte{c}) + out
 		} else {
 			overflow += 1
 		}

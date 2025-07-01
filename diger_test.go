@@ -55,4 +55,19 @@ func TestNewDiger(t *testing.T) {
 	if err != nil {
 		t.Fatalf("verify should not fail: %v", err)
 	}
+
+	qb2, err := dig3.Qb2()
+	if err != nil {
+		t.Fatalf("qb2 should not fail: %v", err)
+	}
+
+	dig4, err := cesrgo.NewDiger(nil, options.WithQb2(qb2))
+	if err != nil {
+		t.Fatalf("qb2 should not fail: %v", err)
+	}
+
+	verified, err = dig4.Verify([]byte{})
+	if err != nil {
+		t.Fatalf("verify should not fail: %v", err)
+	}
 }
