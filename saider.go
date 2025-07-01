@@ -60,21 +60,20 @@ func NewSaider(
 	} else if sad == nil {
 		return nil, fmt.Errorf("code and raw or sad is required")
 	} else {
-		om := sad.Map()
-		value, ok := om.Get(*label)
+		value, ok := sad.Get(*label)
 		if !ok {
 			return nil, fmt.Errorf("label not found: %s", *label)
 		}
 
-		valueQb64, ok := value.(types.Qb64)
+		valueQb64, ok := value.(string)
 		if !ok {
 			return nil, fmt.Errorf("value is not a string")
 		}
 
-		empty := valueQb64 == types.Qb64("")
+		empty := valueQb64 == ""
 		if code == nil {
 			if !empty {
-				err := NewMatter(s, options.WithQb64(valueQb64))
+				err := NewMatter(s, options.WithQb64(types.Qb64(valueQb64)))
 				if err != nil {
 					return nil, err
 				}
@@ -129,9 +128,7 @@ func derive(sad *types.Map, code *types.Code, kind *types.Kind, label *string, i
 	}
 
 	sadCopy := *sad
-	sadOm := sadCopy.Map()
-
-	_, ok := sadOm.Get(*label)
+	_, ok := sadCopy.Get(*label)
 	if !ok {
 		return nil, types.Map{}, fmt.Errorf("label not found: %s", *label)
 	}
@@ -146,10 +143,16 @@ func derive(sad *types.Map, code *types.Code, kind *types.Kind, label *string, i
 	}
 
 	dummy := strings.Repeat("#", int(*szg.Fs))
-	sadOm.Set(*label, dummy)
+	_, ok = sadCopy.Set(*label, dummy)
+	if !ok {
+		return nil, types.Map{}, fmt.Errorf("failed to set dummy")
+	}
 
 	for _, key := range ignore {
-		sadOm.Delete(key)
+		_, ok = sadCopy.Delete(key)
+		if !ok {
+			return nil, types.Map{}, fmt.Errorf("failed to delete key: %s", key)
+		}
 	}
 
 	cpa, err := marshal(sadCopy, kind)
