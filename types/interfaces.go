@@ -11,9 +11,14 @@ type (
 		SetSize(size Size)
 		GetSize() Size
 
-		Qb2() Qb2
-		Qb64() Qb64
-		Qb64b() Qb64b
+		Hard() string
+		SetSoft(soft *string)
+		GetSoft() string
+		Both() (string, error)
+
+		Qb2() (Qb2, error)
+		Qb64() (Qb64, error)
+		Qb64b() (Qb64b, error)
 	}
 
 	Indexer interface {
@@ -29,8 +34,8 @@ type (
 		SetOndex(ondex Ondex)
 		GetOndex() Ondex
 
-		Qb2() Qb2
-		Qb64() Qb64
-		Qb64b() Qb64b
+		Qb2() (Qb2, error)
+		Qb64() (Qb64, error)
+		Qb64b() (Qb64b, error)
 	}
 )

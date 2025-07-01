@@ -1,17 +1,27 @@
 package cesrgo
 
 import (
+	"encoding/base64"
+	"encoding/binary"
 	"fmt"
+	"slices"
+	"strings"
 
+	codex "github.com/jasoncolburne/cesrgo/matter"
 	tables "github.com/jasoncolburne/cesrgo/matter"
 	"github.com/jasoncolburne/cesrgo/matter/options"
 	"github.com/jasoncolburne/cesrgo/types"
+)
+
+const (
+	Pad = "_"
 )
 
 type matter struct {
 	code types.Code
 	size types.Size
 	raw  types.Raw
+	soft *string
 }
 
 func (m *matter) SetCode(code types.Code) {
@@ -38,16 +48,104 @@ func (m *matter) GetSize() types.Size {
 	return m.size
 }
 
-func (m *matter) Qb2() types.Qb2 {
-	return types.Qb2([]byte{})
+func (m *matter) Hard() string {
+	return string(m.code)
 }
 
-func (m *matter) Qb64() types.Qb64 {
-	return types.Qb64("")
+func (m *matter) SetSoft(soft *string) {
+	m.soft = soft
 }
 
-func (m *matter) Qb64b() types.Qb64b {
-	return types.Qb64b([]byte{})
+func (m *matter) GetSoft() string {
+	if m.soft == nil {
+		return ""
+	}
+
+	return *m.soft
+}
+
+func (m *matter) Both() (string, error) {
+	szg, err := codex.GetSizage(m.GetCode())
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s%s%s", m.Hard(), strings.Repeat(Pad, int(szg.Xs)), m.GetSoft()), nil
+}
+
+func (m *matter) Qb2() (types.Qb2, error) {
+	return mbinfil(m)
+}
+
+func (m *matter) Qb64() (types.Qb64, error) {
+	qb64b, err := minfil(m)
+	if err != nil {
+		return types.Qb64(""), err
+	}
+
+	return types.Qb64(qb64b), nil
+}
+
+func (m *matter) Qb64b() (types.Qb64b, error) {
+	return minfil(m)
+}
+
+func mbinfil(m types.Matter) (types.Qb2, error) {
+	_ = m
+
+	return types.Qb2{}, nil
+}
+
+func minfil(m types.Matter) (types.Qb64b, error) {
+	code := m.GetCode()
+	both, err := m.Both()
+	if err != nil {
+		return types.Qb64b{}, err
+	}
+	raw := m.GetRaw()
+	rs := len(raw)
+	szg, err := codex.GetSizage(code)
+	if err != nil {
+		return types.Qb64b{}, err
+	}
+
+	cs := szg.Hs + szg.Ss
+
+	if int(cs) != len(both) {
+		return types.Qb64b{}, fmt.Errorf("both length mismatch: cs = %d, both = '%s'", cs, both)
+	}
+
+	var full string
+	if szg.Fs == nil {
+		if (int(szg.Ls)+rs)%3 != 0 || cs%4 != 0 {
+			return types.Qb64b{}, fmt.Errorf("invalid full code '%s' with variable size rs = %d", both, rs)
+		}
+
+		bytes := make([]byte, int(szg.Ls)+rs)
+
+		copy(bytes[:int(szg.Ls)], slices.Repeat([]byte{0}, int(szg.Ls)))
+		copy(bytes[int(szg.Ls):], raw)
+
+		full = both + base64.URLEncoding.EncodeToString(bytes)
+	} else {
+		ps := (3 - ((rs + int(szg.Ls)) % 3)) % 3
+		if ps != int(cs)%4 {
+			return types.Qb64b{}, fmt.Errorf("invalid full code '%s' with fixed size rs = %d", both, rs)
+		}
+
+		bytes := make([]byte, ps+int(szg.Ls)+rs)
+
+		copy(bytes[:ps+int(szg.Ls)], slices.Repeat([]byte{0}, ps+int(szg.Ls)))
+		copy(bytes[ps+int(szg.Ls):], raw)
+
+		full = both + base64.URLEncoding.EncodeToString(bytes)[ps:]
+	}
+
+	if (len(full)%4 != 0) || (szg.Fs != nil && len(full) != int(*szg.Fs)) {
+		return types.Qb64b{}, fmt.Errorf("invalid full size given code '%s' with rs = %d", both, rs)
+	}
+
+	return types.Qb64b(full), nil
 }
 
 func mbexfil(m types.Matter, qb2 types.Qb2) error {
@@ -168,7 +266,75 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 		return fmt.Errorf("qb64 is empty")
 	}
 
-	_ = m
+	first := qb64[:1]
+	hs, err := tables.Hardage(string(first))
+	if err != nil {
+		return err
+	}
+
+	if len(qb64) < int(hs) {
+		return fmt.Errorf("insufficient material for hard part of code: qb64 size = %d, hs = %d", len(qb64), hs)
+	}
+
+	hard := qb64[:hs]
+
+	szg, err := tables.GetSizage(types.Code(hard))
+	if err != nil {
+		return err
+	}
+
+	cs := szg.Hs + szg.Ss
+	soft := qb64[int(hs):int(hs+szg.Ss)]
+	xtra := soft[:int(szg.Xs)]
+	soft = soft[int(szg.Xs):]
+
+	if string(xtra) != strings.Repeat(Pad, int(szg.Xs)) {
+		return fmt.Errorf("invalid prepad extra material: xtra = %s", xtra)
+	}
+
+	var fs uint32
+	if szg.Fs == nil {
+		i, err := b64ToU32(string(soft))
+		if err != nil {
+			return err
+		}
+		fs = i*4 + cs
+	} else {
+		fs = *szg.Fs
+	}
+
+	if len(qb64) < int(fs) {
+		return fmt.Errorf("insufficient material: qb64 size = %d, fs = %d", len(qb64), fs)
+	}
+
+	qb64 = qb64[:fs]
+
+	ps := cs % 4                                                  // net prepad bytes to ensure 24 bit align when encodeB64
+	base := strings.Repeat("A", int(ps)) + string(qb64[int(cs):]) // prepad ps 'A's to  B64 of (lead + raw)
+	paw, err := base64.URLEncoding.DecodeString(base)             // now should have ps + ls leading sextexts of zeros
+	if err != nil {
+		return err
+	}
+	raw := paw[int(ps+szg.Ls):] // remove prepad midpat bytes to invert back to raw
+	// ensure midpad bytes are zero
+	bytes := make([]byte, 8)
+	copy(bytes[int(8-ps-szg.Ls):], paw[:int(ps+szg.Ls)])
+	pi := binary.BigEndian.Uint64(bytes)
+	if pi != 0 {
+		return fmt.Errorf("nonzero midpad bytes=0x%x", pi)
+	}
+
+	if len(raw) != ((len(qb64)-int(cs))*3/4)-int(szg.Ls) {
+		return fmt.Errorf("improperly qualified material: qb64 = %s", qb64)
+	}
+
+	m.SetCode(types.Code(hard))
+	if len(soft) > 0 {
+		softStr := string(soft)
+		m.SetSoft(&softStr)
+	}
+	m.SetRaw(types.Raw(raw))
+	m.SetSize(types.Size(len(raw)))
 
 	return nil
 }
@@ -194,6 +360,7 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 		m.SetRaw(*options.Raw)
 		//nolint:gosec
 		m.SetSize(types.Size(len(*options.Raw)))
+		m.SetSoft(options.Soft)
 
 		return nil
 	}

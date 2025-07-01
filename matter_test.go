@@ -13,6 +13,7 @@ type TestMatter struct {
 	code types.Code
 	size types.Size
 	raw  types.Raw
+	soft *string
 }
 
 func (m *TestMatter) SetCode(code types.Code) {
@@ -39,27 +40,43 @@ func (m *TestMatter) GetSize() types.Size {
 	return m.size
 }
 
-func (m *TestMatter) Qb2() types.Qb2 {
-	return types.Qb2{}
+func (m *TestMatter) Hard() string {
+	return string(m.code)
 }
 
-func (m *TestMatter) Qb64() types.Qb64 {
-	return types.Qb64("")
+func (m *TestMatter) SetSoft(soft *string) {
+	m.soft = soft
 }
 
-func (m *TestMatter) Qb64b() types.Qb64b {
-	return types.Qb64b{}
+func (m *TestMatter) GetSoft() string {
+	return *m.soft
+}
+
+func (m *TestMatter) Both() (string, error) {
+	return "", nil
+}
+
+func (m *TestMatter) Qb2() (types.Qb2, error) {
+	return types.Qb2{}, nil
+}
+
+func (m *TestMatter) Qb64() (types.Qb64, error) {
+	return types.Qb64(""), nil
+}
+
+func (m *TestMatter) Qb64b() (types.Qb64b, error) {
+	return types.Qb64b{}, nil
 }
 
 func TestNewMatter(t *testing.T) {
-	m := TestMatter{}
+	m := &TestMatter{}
 
-	if err := cesrgo.NewMatter(&m); err == nil {
+	if err := cesrgo.NewMatter(m); err == nil {
 		t.Fatalf("no options should fail")
 	}
 
 	if err := cesrgo.NewMatter(
-		&m,
+		m,
 		options.WithCode(codex.Blake3_256),
 		options.WithRaw(types.Raw{}),
 		options.WithQb2(types.Qb2{}),
@@ -68,7 +85,7 @@ func TestNewMatter(t *testing.T) {
 	}
 
 	if err := cesrgo.NewMatter(
-		&m,
+		m,
 		options.WithQb2(types.Qb2{19, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}),
 	); err == nil {
 		t.Fatalf("? should fail")
