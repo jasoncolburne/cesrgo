@@ -181,18 +181,14 @@ func u32ToB64(n uint32, length int) (string, error) {
 
 	x := n
 	out := ""
-	overflow := float64(length) - math.Log2(float64(n))/math.Log2(64)
 
 	for x > 0 {
-		if overflow >= 0.0 {
-			i, err := b64IndexToChar(byte(x % 64))
-			if err != nil {
-				return "", err
-			}
-			out = string(i) + out
-		} else {
-			overflow += 1
+		c, err := b64IndexToChar(byte(x % 64))
+		if err != nil {
+			return "", err
 		}
+		out = string(c) + out
+
 		x /= 64
 	}
 
@@ -200,7 +196,7 @@ func u32ToB64(n uint32, length int) (string, error) {
 		out = "A" + out
 	}
 
-	return out, nil
+	return out[:length], nil
 }
 
 func u64ToB64(n uint64, length int) (string, error) {
@@ -210,18 +206,14 @@ func u64ToB64(n uint64, length int) (string, error) {
 
 	x := n
 	out := ""
-	overflow := float64(length) - math.Log2(float64(n))/math.Log2(64)
 
 	for x > 0 {
-		if overflow >= 0.0 {
-			c, err := b64IndexToChar(byte(x % 64))
-			if err != nil {
-				return "", err
-			}
-			out = string([]byte{c}) + out
-		} else {
-			overflow += 1
+		c, err := b64IndexToChar(byte(x % 64))
+		if err != nil {
+			return "", err
 		}
+		out = string(c) + out
+
 		x /= 64
 	}
 
@@ -229,7 +221,7 @@ func u64ToB64(n uint64, length int) (string, error) {
 		out = "A" + out
 	}
 
-	return out, nil
+	return out[:length], nil
 }
 
 func bytesToInt(in []byte) int {

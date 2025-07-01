@@ -53,4 +53,19 @@ func TestNewSiger(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Verify: %v", err)
 	}
+
+	qb2, err := siger.Qb2()
+	if err != nil {
+		t.Fatalf("Qb2: %v", err)
+	}
+
+	siger3, err := cesrgo.NewSiger(nVerfer, iopts.WithQb2(qb2))
+	if err != nil {
+		t.Fatalf("NewSiger: %v", err)
+	}
+
+	err = nVerfer.Verify(siger3.GetRaw(), []byte{})
+	if err != nil {
+		t.Fatalf("Verify: %v", err)
+	}
 }
