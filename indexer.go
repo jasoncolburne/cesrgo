@@ -94,7 +94,6 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 		return err
 	}
 
-	fmt.Printf("hard=%s\n", hard)
 	szg, err := codex.GetSizage(types.Code(hard))
 	if err != nil {
 		return err
