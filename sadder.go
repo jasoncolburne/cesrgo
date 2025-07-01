@@ -540,7 +540,7 @@ func intToB64(i, length int) (string, error) {
 			return "", err
 		}
 		s = string([]byte{c}) + s
-		i = i / 64
+		i /= 64
 	}
 
 	for i = 0; i < length-len(s); i++ {
