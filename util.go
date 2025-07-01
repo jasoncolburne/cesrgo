@@ -13,6 +13,7 @@ func validateCode(code types.Code, validCodes []types.Code) bool {
 	return slices.Contains(validCodes, code)
 }
 
+//nolint:dupl
 func b64CharToIndex(c byte) (uint8, error) {
 	switch c {
 	case 'A':
@@ -148,6 +149,7 @@ func b64CharToIndex(c byte) (uint8, error) {
 	}
 }
 
+//nolint:dupl
 func b64IndexToChar(i uint8) (byte, error) {
 	switch i {
 	case 0:

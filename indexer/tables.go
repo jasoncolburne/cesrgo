@@ -80,6 +80,7 @@ type Sizage struct {
 	Fs *uint32
 }
 
+//nolint:gocyclo
 func GetSizage(code types.Code) (Sizage, error) {
 	switch code {
 	case Ed25519:
@@ -162,7 +163,7 @@ func GetHardage(c byte) (uint32, error) {
 }
 
 func GetBardage(b byte) (uint32, error) {
-	if b >= 0x00 && b <= 0x33 {
+	if b <= 0x33 {
 		return 1, nil
 	}
 	if b >= 0x34 && b <= 0x38 {

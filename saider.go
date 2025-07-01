@@ -148,14 +148,19 @@ func derive(sad *types.Map, code *types.Code, kind *types.Kind, label *string, i
 	dummy := strings.Repeat("#", int(*szg.Fs))
 	sadOm.Set(*label, dummy)
 
-	if ignore != nil {
-		for _, key := range ignore {
-			sadOm.Delete(key)
-		}
+	for _, key := range ignore {
+		sadOm.Delete(key)
 	}
 
 	cpa, err := marshal(sadCopy, kind)
+	if err != nil {
+		return nil, types.Map{}, fmt.Errorf("failed to marshal: %w", err)
+	}
+
 	digest, err := crypto.Digest(*code, []byte(cpa))
+	if err != nil {
+		return nil, types.Map{}, fmt.Errorf("failed to digest: %w", err)
+	}
 
 	return types.Raw(digest), sadCopy, nil
 }

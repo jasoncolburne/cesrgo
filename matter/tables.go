@@ -372,7 +372,7 @@ func Hardage(c string) (uint32, error) {
 }
 
 func Bardage(b byte) (uint32, error) {
-	if b >= 0x00 && b <= 0x33 {
+	if b <= 0x33 {
 		return 1, nil
 	}
 	if b == 0x34 || b >= 0x38 && b <= 0x3a {

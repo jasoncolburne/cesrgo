@@ -74,6 +74,7 @@ func (s *sad) SetVersion(version types.Version) {
 	s.version = version
 }
 
+//nolint:lll
 var (
 	VER1FULLSPAN = 17
 	VER1TERM     = byte("_"[0])
@@ -231,6 +232,9 @@ func (s *Sadder) inhale(raw types.Raw) error {
 	s.SetKind(kind)
 
 	err = NewMatter(s, options.WithCode(s.code), options.WithRaw(raw))
+	if err != nil {
+		return err
+	}
 
 	if s.size != size {
 		*s = Sadder{}

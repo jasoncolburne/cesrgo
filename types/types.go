@@ -30,3 +30,13 @@ type (
 func (m Map) Map() orderedmap.OrderedMap[string, any] {
 	return orderedmap.OrderedMap[string, any](m)
 }
+
+func (m Map) MarshalJSON() ([]byte, error) {
+	om := m.Map()
+	return om.MarshalJSON()
+}
+
+func (m Map) UnmarshalJSON(data []byte) error {
+	om := m.Map()
+	return om.UnmarshalJSON(data)
+}
