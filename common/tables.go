@@ -25,8 +25,15 @@ var (
 		Kind_CESR,
 	}
 
-	VERSION = types.Version{
+	VERSION_1_0 = types.Version{
+		Major: 1,
+		Minor: 0,
+	}
+
+	VERSION_2_0 = types.Version{
 		Major: 2,
 		Minor: 0,
 	}
+
+	VERSION = VERSION_2_0
 )
