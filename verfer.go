@@ -14,7 +14,7 @@ type Verfer struct {
 	matter
 }
 
-var validVerferCodes []types.Code = []types.Code{
+var implementedVerferCodes []types.Code = []types.Code{
 	codex.Ed25519N,
 	codex.Ed25519,
 	codex.ECDSA_256k1N,
@@ -36,7 +36,7 @@ func NewVerfer(opts ...options.MatterOption) (*Verfer, error) {
 }
 
 func (v *Verfer) Verify(sig, ser []byte) error {
-	if !util.ValidateCode(v.GetCode(), validVerferCodes) {
+	if !util.ValidateCode(v.GetCode(), implementedVerferCodes) {
 		return fmt.Errorf("unexpected code: %s", v.GetCode())
 	}
 

@@ -18,7 +18,7 @@ func (c *Cigar) GetVerfer() *Verfer {
 	return c.verfer
 }
 
-var validCigarCodes = []types.Code{
+var implementedCigarCodes = []types.Code{
 	codex.Ed25519_Sig,
 	codex.ECDSA_256k1_Sig,
 	codex.ECDSA_256r1_Sig,
@@ -31,7 +31,7 @@ func NewCigar(verfer *Verfer, opts ...options.MatterOption) (*Cigar, error) {
 		return nil, err
 	}
 
-	if !util.ValidateCode(c.GetCode(), validCigarCodes) {
+	if !util.ValidateCode(c.GetCode(), implementedCigarCodes) {
 		return nil, fmt.Errorf("unexpected code: %s", c.GetCode())
 	}
 

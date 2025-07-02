@@ -14,7 +14,7 @@ type Siger struct {
 	verfer *Verfer
 }
 
-var validSigerCodes = []types.Code{
+var implementedSigerCodes = []types.Code{
 	codex.Ed25519,
 	codex.Ed25519_Crt,
 	codex.ECDSA_256k1,
@@ -44,7 +44,7 @@ func NewSiger(verfer *Verfer, opts ...options.IndexerOption) (*Siger, error) {
 		return nil, err
 	}
 
-	if !util.ValidateCode(s.GetCode(), validSigerCodes) {
+	if !util.ValidateCode(s.GetCode(), implementedSigerCodes) {
 		return nil, fmt.Errorf("unexpected code: %s", s.GetCode())
 	}
 
