@@ -25,7 +25,7 @@ var MessageUniversalCodex = map[uint32][]types.Code{
 }
 
 var Sizes = map[uint32]map[types.Code]counter.Sizage{
-	// common.VERSION_1_0.Major: one.Sizes,
+	common.VERSION_1_0.Major: one.Sizes,
 	common.VERSION_2_0.Major: two.Sizes,
 }
 

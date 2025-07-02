@@ -1,6 +1,9 @@
 package one
 
-import "github.com/jasoncolburne/cesrgo/types"
+import (
+	counter "github.com/jasoncolburne/cesrgo/counter/sizage"
+	"github.com/jasoncolburne/cesrgo/types"
+)
 
 const (
 	ControllerIdxSigs          = types.Code("-A")    // Qualified Base64 Indexed Signature.
@@ -91,4 +94,29 @@ var SpecialUniversalCodex = []types.Code{
 var MessageUniversalCodex = []types.Code{
 	NonNativeBodyGroup,
 	BigNonNativeBodyGroup,
+}
+
+var Sizes = map[types.Code]counter.Sizage{
+	ControllerIdxSigs:          {Hs: 2, Ss: 2, Fs: 4},
+	WitnessIdxSigs:             {Hs: 2, Ss: 2, Fs: 4},
+	NonTransReceiptCouples:     {Hs: 2, Ss: 2, Fs: 4},
+	TransReceiptQuadruples:     {Hs: 2, Ss: 2, Fs: 4},
+	FirstSeenReplayCouples:     {Hs: 2, Ss: 2, Fs: 4},
+	TransIdxSigGroups:          {Hs: 2, Ss: 2, Fs: 4},
+	SealSourceCouples:          {Hs: 2, Ss: 2, Fs: 4},
+	TransLastIdxSigGroups:      {Hs: 2, Ss: 2, Fs: 4},
+	SealSourceTriples:          {Hs: 2, Ss: 2, Fs: 4},
+	PathedMaterialGroup:        {Hs: 2, Ss: 2, Fs: 4},
+	BigPathedMaterialGroup:     {Hs: 3, Ss: 5, Fs: 8},
+	GenericGroup:               {Hs: 2, Ss: 2, Fs: 4},
+	BigGenericGroup:            {Hs: 3, Ss: 5, Fs: 8},
+	BodyWithAttachmentGroup:    {Hs: 2, Ss: 2, Fs: 4},
+	BigBodyWithAttachmentGroup: {Hs: 3, Ss: 5, Fs: 8},
+	AttachmentGroup:            {Hs: 2, Ss: 2, Fs: 4},
+	BigAttachmentGroup:         {Hs: 3, Ss: 5, Fs: 8},
+	NonNativeBodyGroup:         {Hs: 2, Ss: 2, Fs: 4},
+	BigNonNativeBodyGroup:      {Hs: 3, Ss: 5, Fs: 8},
+	ESSRPayloadGroup:           {Hs: 2, Ss: 2, Fs: 4},
+	BigESSRPayloadGroup:        {Hs: 3, Ss: 5, Fs: 8},
+	KERIACDCGenusVersion:       {Hs: 5, Ss: 3, Fs: 8},
 }
