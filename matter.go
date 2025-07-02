@@ -216,7 +216,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 		return fmt.Errorf("insufficient material for hard part of code: qb2 size = %d, bhs = %d", len(qb2), bhs)
 	}
 
-	hard, err := util.CodeB2ToB64(qb2, int(hs))
+	hard, err := util.CodeB2ToB64(qb2, hs)
 	if err != nil {
 		return err
 	}
@@ -306,7 +306,7 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 		return fmt.Errorf("unknown hard: %x", first)
 	}
 
-	if len(qb64) < int(hs) {
+	if len(qb64) < hs {
 		return fmt.Errorf("insufficient material for hard part of code: qb64 size = %d, hs = %d", len(qb64), hs)
 	}
 

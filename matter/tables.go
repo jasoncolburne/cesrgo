@@ -155,7 +155,6 @@ var (
 	_76  = uint32(76)
 	_80  = uint32(80)
 	_88  = uint32(88)
-	_92  = uint32(92)
 	_100 = uint32(100)
 	_124 = uint32(124)
 	_156 = uint32(156)
@@ -386,7 +385,10 @@ func Hardage(c byte) (int, bool) {
 }
 
 func Bardage(b byte) (int, bool) {
-	generateBards()
+	err := generateBards()
+	if err != nil {
+		return -1, false
+	}
 
 	n, ok := Bards[b]
 	return n, ok

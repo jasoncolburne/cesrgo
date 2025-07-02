@@ -90,7 +90,7 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 		return fmt.Errorf("insufficient material for hard part of code: qb2 size = %d, bhs = %d", len(qb2), bhs)
 	}
 
-	hard, err := util.CodeB2ToB64(qb2, int(hs))
+	hard, err := util.CodeB2ToB64(qb2, hs)
 	if err != nil {
 		return err
 	}
