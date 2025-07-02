@@ -8,34 +8,39 @@ import (
 )
 
 const (
-	Ed25519_Seed              = types.Code("A")    // Ed25519 256 bit random seed for private key
-	Ed25519N                  = types.Code("B")    // Ed25519 verification key non-transferable, basic derivation.
-	X25519                    = types.Code("C")    // X25519 public encryption key, may be converted from Ed25519 or Ed25519N.
-	Ed25519                   = types.Code("D")    // Ed25519 verification key basic derivation
-	Blake3_256                = types.Code("E")    // Blake3 256 bit digest self-addressing derivation.
-	Blake2b_256               = types.Code("F")    // Blake2b 256 bit digest self-addressing derivation.
-	Blake2s_256               = types.Code("G")    // Blake2s 256 bit digest self-addressing derivation.
-	SHA3_256                  = types.Code("H")    // SHA3 256 bit digest self-addressing derivation.
-	SHA2_256                  = types.Code("I")    // SHA2 256 bit digest self-addressing derivation.
-	ECDSA_256k1_Seed          = types.Code("J")    // ECDSA secp256k1 256 bit random Seed for private key
-	Ed448_Seed                = types.Code("K")    // Ed448 448 bit random Seed for private key
-	X448                      = types.Code("L")    // X448 public encryption key, converted from Ed448
-	Short                     = types.Code("M")    // Short 2 byte b2 number
-	Big                       = types.Code("N")    // Big 8 byte b2 number
-	X25519_Private            = types.Code("O")    // X25519 private decryption key/seed, may be converted from Ed25519
-	X25519_Cipher_Seed        = types.Code("P")    // X25519 sealed box 124 char qb64 Cipher of 44 char qb64 Seed
-	ECDSA_256r1_Seed          = types.Code("Q")    // ECDSA secp256r1 256 bit random Seed for private key
-	Tall                      = types.Code("R")    // Tall 5 byte b2 number
-	Large                     = types.Code("S")    // Large 11 byte b2 number
-	Great                     = types.Code("T")    // Great 14 byte b2 number
-	Vast                      = types.Code("U")    // Vast 17 byte b2 number
-	Label1                    = types.Code("V")    // Label1 1 bytes for label lead size 1
-	Label2                    = types.Code("W")    // Label2 2 bytes for label lead size 0
-	Tag3                      = types.Code("X")    // Tag3  3 B64 encoded chars for special values
-	Tag7                      = types.Code("Y")    // Tag7  7 B64 encoded chars for special values
-	Tag11                     = types.Code("Z")    // Tag11  11 B64 encoded chars for special values
-	Salt_256                  = types.Code("a")    // Salt/seed/nonce/blind 256 bits
-	Salt_128                  = types.Code("0A")   // Salt/seed/nonce 128 bits or number of length 128 bits (Huge)
+	Ed25519_Seed       = types.Code("A") // Ed25519 256 bit random seed for private key
+	Ed25519N           = types.Code("B") // Ed25519 verification key non-transferable, basic derivation.
+	X25519             = types.Code("C") // X25519 public encryption key, may be converted from Ed25519 or Ed25519N.
+	Ed25519            = types.Code("D") // Ed25519 verification key basic derivation
+	Blake3_256         = types.Code("E") // Blake3 256 bit digest self-addressing derivation.
+	Blake2b_256        = types.Code("F") // Blake2b 256 bit digest self-addressing derivation.
+	Blake2s_256        = types.Code("G") // Blake2s 256 bit digest self-addressing derivation.
+	SHA3_256           = types.Code("H") // SHA3 256 bit digest self-addressing derivation.
+	SHA2_256           = types.Code("I") // SHA2 256 bit digest self-addressing derivation.
+	ECDSA_256k1_Seed   = types.Code("J") // ECDSA secp256k1 256 bit random Seed for private key
+	Ed448_Seed         = types.Code("K") // Ed448 448 bit random Seed for private key
+	X448               = types.Code("L") // X448 public encryption key, converted from Ed448
+	Short              = types.Code("M") // Short 2 byte b2 number
+	Big                = types.Code("N") // Big 8 byte b2 number
+	X25519_Private     = types.Code("O") // X25519 private decryption key/seed, may be converted from Ed25519
+	X25519_Cipher_Seed = types.Code("P") // X25519 sealed box 124 char qb64 Cipher of 44 char qb64 Seed
+	ECDSA_256r1_Seed   = types.Code("Q") // ECDSA secp256r1 256 bit random Seed for private key
+	Tall               = types.Code("R") // Tall 5 byte b2 number
+	Large              = types.Code("S") // Large 11 byte b2 number
+	Great              = types.Code("T") // Great 14 byte b2 number
+	Vast               = types.Code("U") // Vast 17 byte b2 number
+	Label1             = types.Code("V") // Label1 1 bytes for label lead size 1
+	Label2             = types.Code("W") // Label2 2 bytes for label lead size 0
+	Tag3               = types.Code("X") // Tag3  3 B64 encoded chars for special values
+	Tag7               = types.Code("Y") // Tag7  7 B64 encoded chars for special values
+	Tag11              = types.Code("Z") // Tag11  11 B64 encoded chars for special values
+	Salt_256           = types.Code("a") // Salt/seed/nonce/blind 256 bits
+	AES_256            = types.Code("b") // AES 256 bit key
+
+	// this code is identified by two names
+	Salt_128 = types.Code("0A") // Salt/seed/nonce 128 bits or number of length 128 bits (Huge)
+	Huge     = types.Code("0A") // This is huge!
+
 	Ed25519_Sig               = types.Code("0B")   // Ed25519 signature.
 	ECDSA_256k1_Sig           = types.Code("0C")   // ECDSA secp256k1 signature.
 	Blake3_512                = types.Code("0D")   // Blake3 512 bit digest self-addressing derivation.
@@ -125,6 +130,153 @@ const (
 	Decimal_Big_L1            = types.Code("8AAH") // Decimal B64 string float and int big lead size 1
 	Decimal_Big_L2            = types.Code("9AAH") // Decimal B64 string float and int big lead size 2
 )
+
+var BextCodex = []types.Code{
+	StrB64_L0,
+	StrB64_L1,
+	StrB64_L2,
+	StrB64_Big_L0,
+	StrB64_Big_L1,
+	StrB64_Big_L2,
+}
+
+var TextCodex = []types.Code{
+	Bytes_L0,
+	Bytes_L1,
+	Bytes_L2,
+	Bytes_Big_L0,
+	Bytes_Big_L1,
+	Bytes_Big_L2,
+}
+
+var DecimalCodex = []types.Code{
+	Decimal_L0,
+	Decimal_L1,
+	Decimal_L2,
+	Decimal_Big_L0,
+	Decimal_Big_L1,
+	Decimal_Big_L2,
+}
+
+var DigCodex = []types.Code{
+	Blake3_256,
+	Blake2b_256,
+	Blake2s_256,
+	SHA3_256,
+	SHA2_256,
+	Blake3_512,
+	Blake2b_512,
+	SHA3_512,
+	SHA2_512,
+}
+
+var NonceCodex = []types.Code{
+	Empty,
+	Salt_128,
+	Salt_256,
+	Blake3_256,
+	Blake2b_256,
+	Blake2s_256,
+	SHA3_256,
+	SHA2_256,
+	Blake3_512,
+	Blake2b_512,
+	SHA3_512,
+	SHA2_512,
+}
+
+var NumCodex = []types.Code{
+	Short,
+	Long,
+	Tall,
+	Big,
+	Large,
+	Great,
+	Huge,
+	Vast,
+}
+
+var TagCodex = []types.Code{
+	Tag1,
+	Tag2,
+	Tag3,
+	Tag4,
+	Tag5,
+	Tag6,
+	Tag7,
+	Tag8,
+	Tag9,
+	Tag10,
+	Tag11,
+}
+
+var LabelCodex = []types.Code{
+	Empty,
+	Tag1,
+	Tag2,
+	Tag3,
+	Tag4,
+	Tag5,
+	Tag6,
+	Tag7,
+	Tag8,
+	Tag9,
+	Tag10,
+	Tag11,
+	StrB64_L0,
+	StrB64_L1,
+	StrB64_L2,
+	StrB64_Big_L0,
+	StrB64_Big_L1,
+	StrB64_Big_L2,
+	Label1,
+	Label2,
+	Bytes_L0,
+	Bytes_L1,
+	Bytes_L2,
+	Bytes_Big_L0,
+	Bytes_Big_L1,
+	Bytes_Big_L2,
+}
+
+var PreCodex = []types.Code{
+	Ed25519N,
+	Ed25519,
+	Blake3_256,
+	Blake2b_256,
+	Blake2s_256,
+	SHA3_256,
+	SHA2_256,
+	Blake3_512,
+	Blake2b_512,
+	SHA3_512,
+	SHA2_512,
+	ECDSA_256k1N,
+	ECDSA_256k1,
+	Ed448N,
+	Ed448,
+	Ed448_Sig,
+	ECDSA_256r1N,
+	ECDSA_256r1,
+}
+
+var NonTransCodex = []types.Code{
+	Ed25519N,
+	ECDSA_256k1N,
+	Ed448N,
+	ECDSA_256r1N,
+}
+
+var PreNonDigCodex = []types.Code{
+	Ed25519N,
+	Ed25519,
+	ECDSA_256k1N,
+	ECDSA_256k1,
+	Ed448N,
+	Ed448,
+	ECDSA_256r1N,
+	ECDSA_256r1,
+}
 
 var SMALL_VRZ_DEX = []byte{4, 5, 6}
 var LARGE_VRZ_DEX = []byte{7, 8, 9}

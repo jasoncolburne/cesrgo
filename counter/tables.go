@@ -14,7 +14,7 @@ var CounterCodex = map[uint32][]types.Code{
 	common.VERSION_2_0.Major: two.CounterCodex,
 }
 
-var SpeicialUniversalCodex = map[uint32][]types.Code{
+var SpecialUniversalCodex = map[uint32][]types.Code{
 	common.VERSION_1_0.Major: one.SpecialUniversalCodex,
 	common.VERSION_2_0.Major: two.SpecialUniversalCodex,
 }

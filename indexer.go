@@ -118,7 +118,7 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 	}
 
 	var ondex *types.Ondex
-	if util.ValidateCode(types.Code(hard), codex.ValidCurrentSigCodes) {
+	if util.ValidateCode(types.Code(hard), codex.IndexedCurrentSigCodex) {
 		if szg.Os != 0 {
 			odx, err := util.B64ToU32(both[hs+int(ms) : hs+int(ms)+int(szg.Os)])
 			if err != nil {
@@ -393,7 +393,7 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 	ondexB64 := qb64[hs+int(ms) : hs+int(ms)+int(szg.Os)]
 
 	var ondex *types.Ondex
-	if slices.Contains(codex.ValidCurrentSigCodes, types.Code(hard)) {
+	if slices.Contains(codex.IndexedCurrentSigCodex, types.Code(hard)) {
 		if szg.Os != 0 {
 			odx, err := util.B64ToU32(string(ondexB64))
 			if err != nil {
@@ -519,11 +519,11 @@ func NewIndexer(i types.Indexer, opts ...options.IndexerOption) error {
 			}
 		}
 
-		if util.ValidateCode(*config.Code, codex.ValidCurrentSigCodes) && config.Ondex != nil {
+		if util.ValidateCode(*config.Code, codex.IndexedCurrentSigCodex) && config.Ondex != nil {
 			return fmt.Errorf("non-nil ondex %d for code %s", *config.Ondex, *config.Code)
 		}
 
-		if util.ValidateCode(*config.Code, codex.ValidBothSigCodes) {
+		if util.ValidateCode(*config.Code, codex.IndexedBothSigCodex) {
 			ondex := types.Ondex(*config.Index)
 			if config.Ondex == nil {
 				config.Ondex = &ondex

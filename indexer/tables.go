@@ -32,7 +32,7 @@ var (
 	TBD4                = types.Code("4z") // Test of index sig lead 1 big
 )
 
-var ValidSigCodes = []types.Code{
+var IndexedSigCodex = []types.Code{
 	Ed25519,
 	Ed25519_Crt,
 	ECDSA_256k1,
@@ -51,7 +51,7 @@ var ValidSigCodes = []types.Code{
 	Ed448_Big_Crt,
 }
 
-var ValidCurrentSigCodes = []types.Code{
+var IndexedCurrentSigCodex = []types.Code{
 	Ed25519_Crt,
 	ECDSA_256k1_Crt,
 	ECDSA_256r1_Crt,
@@ -62,7 +62,7 @@ var ValidCurrentSigCodes = []types.Code{
 	Ed448_Big_Crt,
 }
 
-var ValidBothSigCodes = []types.Code{
+var IndexedBothSigCodex = []types.Code{
 	Ed25519,
 	ECDSA_256k1,
 	ECDSA_256r1,
