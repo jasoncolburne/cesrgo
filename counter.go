@@ -2,7 +2,11 @@ package cesrgo
 
 import (
 	"fmt"
+	"math"
 
+	"github.com/jasoncolburne/cesrgo/common"
+	"github.com/jasoncolburne/cesrgo/common/util"
+	codex "github.com/jasoncolburne/cesrgo/counter"
 	"github.com/jasoncolburne/cesrgo/counter/options"
 	"github.com/jasoncolburne/cesrgo/types"
 )
@@ -55,18 +59,140 @@ func (c *counter) Qb64b() (types.Qb64b, error) {
 }
 
 func cbinfil(c types.Counter) (types.Qb2, error) {
-	return types.Qb2{}, nil
+	qb64, err := cinfil(c)
+	if err != nil {
+		return types.Qb2{}, err
+	}
+
+	b2, err := util.CodeB64ToB2(string(qb64))
+	if err != nil {
+		return types.Qb2{}, err
+	}
+
+	return types.Qb2(b2), nil
 }
 
 func cinfil(c types.Counter) (types.Qb64, error) {
-	return types.Qb64(""), nil
+	code := c.GetCode()
+	count := c.GetCount()
+
+	szg, ok := codex.Sizes[common.VERSION_2_0.Major][code]
+	if !ok {
+		return types.Qb64(""), fmt.Errorf("unknown code: %s", code)
+	}
+
+	if count < 0 || count > (1<<(6*szg.Ss)-1) {
+		return types.Qb64(""), fmt.Errorf("invalid count=%d for code=%s", count, code)
+	}
+
+	countB64, err := util.IntToB64(int(count), int(szg.Ss))
+	if err != nil {
+		return types.Qb64(""), err
+	}
+
+	both := fmt.Sprintf("%s%s", code, countB64)
+
+	if len(both)%4 != 0 {
+		return types.Qb64(""), fmt.Errorf("invalid size=%d of %s not a multiple of 4", len(both), both)
+	}
+
+	return types.Qb64(both), nil
 }
 
 func cexfil(c types.Counter, qb64 types.Qb64) error {
+	if len(qb64) < 2 {
+		return fmt.Errorf("empty material, need more characters")
+	}
+
+	first := string(qb64[:2])
+	if first[0] == '_' {
+		return fmt.Errorf("unexpected op code start while extracting Counter.")
+	}
+
+	hs, ok := codex.Hards[first]
+	if !ok {
+		return fmt.Errorf("uneunsupported code start first=%s", first)
+	}
+
+	if len(qb64) < hs {
+		return fmt.Errorf("need more characters")
+	}
+
+	hard := qb64[:hs]
+
+	szg, ok := codex.Sizes[common.VERSION_2_0.Major][types.Code(hard)]
+	if !ok {
+		return fmt.Errorf("unsupported code=%s", hard)
+	}
+
+	if len(qb64) < int(szg.Fs) {
+		return fmt.Errorf("need more characters")
+	}
+
+	count := qb64[hs:szg.Fs]
+	countInt, err := util.B64ToU32(string(count))
+	if err != nil {
+		return err
+	}
+
+	c.SetCode(types.Code(hard))
+	c.SetCount(types.Count(countInt))
+
 	return nil
 }
 
 func cbexfil(c types.Counter, qb2 types.Qb2) error {
+	if len(qb2) < 2 {
+		return fmt.Errorf("empty material, need more bytes")
+	}
+
+	first, err := util.NabSextets(qb2, 2)
+	if err != nil {
+		return err
+	}
+
+	if first[0] == 0xfc {
+		return fmt.Errorf("unexpected op code start while extracting Counter.")
+	}
+
+	hs, ok := codex.Bards[string(first)]
+	if !ok {
+		return fmt.Errorf("unsupported code start sextet=%s", first)
+	}
+
+	bhs := int(math.Ceil(float64(hs) * 3 / 4))
+	if len(qb2) < bhs {
+		return fmt.Errorf("need more bytes")
+	}
+
+	hard, err := util.CodeB2ToB64(qb2, int(hs))
+	if err != nil {
+		return err
+	}
+
+	szg, ok := codex.Sizes[common.VERSION_2_0.Major][types.Code(hard)]
+	if !ok {
+		return fmt.Errorf("unsupported code=%s", hard)
+	}
+
+	bcs := int(math.Ceil(float64(szg.Fs) * 3 / 4))
+	if len(qb2) < bcs {
+		return fmt.Errorf("need more bytes")
+	}
+
+	both, err := util.CodeB2ToB64(qb2, int(szg.Fs))
+	if err != nil {
+		return err
+	}
+
+	count, err := util.B64ToU32(string(both[hs:szg.Fs]))
+	if err != nil {
+		return err
+	}
+
+	c.SetCode(types.Code(hard))
+	c.SetCount(types.Count(count))
+
 	return nil
 }
 
