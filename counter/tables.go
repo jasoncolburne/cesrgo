@@ -126,6 +126,70 @@ var SealCodex_2_0 = []types.Code{
 	BigTypedDigestSealCouples,
 }
 
+type Sizage struct {
+	Hs uint32
+	Ss uint32
+	Fs uint32
+}
+
+var Sizes = map[types.Code]Sizage{
+	GenericGroup:                  {Hs: 2, Ss: 2, Fs: 4},
+	BigGenericGroup:               {Hs: 3, Ss: 5, Fs: 8},
+	BodyWithAttachmentGroup:       {Hs: 2, Ss: 2, Fs: 4},
+	BigBodyWithAttachmentGroup:    {Hs: 3, Ss: 5, Fs: 8},
+	AttachmentGroup:               {Hs: 2, Ss: 2, Fs: 4},
+	BigAttachmentGroup:            {Hs: 3, Ss: 5, Fs: 8},
+	DatagramSegmentGroup:          {Hs: 2, Ss: 2, Fs: 4},
+	BigDatagramSegmentGroup:       {Hs: 3, Ss: 5, Fs: 8},
+	ESSRWrapperGroup:              {Hs: 2, Ss: 2, Fs: 4},
+	BigESSRWrapperGroup:           {Hs: 3, Ss: 5, Fs: 8},
+	FixBodyGroup:                  {Hs: 2, Ss: 2, Fs: 4},
+	BigFixBodyGroup:               {Hs: 3, Ss: 5, Fs: 8},
+	MapBodyGroup:                  {Hs: 2, Ss: 2, Fs: 4},
+	BigMapBodyGroup:               {Hs: 3, Ss: 5, Fs: 8},
+	NonNativeBodyGroup:            {Hs: 2, Ss: 2, Fs: 4},
+	BigNonNativeBodyGroup:         {Hs: 3, Ss: 5, Fs: 8},
+	GenericMapGroup:               {Hs: 2, Ss: 2, Fs: 4},
+	BigGenericMapGroup:            {Hs: 3, Ss: 5, Fs: 8},
+	GenericListGroup:              {Hs: 2, Ss: 2, Fs: 4},
+	BigGenericListGroup:           {Hs: 3, Ss: 5, Fs: 8},
+	ControllerIdxSigs:             {Hs: 2, Ss: 2, Fs: 4},
+	BigControllerIdxSigs:          {Hs: 3, Ss: 5, Fs: 8},
+	WitnessIdxSigs:                {Hs: 2, Ss: 2, Fs: 4},
+	BigWitnessIdxSigs:             {Hs: 3, Ss: 5, Fs: 8},
+	NonTransReceiptCouples:        {Hs: 2, Ss: 2, Fs: 4},
+	BigNonTransReceiptCouples:     {Hs: 3, Ss: 5, Fs: 8},
+	TransReceiptQuadruples:        {Hs: 2, Ss: 2, Fs: 4},
+	BigTransReceiptQuadruples:     {Hs: 3, Ss: 5, Fs: 8},
+	FirstSeenReplayCouples:        {Hs: 2, Ss: 2, Fs: 4},
+	BigFirstSeenReplayCouples:     {Hs: 3, Ss: 5, Fs: 8},
+	PathedMaterialGroup:           {Hs: 2, Ss: 2, Fs: 4},
+	BigPathedMaterialGroup:        {Hs: 3, Ss: 5, Fs: 8},
+	DigestSealSingles:             {Hs: 2, Ss: 2, Fs: 4},
+	BigDigestSealSingles:          {Hs: 3, Ss: 5, Fs: 8},
+	MerkleRootSealSingles:         {Hs: 2, Ss: 2, Fs: 4},
+	BigMerkleRootSealSingles:      {Hs: 3, Ss: 5, Fs: 8},
+	SealSourceTriples:             {Hs: 2, Ss: 2, Fs: 4},
+	BigSealSourceTriples:          {Hs: 3, Ss: 5, Fs: 8},
+	SealSourceCouples:             {Hs: 2, Ss: 2, Fs: 4},
+	BigSealSourceCouples:          {Hs: 3, Ss: 5, Fs: 8},
+	SealSourceLastSingles:         {Hs: 2, Ss: 2, Fs: 4},
+	BigSealSourceLastSingles:      {Hs: 3, Ss: 5, Fs: 8},
+	BackerRegistrarSealCouples:    {Hs: 2, Ss: 2, Fs: 4},
+	BigBackerRegistrarSealCouples: {Hs: 3, Ss: 5, Fs: 8},
+	TypedDigestSealCouples:        {Hs: 2, Ss: 2, Fs: 4},
+	BigTypedDigestSealCouples:     {Hs: 3, Ss: 5, Fs: 8},
+	TransIdxSigGroups:             {Hs: 2, Ss: 2, Fs: 4},
+	BigTransIdxSigGroups:          {Hs: 3, Ss: 5, Fs: 8},
+	TransLastIdxSigGroups:         {Hs: 2, Ss: 2, Fs: 4},
+	BigTransLastIdxSigGroups:      {Hs: 3, Ss: 5, Fs: 8},
+	ESSRPayloadGroup:              {Hs: 2, Ss: 2, Fs: 4},
+	BigESSRPayloadGroup:           {Hs: 3, Ss: 5, Fs: 8},
+	BlindedStateQuadruples:        {Hs: 2, Ss: 2, Fs: 4},
+	BigBlindedStateQuadruples:     {Hs: 3, Ss: 5, Fs: 8},
+	KERIACDCGenusVersion:          {Hs: 5, Ss: 3, Fs: 8},
+}
+
 var Hards = map[string]int{}
 var Bards = map[string]int{}
 
