@@ -7,6 +7,7 @@ import (
 	codex "github.com/jasoncolburne/cesrgo/matter"
 	"github.com/jasoncolburne/cesrgo/matter/options"
 	"github.com/jasoncolburne/cesrgo/types"
+	"github.com/jasoncolburne/cesrgo/util"
 )
 
 type Verfer struct {
@@ -35,7 +36,7 @@ func NewVerfer(opts ...options.MatterOption) (*Verfer, error) {
 }
 
 func (v *Verfer) Verify(sig, ser []byte) error {
-	if !validateCode(v.GetCode(), validVerferCodes) {
+	if !util.ValidateCode(v.GetCode(), validVerferCodes) {
 		return fmt.Errorf("unexpected code: %s", v.GetCode())
 	}
 

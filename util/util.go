@@ -1,4 +1,4 @@
-package cesrgo
+package util
 
 import (
 	"encoding/binary"
@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/fxamacker/cbor/v2"
+	"github.com/jasoncolburne/cesrgo/common"
 	"github.com/jasoncolburne/cesrgo/types"
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -46,13 +47,13 @@ func Rever() (*regexp.Regexp, error) {
 	return REVER, nil
 }
 
-func validateCode(code types.Code, validCodes []types.Code) bool {
+func ValidateCode(code types.Code, validCodes []types.Code) bool {
 	return slices.Contains(validCodes, code)
 }
 
 var b64Runes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 
-func b64CharToIndex(c byte) (uint8, error) {
+func B64CharToIndex(c byte) (uint8, error) {
 	index := strings.Index(b64Runes, string(c))
 	if index == -1 {
 		return 0, fmt.Errorf("invalid base64 character: %c", c)
@@ -66,7 +67,7 @@ func b64CharToIndex(c byte) (uint8, error) {
 	return uint8(index), nil
 }
 
-func b64IndexToChar(i uint8) (byte, error) {
+func B64IndexToChar(i uint8) (byte, error) {
 	if i > 63 {
 		return 0, fmt.Errorf("programmer error:invalid base64 index: %d", i)
 	}
@@ -74,7 +75,7 @@ func b64IndexToChar(i uint8) (byte, error) {
 	return b64Runes[i], nil
 }
 
-func nabSextets(bin []byte, count int) ([]byte, error) {
+func NabSextets(bin []byte, count int) ([]byte, error) {
 	n := ((count + 1) * 3) / 4
 
 	if n > len(bin) {
@@ -106,7 +107,7 @@ func nabSextets(bin []byte, count int) ([]byte, error) {
 	return out[:count], nil
 }
 
-func codeB2ToB64(b2 []byte, length int) (string, error) {
+func CodeB2ToB64(b2 []byte, length int) (string, error) {
 	if length == 0 {
 		return "", nil
 	}
@@ -123,34 +124,33 @@ func codeB2ToB64(b2 []byte, length int) (string, error) {
 		copy(bytes[:], b2[:n])
 
 		i := binary.BigEndian.Uint32(bytes[:])
-		return u32ToB64(i>>tbs, length)
+		return U32ToB64(i>>tbs, length)
 	} else if length <= 8 {
 		bytes := [8]byte{}
 		copy(bytes[:], b2[:n])
 
 		i := binary.BigEndian.Uint64(bytes[:])
-		return u64ToB64(i>>tbs, length)
+		return U64ToB64(i>>tbs, length)
 	} else {
 		return "", fmt.Errorf("unexpected length")
 	}
 }
 
-// func codeB64ToB2(code string) ([]byte, error) {
-// 	i, err := b64ToU64(code)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func CodeB64ToB2(code string) ([]byte, error) {
+	i, err := B64ToU64(code)
+	if err != nil {
+		return nil, err
+	}
 
-// 	i <<= 2 * (len(code) % 4)
-// 	n := ((len(code) + 1) * 3) / 4
-// 	return binary.BigEndian.AppendUint64(make([]byte, 0, 8), i)[8-n:], nil
-// }
+	n := int(math.Ceil(float64(len(code)) * 3 / 4))
+	return binary.BigEndian.AppendUint64([]byte{}, i)[8-n:], nil
+}
 
-func b64ToU16(b64 string) (uint16, error) {
+func B64ToU16(b64 string) (uint16, error) {
 	var out uint16 = 0
 
 	for _, c := range b64 {
-		i, err := b64CharToIndex(byte(c))
+		i, err := B64CharToIndex(byte(c))
 		if err != nil {
 			return 0, err
 		}
@@ -160,11 +160,11 @@ func b64ToU16(b64 string) (uint16, error) {
 	return out, nil
 }
 
-func b64ToU32(b64 string) (uint32, error) {
+func B64ToU32(b64 string) (uint32, error) {
 	var out uint32 = 0
 
 	for _, c := range b64 {
-		i, err := b64CharToIndex(byte(c))
+		i, err := B64CharToIndex(byte(c))
 		if err != nil {
 			return 0, err
 		}
@@ -174,11 +174,11 @@ func b64ToU32(b64 string) (uint32, error) {
 	return out, nil
 }
 
-func b64ToU64(b64 string) (uint64, error) {
+func B64ToU64(b64 string) (uint64, error) {
 	var out uint64 = 0
 
 	for _, c := range b64 {
-		i, err := b64CharToIndex(byte(c))
+		i, err := B64CharToIndex(byte(c))
 		if err != nil {
 			return 0, err
 		}
@@ -188,7 +188,7 @@ func b64ToU64(b64 string) (uint64, error) {
 	return out, nil
 }
 
-func u32ToB64(n uint32, length int) (string, error) {
+func U32ToB64(n uint32, length int) (string, error) {
 	if length == 0 {
 		return "", nil
 	}
@@ -197,7 +197,7 @@ func u32ToB64(n uint32, length int) (string, error) {
 	out := ""
 
 	for x > 0 {
-		c, err := b64IndexToChar(byte(x % 64))
+		c, err := B64IndexToChar(byte(x % 64))
 		if err != nil {
 			return "", err
 		}
@@ -213,7 +213,7 @@ func u32ToB64(n uint32, length int) (string, error) {
 	return out[:length], nil
 }
 
-func u64ToB64(n uint64, length int) (string, error) {
+func U64ToB64(n uint64, length int) (string, error) {
 	if length == 0 {
 		return "", nil
 	}
@@ -222,7 +222,7 @@ func u64ToB64(n uint64, length int) (string, error) {
 	out := ""
 
 	for x > 0 {
-		c, err := b64IndexToChar(byte(x % 64))
+		c, err := B64IndexToChar(byte(x % 64))
 		if err != nil {
 			return "", err
 		}
@@ -238,7 +238,7 @@ func u64ToB64(n uint64, length int) (string, error) {
 	return out[:length], nil
 }
 
-func bytesToInt(in []byte) int {
+func BytesToInt(in []byte) int {
 	length := len(in)
 
 	if length <= 4 {
@@ -257,12 +257,12 @@ func bytesToInt(in []byte) int {
 	}
 }
 
-func intToB64(n, length int) (string, error) {
+func IntToB64(n, length int) (string, error) {
 	s := ""
 
 	for n > 0 {
 		//nolint:gosec
-		c, err := b64IndexToChar(uint8(n % 64))
+		c, err := B64IndexToChar(uint8(n % 64))
 		if err != nil {
 			return "", err
 		}
@@ -278,7 +278,7 @@ func intToB64(n, length int) (string, error) {
 	return s, nil
 }
 
-func hexToUint32(hex []byte) (uint32, error) {
+func HexToUint32(hex []byte) (uint32, error) {
 	val, err := strconv.ParseUint(string(hex), 16, 32)
 	if err != nil {
 		return 0, err
@@ -288,7 +288,7 @@ func hexToUint32(hex []byte) (uint32, error) {
 }
 
 //nolint:gocritic
-func smell(raw types.Raw) (types.Proto, types.Version, types.Kind, types.Size, *types.Version, error) {
+func Smell(raw types.Raw) (types.Proto, types.Version, types.Kind, types.Size, *types.Version, error) {
 	re, err := Rever()
 	if err != nil {
 		return "", types.Version{}, "", 0, nil, err
@@ -302,19 +302,19 @@ func smell(raw types.Raw) (types.Proto, types.Version, types.Kind, types.Size, *
 	if len(match[1]) > 0 {
 		proto := types.Proto(match[1])
 
-		pmajor, err := hexToUint32(match[2])
+		pmajor, err := HexToUint32(match[2])
 		if err != nil {
 			return "", types.Version{}, "", 0, nil, err
 		}
 
-		pminor, err := hexToUint32(match[3])
+		pminor, err := HexToUint32(match[3])
 		if err != nil {
 			return "", types.Version{}, "", 0, nil, err
 		}
 
 		kind := types.Kind(match[4])
 
-		sizeInt, err := hexToUint32(match[5])
+		sizeInt, err := HexToUint32(match[5])
 		if err != nil {
 			return "", types.Version{}, "", 0, nil, err
 		}
@@ -328,29 +328,29 @@ func smell(raw types.Raw) (types.Proto, types.Version, types.Kind, types.Size, *
 	} else if len(match[6]) > 0 {
 		proto := types.Proto(match[6])
 
-		pmajor, err := b64ToU32(string(match[7]))
+		pmajor, err := B64ToU32(string(match[7]))
 		if err != nil {
 			return "", types.Version{}, "", 0, nil, err
 		}
 
-		pminor, err := b64ToU32(string(match[8]))
+		pminor, err := B64ToU32(string(match[8]))
 		if err != nil {
 			return "", types.Version{}, "", 0, nil, err
 		}
 
-		gmajor, err := b64ToU32(string(match[9]))
+		gmajor, err := B64ToU32(string(match[9]))
 		if err != nil {
 			return "", types.Version{}, "", 0, nil, err
 		}
 
-		gminor, err := b64ToU32(string(match[10]))
+		gminor, err := B64ToU32(string(match[10]))
 		if err != nil {
 			return "", types.Version{}, "", 0, nil, err
 		}
 
 		kind := types.Kind(match[11])
 
-		sizeInt, err := b64ToU32(string(match[12]))
+		sizeInt, err := B64ToU32(string(match[12]))
 		if err != nil {
 			return "", types.Version{}, "", 0, nil, err
 		}
@@ -370,7 +370,7 @@ func smell(raw types.Raw) (types.Proto, types.Version, types.Kind, types.Size, *
 }
 
 //nolint:gocritic
-func sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
+func Sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 	types.Raw,
 	types.Proto,
 	types.Kind,
@@ -389,10 +389,10 @@ func sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 	}
 
 	if version == nil {
-		version = &VERSION
+		version = &common.VERSION
 	}
 
-	proto, pvrsn, knd, _, gvrsn, err := deversify(v)
+	proto, pvrsn, knd, _, gvrsn, err := Deversify(v)
 	if err != nil {
 		return nil, "", "", types.Map{}, types.Version{}, err
 	}
@@ -409,11 +409,11 @@ func sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 		kind = &knd
 	}
 
-	if !slices.Contains(KINDS, *kind) {
+	if !slices.Contains(common.KINDS, *kind) {
 		return nil, "", "", types.Map{}, types.Version{}, fmt.Errorf("kind not supported")
 	}
 
-	raw, err := marshal(ked, kind)
+	raw, err := Marshal(ked, kind)
 	if err != nil {
 		return nil, "", "", types.Map{}, types.Version{}, err
 	}
@@ -439,7 +439,7 @@ func sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 	fore := offset[0]
 	back := offset[1]
 
-	vs, err := versify(&proto, &pvrsn, kind, size, nil)
+	vs, err := Versify(&proto, &pvrsn, kind, size, nil)
 	if err != nil {
 		return nil, "", "", types.Map{}, types.Version{}, err
 	}
@@ -454,18 +454,18 @@ func sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 	return rawOut, proto, *kind, ked, pvrsn, nil
 }
 
-func versify(proto *types.Proto, pvrsn *types.Version, kind *types.Kind, size types.Size, gvrsn *types.Version) (string, error) {
+func Versify(proto *types.Proto, pvrsn *types.Version, kind *types.Kind, size types.Size, gvrsn *types.Version) (string, error) {
 	if proto == nil {
-		protoKeri := Proto_KERI
+		protoKeri := common.Proto_KERI
 		proto = &protoKeri
 	}
 
 	if pvrsn == nil {
-		pvrsn = &VERSION
+		pvrsn = &common.VERSION
 	}
 
 	if kind == nil {
-		kindJson := Kind_JSON
+		kindJson := common.Kind_JSON
 		kind = &kindJson
 	}
 
@@ -473,11 +473,11 @@ func versify(proto *types.Proto, pvrsn *types.Version, kind *types.Kind, size ty
 		gvrsn = pvrsn
 	}
 
-	if !slices.Contains(PROTOS, *proto) {
+	if !slices.Contains(common.PROTOS, *proto) {
 		return "", fmt.Errorf("proto not supported")
 	}
 
-	if !slices.Contains(KINDS, *kind) {
+	if !slices.Contains(common.KINDS, *kind) {
 		return "", fmt.Errorf("kind not supported")
 	}
 
@@ -485,27 +485,27 @@ func versify(proto *types.Proto, pvrsn *types.Version, kind *types.Kind, size ty
 		return "", fmt.Errorf("major versions must be >= 2")
 	}
 
-	pvmaj, err := intToB64(int(pvrsn.Major), 1)
+	pvmaj, err := IntToB64(int(pvrsn.Major), 1)
 	if err != nil {
 		return "", err
 	}
 
-	pvmin, err := intToB64(int(pvrsn.Minor), 2)
+	pvmin, err := IntToB64(int(pvrsn.Minor), 2)
 	if err != nil {
 		return "", err
 	}
 
-	gvmaj, err := intToB64(int(gvrsn.Major), 1)
+	gvmaj, err := IntToB64(int(gvrsn.Major), 1)
 	if err != nil {
 		return "", err
 	}
 
-	gvmin, err := intToB64(int(gvrsn.Minor), 2)
+	gvmin, err := IntToB64(int(gvrsn.Minor), 2)
 	if err != nil {
 		return "", err
 	}
 
-	sz, err := intToB64(int(size), 4)
+	sz, err := IntToB64(int(size), 4)
 	if err != nil {
 		return "", err
 	}
@@ -514,7 +514,7 @@ func versify(proto *types.Proto, pvrsn *types.Version, kind *types.Kind, size ty
 }
 
 //nolint:gocritic
-func deversify(v string) (
+func Deversify(v string) (
 	types.Proto,
 	types.Version,
 	types.Kind,
@@ -532,11 +532,11 @@ func deversify(v string) (
 		return "", types.Version{}, "", 0, &types.Version{}, fmt.Errorf("version string not found")
 	}
 
-	return rematch(match)
+	return Rematch(match)
 }
 
 //nolint:gocritic
-func rematch(match [][]byte) (
+func Rematch(match [][]byte) (
 	types.Proto,
 	types.Version,
 	types.Kind,
@@ -550,29 +550,29 @@ func rematch(match [][]byte) (
 
 	if len(match[6]) > 0 {
 		proto := types.Proto(match[6])
-		pmajor, err := b64ToU32(string(match[7]))
+		pmajor, err := B64ToU32(string(match[7]))
 		if err != nil {
 			return "", types.Version{}, "", 0, &types.Version{}, err
 		}
 
-		pminor, err := b64ToU32(string(match[8]))
+		pminor, err := B64ToU32(string(match[8]))
 		if err != nil {
 			return "", types.Version{}, "", 0, &types.Version{}, err
 		}
 
-		gmajor, err := b64ToU32(string(match[9]))
+		gmajor, err := B64ToU32(string(match[9]))
 		if err != nil {
 			return "", types.Version{}, "", 0, &types.Version{}, err
 		}
 
-		gminor, err := b64ToU32(string(match[10]))
+		gminor, err := B64ToU32(string(match[10]))
 		if err != nil {
 			return "", types.Version{}, "", 0, &types.Version{}, err
 		}
 
 		kind := types.Kind(match[11])
 
-		sizeInt, err := b64ToU32(string(match[12]))
+		sizeInt, err := B64ToU32(string(match[12]))
 		if err != nil {
 			return "", types.Version{}, "", 0, &types.Version{}, err
 		}
@@ -588,19 +588,19 @@ func rematch(match [][]byte) (
 			}, nil
 	} else if len(match[1]) > 0 {
 		proto := types.Proto(match[1])
-		pmajor, err := hexToUint32(match[2])
+		pmajor, err := HexToUint32(match[2])
 		if err != nil {
 			return "", types.Version{}, "", 0, &types.Version{}, err
 		}
 
-		pminor, err := hexToUint32(match[3])
+		pminor, err := HexToUint32(match[3])
 		if err != nil {
 			return "", types.Version{}, "", 0, &types.Version{}, err
 		}
 
 		kind := types.Kind(match[4])
 
-		sizeInt, err := hexToUint32(match[5])
+		sizeInt, err := HexToUint32(match[5])
 		if err != nil {
 			return "", types.Version{}, "", 0, &types.Version{}, err
 		}
@@ -616,9 +616,9 @@ func rematch(match [][]byte) (
 	return "", types.Version{}, "", 0, &types.Version{}, fmt.Errorf("invalid version")
 }
 
-func marshal(ked types.Map, kind *types.Kind) (types.Raw, error) {
+func Marshal(ked types.Map, kind *types.Kind) (types.Raw, error) {
 	if kind == nil {
-		kindJson := Kind_JSON
+		kindJson := common.Kind_JSON
 		kind = &kindJson
 	}
 
@@ -628,17 +628,17 @@ func marshal(ked types.Map, kind *types.Kind) (types.Raw, error) {
 	)
 
 	switch *kind {
-	case Kind_JSON:
+	case common.Kind_JSON:
 		raw, err = json.Marshal(ked)
 		if err != nil {
 			return nil, err
 		}
-	case Kind_CBOR:
+	case common.Kind_CBOR:
 		raw, err = cbor.Marshal(ked)
 		if err != nil {
 			return nil, err
 		}
-	case Kind_MGPK:
+	case common.Kind_MGPK:
 		raw, err = msgpack.Marshal(ked)
 		if err != nil {
 			return nil, err
@@ -650,21 +650,21 @@ func marshal(ked types.Map, kind *types.Kind) (types.Raw, error) {
 	return raw, nil
 }
 
-func unmarshal(kind types.Kind, raw types.Raw) (types.Map, error) {
+func Unmarshal(kind types.Kind, raw types.Raw) (types.Map, error) {
 	var ked types.Map
 
 	switch kind {
-	case Kind_JSON:
+	case common.Kind_JSON:
 		err := json.Unmarshal(raw, &ked)
 		if err != nil {
 			return types.Map{}, err
 		}
-	case Kind_CBOR:
+	case common.Kind_CBOR:
 		err := cbor.Unmarshal(raw, &ked)
 		if err != nil {
 			return types.Map{}, err
 		}
-	case Kind_MGPK:
+	case common.Kind_MGPK:
 		err := msgpack.Unmarshal(raw, &ked)
 		if err != nil {
 			return types.Map{}, err

@@ -9,6 +9,7 @@ import (
 	mdex "github.com/jasoncolburne/cesrgo/matter"
 	mopts "github.com/jasoncolburne/cesrgo/matter/options"
 	"github.com/jasoncolburne/cesrgo/types"
+	"github.com/jasoncolburne/cesrgo/util"
 )
 
 type Signer struct {
@@ -42,7 +43,7 @@ func NewSigner(transferable bool, opts ...mopts.MatterOption) (*Signer, error) {
 			code = *config.Code
 		}
 
-		if !validateCode(code, validSignerCodes) {
+		if !util.ValidateCode(code, validSignerCodes) {
 			return nil, fmt.Errorf("unexpected code: %s", code)
 		}
 
@@ -83,7 +84,7 @@ func NewSigner(transferable bool, opts ...mopts.MatterOption) (*Signer, error) {
 		return nil, err
 	}
 
-	if !validateCode(s.code, validSignerCodes) {
+	if !util.ValidateCode(s.code, validSignerCodes) {
 		return nil, fmt.Errorf("unexpected code: %s", *config.Code)
 	}
 
@@ -111,7 +112,7 @@ func (s *Signer) deriveVerfer(transferable bool) error {
 }
 
 func (s *Signer) SignUnindexed(ser []byte) (*Cigar, error) {
-	if !validateCode(s.code, validSignerCodes) {
+	if !util.ValidateCode(s.code, validSignerCodes) {
 		return nil, fmt.Errorf("unexpected code: %s", s.code)
 	}
 
@@ -151,7 +152,7 @@ func (s *Signer) SignIndexed(
 	index types.Index,
 	ondex *types.Ondex,
 ) (*Siger, error) {
-	if !validateCode(s.code, validSignerCodes) {
+	if !util.ValidateCode(s.code, validSignerCodes) {
 		return nil, fmt.Errorf("unexpected code: %s", s.code)
 	}
 

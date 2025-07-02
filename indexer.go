@@ -11,6 +11,7 @@ import (
 	codex "github.com/jasoncolburne/cesrgo/indexer"
 	"github.com/jasoncolburne/cesrgo/indexer/options"
 	"github.com/jasoncolburne/cesrgo/types"
+	"github.com/jasoncolburne/cesrgo/util"
 )
 
 type indexer struct {
@@ -74,14 +75,14 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 		return fmt.Errorf("qb2 is empty")
 	}
 
-	first, err := nabSextets(qb2, 1)
+	first, err := util.NabSextets(qb2, 1)
 	if err != nil {
 		return err
 	}
 
-	hs, err := codex.GetBardage(first[0])
-	if err != nil {
-		return err
+	hs, ok := codex.Bardage(first[0])
+	if !ok {
+		return fmt.Errorf("unknown bard: %x", first[0])
 	}
 
 	bhs := int(math.Ceil(float64(hs) * 3 / 4))
@@ -89,14 +90,14 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 		return fmt.Errorf("insufficient material for hard part of code: qb2 size = %d, bhs = %d", len(qb2), bhs)
 	}
 
-	hard, err := codeB2ToB64(qb2, int(hs))
+	hard, err := util.CodeB2ToB64(qb2, int(hs))
 	if err != nil {
 		return err
 	}
 
-	szg, err := codex.GetSizage(types.Code(hard))
-	if err != nil {
-		return err
+	szg, ok := codex.Sizes[types.Code(hard)]
+	if !ok {
+		return fmt.Errorf("unknown sizage: %s", hard)
 	}
 	cs := szg.Hs + szg.Ss
 	ms := szg.Ss - szg.Os
@@ -106,20 +107,20 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 		return fmt.Errorf("insufficient material for code: qb2 size = %d, bcs = %d", len(qb2), bcs)
 	}
 
-	both, err := codeB2ToB64(qb2, int(cs))
+	both, err := util.CodeB2ToB64(qb2, int(cs))
 	if err != nil {
 		return err
 	}
 
-	index, err := b64ToU32(both[hs : hs+ms])
+	index, err := util.B64ToU32(both[hs : hs+int(ms)])
 	if err != nil {
 		return err
 	}
 
 	var ondex *types.Ondex
-	if validateCode(types.Code(hard), codex.ValidCurrentSigCodes) {
+	if util.ValidateCode(types.Code(hard), codex.ValidCurrentSigCodes) {
 		if szg.Os != 0 {
-			odx, err := b64ToU32(both[hs+ms : hs+(ms+szg.Os)])
+			odx, err := util.B64ToU32(both[hs+int(ms) : hs+int(ms)+int(szg.Os)])
 			if err != nil {
 				return err
 			}
@@ -129,7 +130,7 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 			}
 		}
 	} else if szg.Os != 0 {
-		odx, err := b64ToU32(both[hs+ms : hs+(ms+szg.Os)])
+		odx, err := util.B64ToU32(both[hs+int(ms) : hs+int(ms)+int(szg.Os)])
 		if err != nil {
 			return err
 		}
@@ -211,9 +212,9 @@ func ibinfil(i types.Indexer) (types.Qb2, error) {
 	raw := i.GetRaw()
 
 	ps := (3 - (len(raw) % 3)) % 3
-	szg, err := codex.GetSizage(code)
-	if err != nil {
-		return types.Qb2{}, err
+	szg, ok := codex.Sizes[code]
+	if !ok {
+		return types.Qb2{}, fmt.Errorf("no sizage for code: %s", code)
 	}
 
 	cs := szg.Hs + szg.Ss
@@ -245,12 +246,12 @@ func ibinfil(i types.Indexer) (types.Qb2, error) {
 		odx = int(*ondex)
 	}
 
-	indexB64, err := intToB64(int(index), int(ms))
+	indexB64, err := util.IntToB64(int(index), int(ms))
 	if err != nil {
 		return types.Qb2{}, err
 	}
 
-	ondexB64, err := intToB64(odx, int(szg.Os))
+	ondexB64, err := util.IntToB64(odx, int(szg.Os))
 	if err != nil {
 		return types.Qb2{}, err
 	}
@@ -265,7 +266,7 @@ func ibinfil(i types.Indexer) (types.Qb2, error) {
 		return types.Qb2{}, fmt.Errorf("invalid code=%s for converted raw pad size=%d", both, ps)
 	}
 
-	bothU16, err := b64ToU16(both)
+	bothU16, err := util.B64ToU16(both)
 	if err != nil {
 		return types.Qb2{}, err
 	}
@@ -292,9 +293,9 @@ func iinfil(i types.Indexer) (types.Qb64, error) {
 	raw := i.GetRaw()
 
 	ps := (3 - (len(raw) % 3)) % 3
-	szg, err := codex.GetSizage(code)
-	if err != nil {
-		return "", err
+	szg, ok := codex.Sizes[code]
+	if !ok {
+		return "", fmt.Errorf("unknown sizage for code: %s", code)
 	}
 
 	cs := szg.Hs + szg.Ss
@@ -327,12 +328,12 @@ func iinfil(i types.Indexer) (types.Qb64, error) {
 		odx = int(*ondex)
 	}
 
-	indexB64, err := intToB64(int(index), int(ms))
+	indexB64, err := util.IntToB64(int(index), int(ms))
 	if err != nil {
 		return "", err
 	}
 
-	ondexB64, err := intToB64(odx, int(szg.Os))
+	ondexB64, err := util.IntToB64(odx, int(szg.Os))
 	if err != nil {
 		return "", err
 	}
@@ -365,15 +366,15 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 	}
 
 	first := qb64[0]
-	hs, err := codex.GetHardage(first)
-	if err != nil {
-		return err
+	hs, ok := codex.Hardage(first)
+	if !ok {
+		return fmt.Errorf("unknown hard: %x", first)
 	}
 
 	hard := qb64[:hs]
-	szg, err := codex.GetSizage(types.Code(hard))
-	if err != nil {
-		return err
+	szg, ok := codex.Sizes[types.Code(hard)]
+	if !ok {
+		return fmt.Errorf("unknown sizage: %s", hard)
 	}
 
 	cs := szg.Hs + szg.Ss
@@ -383,18 +384,18 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 		return fmt.Errorf("insufficient material for code: qb64 size = %d, cs = %d", len(qb64), cs)
 	}
 
-	indexB64 := qb64[hs : hs+ms]
-	index, err := b64ToU32(string(indexB64))
+	indexB64 := qb64[hs : hs+int(ms)]
+	index, err := util.B64ToU32(string(indexB64))
 	if err != nil {
 		return err
 	}
 
-	ondexB64 := qb64[hs+ms : hs+ms+szg.Os]
+	ondexB64 := qb64[hs+int(ms) : hs+int(ms)+int(szg.Os)]
 
 	var ondex *types.Ondex
 	if slices.Contains(codex.ValidCurrentSigCodes, types.Code(hard)) {
 		if szg.Os != 0 {
-			odx, err := b64ToU32(string(ondexB64))
+			odx, err := util.B64ToU32(string(ondexB64))
 			if err != nil {
 				return err
 			}
@@ -407,7 +408,7 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 			ondex = &_ondex
 		}
 	} else if szg.Os != 0 {
-		odx, err := b64ToU32(string(ondexB64))
+		odx, err := util.B64ToU32(string(ondexB64))
 		if err != nil {
 			return err
 		}
@@ -456,7 +457,7 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 			return err
 		}
 
-		pi := bytesToInt(paw[:ps])
+		pi := util.BytesToInt(paw[:ps])
 		if pi&(1<<pbs-1) != 0 {
 			return fmt.Errorf("non-zeroed pad bits: %x", pi&(1<<pbs-1))
 		}
@@ -469,7 +470,7 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 			return err
 		}
 
-		li := bytesToInt(paw[:szg.Ls])
+		li := util.BytesToInt(paw[:szg.Ls])
 		if li != 0 {
 			return fmt.Errorf("non-zeroed lead byte: %x", li)
 		}
@@ -500,9 +501,9 @@ func NewIndexer(i types.Indexer, opts ...options.IndexerOption) error {
 			return fmt.Errorf("qb2, qb64, or qb64b cannot be used with code and raw")
 		}
 
-		szg, err := codex.GetSizage(*config.Code)
-		if err != nil {
-			return err
+		szg, ok := codex.Sizes[*config.Code]
+		if !ok {
+			return fmt.Errorf("unknown sizage for code: %s", *config.Code)
 		}
 
 		cs := szg.Hs + szg.Ss
@@ -518,11 +519,11 @@ func NewIndexer(i types.Indexer, opts ...options.IndexerOption) error {
 			}
 		}
 
-		if validateCode(*config.Code, codex.ValidCurrentSigCodes) && config.Ondex != nil {
+		if util.ValidateCode(*config.Code, codex.ValidCurrentSigCodes) && config.Ondex != nil {
 			return fmt.Errorf("non-nil ondex %d for code %s", *config.Ondex, *config.Code)
 		}
 
-		if validateCode(*config.Code, codex.ValidBothSigCodes) {
+		if util.ValidateCode(*config.Code, codex.ValidBothSigCodes) {
 			ondex := types.Ondex(*config.Index)
 			if config.Ondex == nil {
 				config.Ondex = &ondex

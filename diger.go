@@ -8,6 +8,7 @@ import (
 	codex "github.com/jasoncolburne/cesrgo/matter"
 	"github.com/jasoncolburne/cesrgo/matter/options"
 	"github.com/jasoncolburne/cesrgo/types"
+	"github.com/jasoncolburne/cesrgo/util"
 )
 
 type Diger struct {
@@ -53,7 +54,7 @@ func NewDiger(ser []byte, opts ...options.MatterOption) (*Diger, error) {
 		}
 	}
 
-	if !validateCode(d.GetCode(), validDigerCodes) {
+	if !util.ValidateCode(d.GetCode(), validDigerCodes) {
 		return nil, fmt.Errorf("unexpected code: %s", d.GetCode())
 	}
 

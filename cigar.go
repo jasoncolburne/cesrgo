@@ -6,6 +6,7 @@ import (
 	codex "github.com/jasoncolburne/cesrgo/matter"
 	"github.com/jasoncolburne/cesrgo/matter/options"
 	"github.com/jasoncolburne/cesrgo/types"
+	"github.com/jasoncolburne/cesrgo/util"
 )
 
 type Cigar struct {
@@ -30,7 +31,7 @@ func NewCigar(verfer *Verfer, opts ...options.MatterOption) (*Cigar, error) {
 		return nil, err
 	}
 
-	if !validateCode(c.GetCode(), validCigarCodes) {
+	if !util.ValidateCode(c.GetCode(), validCigarCodes) {
 		return nil, fmt.Errorf("unexpected code: %s", c.GetCode())
 	}
 

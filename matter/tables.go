@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jasoncolburne/cesrgo/types"
+	"github.com/jasoncolburne/cesrgo/util"
 )
 
 const (
@@ -138,253 +139,255 @@ type Sizage struct {
 	Ls uint32
 }
 
-func GetSizage(code types.Code) (Sizage, error) {
-	var fs uint32
+var (
+	_4   = uint32(4)
+	_8   = uint32(8)
+	_12  = uint32(12)
+	_16  = uint32(16)
+	_20  = uint32(20)
+	_24  = uint32(24)
+	_28  = uint32(28)
+	_32  = uint32(32)
+	_36  = uint32(36)
+	_44  = uint32(44)
+	_48  = uint32(48)
+	_72  = uint32(72)
+	_76  = uint32(76)
+	_80  = uint32(80)
+	_88  = uint32(88)
+	_92  = uint32(92)
+	_100 = uint32(100)
+	_124 = uint32(124)
+	_156 = uint32(156)
+)
 
-	switch code {
-	case Ed25519_Seed, Ed25519N, Ed25519,
-		X25519, X25519_Private,
-		Blake3_256, Blake2b_256, Blake2s_256,
-		SHA3_256, SHA2_256,
-		ECDSA_256k1_Seed, ECDSA_256r1_Seed,
-		Salt_256:
-		fs = 44
-		return Sizage{Hs: 1, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+var Sizes = map[types.Code]Sizage{
+	// keys & seeds
 
-	case Ed448_Seed, X448:
-		fs = 76
-		return Sizage{Hs: 1, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	Ed25519_Seed:     {Hs: 1, Ss: 0, Xs: 0, Fs: &_44, Ls: 0},
+	Ed25519N:         {Hs: 1, Ss: 0, Xs: 0, Fs: &_44, Ls: 0},
+	Ed25519:          {Hs: 1, Ss: 0, Xs: 0, Fs: &_44, Ls: 0},
+	X25519:           {Hs: 1, Ss: 0, Xs: 0, Fs: &_44, Ls: 0},
+	X25519_Private:   {Hs: 1, Ss: 0, Xs: 0, Fs: &_44, Ls: 0},
+	ECDSA_256k1_Seed: {Hs: 1, Ss: 0, Xs: 0, Fs: &_44, Ls: 0},
+	ECDSA_256r1_Seed: {Hs: 1, Ss: 0, Xs: 0, Fs: &_44, Ls: 0},
 
-	case Short:
-		fs = 4
-		return Sizage{Hs: 1, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	ECDSA_256k1N: {Hs: 4, Ss: 0, Xs: 0, Fs: &_48, Ls: 0},
+	ECDSA_256k1:  {Hs: 4, Ss: 0, Xs: 0, Fs: &_48, Ls: 0},
+	ECDSA_256r1N: {Hs: 4, Ss: 0, Xs: 0, Fs: &_48, Ls: 0},
+	ECDSA_256r1:  {Hs: 4, Ss: 0, Xs: 0, Fs: &_48, Ls: 0},
 
-	case Big:
-		fs = 12
-		return Sizage{Hs: 1, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	Ed448N: {Hs: 4, Ss: 0, Xs: 0, Fs: &_80, Ls: 0},
+	Ed448:  {Hs: 4, Ss: 0, Xs: 0, Fs: &_80, Ls: 0},
 
-	case X25519_Cipher_Seed:
-		fs = 124
-		return Sizage{Hs: 1, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	Ed448_Seed: {Hs: 1, Ss: 0, Xs: 0, Fs: &_76, Ls: 0},
+	X448:       {Hs: 1, Ss: 0, Xs: 0, Fs: &_76, Ls: 0},
 
-	case Tall:
-		fs = 8
-		return Sizage{Hs: 1, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	X25519_Cipher_Seed: {Hs: 1, Ss: 0, Xs: 0, Fs: &_124, Ls: 0},
 
-	case Large:
-		fs = 16
-		return Sizage{Hs: 1, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	// signatures
 
-	case Great:
-		fs = 20
-		return Sizage{Hs: 1, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	Ed25519_Sig:     {Hs: 2, Ss: 0, Xs: 0, Fs: &_88, Ls: 0},
+	ECDSA_256k1_Sig: {Hs: 2, Ss: 0, Xs: 0, Fs: &_88, Ls: 0},
+	ECDSA_256r1_Sig: {Hs: 2, Ss: 0, Xs: 0, Fs: &_88, Ls: 0},
 
-	case Vast:
-		fs = 24
-		return Sizage{Hs: 1, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	Ed448_Sig: {Hs: 4, Ss: 0, Xs: 0, Fs: &_156, Ls: 0},
 
-	case Label1:
-		fs = 4
-		return Sizage{Hs: 1, Ss: 0, Xs: 0, Fs: &fs, Ls: 1}, nil
+	// digests
 
-	case Label2:
-		fs = 4
-		return Sizage{Hs: 1, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	Blake3_256:  {Hs: 1, Ss: 0, Xs: 0, Fs: &_44, Ls: 0},
+	Blake2b_256: {Hs: 1, Ss: 0, Xs: 0, Fs: &_44, Ls: 0},
+	Blake2s_256: {Hs: 1, Ss: 0, Xs: 0, Fs: &_44, Ls: 0},
+	SHA3_256:    {Hs: 1, Ss: 0, Xs: 0, Fs: &_44, Ls: 0},
+	SHA2_256:    {Hs: 1, Ss: 0, Xs: 0, Fs: &_44, Ls: 0},
 
-	case Tag3:
-		fs = 4
-		return Sizage{Hs: 1, Ss: 3, Xs: 0, Fs: &fs, Ls: 0}, nil
+	Blake3_512:  {Hs: 2, Ss: 0, Xs: 0, Fs: &_88, Ls: 0},
+	Blake2b_512: {Hs: 2, Ss: 0, Xs: 0, Fs: &_88, Ls: 0},
+	SHA3_512:    {Hs: 2, Ss: 0, Xs: 0, Fs: &_88, Ls: 0},
+	SHA2_512:    {Hs: 2, Ss: 0, Xs: 0, Fs: &_88, Ls: 0},
 
-	case Tag7:
-		fs = 8
-		return Sizage{Hs: 1, Ss: 7, Xs: 0, Fs: &fs, Ls: 0}, nil
+	// salts
 
-	case Tag11:
-		fs = 12
-		return Sizage{Hs: 1, Ss: 11, Xs: 0, Fs: &fs, Ls: 0}, nil
+	Salt_128:           {Hs: 2, Ss: 0, Xs: 0, Fs: &_24, Ls: 0},
+	Salt_256:           {Hs: 1, Ss: 0, Xs: 0, Fs: &_44, Ls: 0},
+	X25519_Cipher_Salt: {Hs: 4, Ss: 0, Xs: 0, Fs: &_100, Ls: 0},
 
-	case Salt_128:
-		fs = 24
-		return Sizage{Hs: 2, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	// sizes
 
-	case Ed25519_Sig, ECDSA_256k1_Sig, ECDSA_256r1_Sig,
-		Blake3_512, Blake2b_512, SHA3_512, SHA2_512:
-		fs = 88
-		return Sizage{Hs: 2, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	Short: {Hs: 1, Ss: 0, Xs: 0, Fs: &_4, Ls: 0},
+	Tall:  {Hs: 1, Ss: 0, Xs: 0, Fs: &_8, Ls: 0},
+	Big:   {Hs: 1, Ss: 0, Xs: 0, Fs: &_12, Ls: 0},
+	Large: {Hs: 1, Ss: 0, Xs: 0, Fs: &_16, Ls: 0},
+	Great: {Hs: 1, Ss: 0, Xs: 0, Fs: &_20, Ls: 0},
+	Vast:  {Hs: 1, Ss: 0, Xs: 0, Fs: &_24, Ls: 0},
 
-	case Long:
-		fs = 8
-		return Sizage{Hs: 2, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	Long: {Hs: 2, Ss: 0, Xs: 0, Fs: &_8, Ls: 0},
 
-	case Tag1:
-		fs = 4
-		return Sizage{Hs: 2, Ss: 2, Xs: 1, Fs: &fs, Ls: 0}, nil
+	// labels
 
-	case Tag2:
-		fs = 4
-		return Sizage{Hs: 2, Ss: 2, Xs: 0, Fs: &fs, Ls: 0}, nil
+	Label1: {Hs: 1, Ss: 0, Xs: 0, Fs: &_4, Ls: 1},
+	Label2: {Hs: 1, Ss: 0, Xs: 0, Fs: &_4, Ls: 0},
 
-	case Tag5:
-		fs = 8
-		return Sizage{Hs: 2, Ss: 6, Xs: 1, Fs: &fs, Ls: 0}, nil
+	// tags
 
-	case Tag6:
-		fs = 8
-		return Sizage{Hs: 2, Ss: 6, Xs: 0, Fs: &fs, Ls: 0}, nil
+	Tag1:  {Hs: 2, Ss: 2, Xs: 1, Fs: &_4, Ls: 0},
+	Tag2:  {Hs: 2, Ss: 2, Xs: 0, Fs: &_4, Ls: 0},
+	Tag3:  {Hs: 1, Ss: 3, Xs: 0, Fs: &_4, Ls: 0},
+	Tag4:  {Hs: 4, Ss: 4, Xs: 0, Fs: &_8, Ls: 0},
+	Tag5:  {Hs: 2, Ss: 6, Xs: 1, Fs: &_8, Ls: 0},
+	Tag6:  {Hs: 2, Ss: 6, Xs: 0, Fs: &_8, Ls: 0},
+	Tag7:  {Hs: 1, Ss: 7, Xs: 0, Fs: &_8, Ls: 0},
+	Tag8:  {Hs: 4, Ss: 8, Xs: 0, Fs: &_12, Ls: 0},
+	Tag9:  {Hs: 2, Ss: 10, Xs: 1, Fs: &_12, Ls: 0},
+	Tag10: {Hs: 2, Ss: 10, Xs: 0, Fs: &_12, Ls: 0},
+	Tag11: {Hs: 1, Ss: 11, Xs: 0, Fs: &_12, Ls: 0},
 
-	case Tag9:
-		fs = 12
-		return Sizage{Hs: 2, Ss: 10, Xs: 1, Fs: &fs, Ls: 0}, nil
+	// more
 
-	case Tag10:
-		fs = 12
-		return Sizage{Hs: 2, Ss: 10, Xs: 0, Fs: &fs, Ls: 0}, nil
+	Null:   {Hs: 4, Ss: 0, Xs: 0, Fs: &_4, Ls: 0},
+	Yes:    {Hs: 4, Ss: 0, Xs: 0, Fs: &_4, Ls: 0},
+	No:     {Hs: 4, Ss: 0, Xs: 0, Fs: &_4, Ls: 0},
+	Escape: {Hs: 4, Ss: 0, Xs: 0, Fs: &_4, Ls: 0},
+	Empty:  {Hs: 4, Ss: 0, Xs: 0, Fs: &_4, Ls: 0},
 
-	case GramHeadNeck:
-		fs = 32
-		return Sizage{Hs: 2, Ss: 22, Xs: 0, Fs: &fs, Ls: 0}, nil
+	// gram head
 
-	case GramHead:
-		fs = 28
-		return Sizage{Hs: 2, Ss: 22, Xs: 0, Fs: &fs, Ls: 0}, nil
+	GramHead:        {Hs: 2, Ss: 22, Xs: 0, Fs: &_28, Ls: 0},
+	GramHeadNeck:    {Hs: 2, Ss: 22, Xs: 0, Fs: &_32, Ls: 0},
+	GramHeadAID:     {Hs: 2, Ss: 22, Xs: 0, Fs: &_72, Ls: 0},
+	GramHeadAIDNeck: {Hs: 2, Ss: 22, Xs: 0, Fs: &_76, Ls: 0},
 
-	case GramHeadAIDNeck:
-		fs = 76
-		return Sizage{Hs: 2, Ss: 22, Xs: 0, Fs: &fs, Ls: 0}, nil
+	// dates
 
-	case GramHeadAID:
-		fs = 72
-		return Sizage{Hs: 2, Ss: 22, Xs: 0, Fs: &fs, Ls: 0}, nil
+	DateTime: {Hs: 4, Ss: 0, Xs: 0, Fs: &_36, Ls: 0},
 
-	case ECDSA_256k1N, ECDSA_256k1, ECDSA_256r1N, ECDSA_256r1:
-		fs = 48
-		return Sizage{Hs: 4, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	// TBD
 
-	case Ed448N, Ed448:
-		fs = 80
-		return Sizage{Hs: 4, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	TBD0S: {Hs: 4, Ss: 2, Xs: 0, Fs: &_12, Ls: 0},
+	TBD0:  {Hs: 4, Ss: 0, Xs: 0, Fs: &_8, Ls: 0},
+	TBD1S: {Hs: 4, Ss: 2, Xs: 1, Fs: &_12, Ls: 1},
+	TBD1:  {Hs: 4, Ss: 0, Xs: 0, Fs: &_8, Ls: 1},
+	TBD2S: {Hs: 4, Ss: 2, Xs: 0, Fs: &_12, Ls: 2},
+	TBD2:  {Hs: 4, Ss: 0, Xs: 0, Fs: &_8, Ls: 2},
 
-	case Ed448_Sig:
-		fs = 156
-		return Sizage{Hs: 4, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	// variable length data
 
-	case Tag4:
-		fs = 8
-		return Sizage{Hs: 4, Ss: 4, Xs: 0, Fs: &fs, Ls: 0}, nil
+	StrB64_L0:             {Hs: 2, Ss: 2, Xs: 0, Ls: 0},
+	Bytes_L0:              {Hs: 2, Ss: 2, Xs: 0, Ls: 0},
+	X25519_Cipher_L0:      {Hs: 2, Ss: 2, Xs: 0, Ls: 0},
+	X25519_Cipher_QB64_L0: {Hs: 2, Ss: 2, Xs: 0, Ls: 0},
+	X25519_Cipher_QB2_L0:  {Hs: 2, Ss: 2, Xs: 0, Ls: 0},
+	HPKEBase_Cipher_L0:    {Hs: 2, Ss: 2, Xs: 0, Ls: 0},
+	HPKEAuth_Cipher_L0:    {Hs: 2, Ss: 2, Xs: 0, Ls: 0},
+	Decimal_L0:            {Hs: 2, Ss: 2, Xs: 0, Ls: 0},
 
-	case DateTime:
-		fs = 36
-		return Sizage{Hs: 4, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	StrB64_L1:             {Hs: 2, Ss: 2, Xs: 0, Ls: 1},
+	Bytes_L1:              {Hs: 2, Ss: 2, Xs: 0, Ls: 1},
+	X25519_Cipher_L1:      {Hs: 2, Ss: 2, Xs: 0, Ls: 1},
+	X25519_Cipher_QB64_L1: {Hs: 2, Ss: 2, Xs: 0, Ls: 1},
+	X25519_Cipher_QB2_L1:  {Hs: 2, Ss: 2, Xs: 0, Ls: 1},
+	HPKEBase_Cipher_L1:    {Hs: 2, Ss: 2, Xs: 0, Ls: 1},
+	HPKEAuth_Cipher_L1:    {Hs: 2, Ss: 2, Xs: 0, Ls: 1},
+	Decimal_L1:            {Hs: 2, Ss: 2, Xs: 0, Ls: 1},
 
-	case X25519_Cipher_Salt:
-		fs = 100
-		return Sizage{Hs: 4, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	StrB64_L2:             {Hs: 2, Ss: 2, Xs: 0, Ls: 2},
+	Bytes_L2:              {Hs: 2, Ss: 2, Xs: 0, Ls: 2},
+	X25519_Cipher_L2:      {Hs: 2, Ss: 2, Xs: 0, Ls: 2},
+	X25519_Cipher_QB64_L2: {Hs: 2, Ss: 2, Xs: 0, Ls: 2},
+	X25519_Cipher_QB2_L2:  {Hs: 2, Ss: 2, Xs: 0, Ls: 2},
+	HPKEBase_Cipher_L2:    {Hs: 2, Ss: 2, Xs: 0, Ls: 2},
+	HPKEAuth_Cipher_L2:    {Hs: 2, Ss: 2, Xs: 0, Ls: 2},
+	Decimal_L2:            {Hs: 2, Ss: 2, Xs: 0, Ls: 2},
 
-	case Null, Yes, No, Escape, Empty:
-		fs = 4
-		return Sizage{Hs: 4, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
+	StrB64_Big_L0:             {Hs: 4, Ss: 4, Xs: 0, Ls: 0},
+	Bytes_Big_L0:              {Hs: 4, Ss: 4, Xs: 0, Ls: 0},
+	X25519_Cipher_Big_L0:      {Hs: 4, Ss: 4, Xs: 0, Ls: 0},
+	X25519_Cipher_QB64_Big_L0: {Hs: 4, Ss: 4, Xs: 0, Ls: 0},
+	X25519_Cipher_QB2_Big_L0:  {Hs: 4, Ss: 4, Xs: 0, Ls: 0},
+	HPKEBase_Cipher_Big_L0:    {Hs: 4, Ss: 4, Xs: 0, Ls: 0},
+	HPKEAuth_Cipher_Big_L0:    {Hs: 4, Ss: 4, Xs: 0, Ls: 0},
+	Decimal_Big_L0:            {Hs: 4, Ss: 4, Xs: 0, Ls: 0},
 
-	case Tag8:
-		fs = 12
-		return Sizage{Hs: 4, Ss: 8, Xs: 0, Fs: &fs, Ls: 0}, nil
+	StrB64_Big_L1:             {Hs: 4, Ss: 4, Xs: 0, Ls: 1},
+	Bytes_Big_L1:              {Hs: 4, Ss: 4, Xs: 0, Ls: 1},
+	X25519_Cipher_Big_L1:      {Hs: 4, Ss: 4, Xs: 0, Ls: 1},
+	X25519_Cipher_QB64_Big_L1: {Hs: 4, Ss: 4, Xs: 0, Ls: 1},
+	X25519_Cipher_QB2_Big_L1:  {Hs: 4, Ss: 4, Xs: 0, Ls: 1},
+	HPKEBase_Cipher_Big_L1:    {Hs: 4, Ss: 4, Xs: 0, Ls: 1},
+	HPKEAuth_Cipher_Big_L1:    {Hs: 4, Ss: 4, Xs: 0, Ls: 1},
+	Decimal_Big_L1:            {Hs: 4, Ss: 4, Xs: 0, Ls: 1},
 
-	case TBD0S:
-		fs = 12
-		return Sizage{Hs: 4, Ss: 2, Xs: 0, Fs: &fs, Ls: 0}, nil
-
-	case TBD0:
-		fs = 8
-		return Sizage{Hs: 4, Ss: 0, Xs: 0, Fs: &fs, Ls: 0}, nil
-
-	case TBD1S:
-		fs = 12
-		return Sizage{Hs: 4, Ss: 2, Xs: 1, Fs: &fs, Ls: 1}, nil
-
-	case TBD1:
-		fs = 8
-		return Sizage{Hs: 4, Ss: 0, Xs: 0, Fs: &fs, Ls: 1}, nil
-
-	case TBD2S:
-		fs = 12
-		return Sizage{Hs: 4, Ss: 2, Xs: 0, Fs: &fs, Ls: 2}, nil
-
-	case TBD2:
-		fs = 8
-		return Sizage{Hs: 4, Ss: 0, Xs: 0, Fs: &fs, Ls: 2}, nil
-
-	case StrB64_L0, Bytes_L0, X25519_Cipher_L0, X25519_Cipher_QB64_L0,
-		X25519_Cipher_QB2_L0, HPKEBase_Cipher_L0, HPKEAuth_Cipher_L0,
-		Decimal_L0:
-		return Sizage{Hs: 2, Ss: 2, Xs: 0, Ls: 0}, nil
-
-	case StrB64_L1, Bytes_L1, X25519_Cipher_L1, X25519_Cipher_QB64_L1,
-		X25519_Cipher_QB2_L1, HPKEBase_Cipher_L1, HPKEAuth_Cipher_L1,
-		Decimal_L1:
-		return Sizage{Hs: 2, Ss: 2, Xs: 0, Ls: 1}, nil
-
-	case StrB64_L2, Bytes_L2, X25519_Cipher_L2, X25519_Cipher_QB64_L2,
-		X25519_Cipher_QB2_L2, HPKEBase_Cipher_L2, HPKEAuth_Cipher_L2,
-		Decimal_L2:
-		return Sizage{Hs: 2, Ss: 2, Xs: 0, Ls: 2}, nil
-
-	case StrB64_Big_L0, Bytes_Big_L0, X25519_Cipher_Big_L0, X25519_Cipher_QB64_Big_L0,
-		X25519_Cipher_QB2_Big_L0, HPKEBase_Cipher_Big_L0, HPKEAuth_Cipher_Big_L0,
-		Decimal_Big_L0:
-		return Sizage{Hs: 4, Ss: 4, Xs: 0, Ls: 0}, nil
-
-	case StrB64_Big_L1, Bytes_Big_L1, X25519_Cipher_Big_L1, X25519_Cipher_QB64_Big_L1,
-		X25519_Cipher_QB2_Big_L1, HPKEBase_Cipher_Big_L1, HPKEAuth_Cipher_Big_L1,
-		Decimal_Big_L1:
-		return Sizage{Hs: 4, Ss: 4, Xs: 0, Ls: 1}, nil
-
-	case StrB64_Big_L2, Bytes_Big_L2, X25519_Cipher_Big_L2, X25519_Cipher_QB64_Big_L2,
-		X25519_Cipher_QB2_Big_L2, HPKEBase_Cipher_Big_L2, HPKEAuth_Cipher_Big_L2,
-		Decimal_Big_L2:
-		return Sizage{Hs: 4, Ss: 4, Xs: 0, Ls: 2}, nil
-
-	default:
-		return Sizage{}, fmt.Errorf("unknown code: %s", code)
-	}
+	StrB64_Big_L2:             {Hs: 4, Ss: 4, Xs: 0, Ls: 2},
+	Bytes_Big_L2:              {Hs: 4, Ss: 4, Xs: 0, Ls: 2},
+	X25519_Cipher_Big_L2:      {Hs: 4, Ss: 4, Xs: 0, Ls: 2},
+	X25519_Cipher_QB64_Big_L2: {Hs: 4, Ss: 4, Xs: 0, Ls: 2},
+	X25519_Cipher_QB2_Big_L2:  {Hs: 4, Ss: 4, Xs: 0, Ls: 2},
+	HPKEBase_Cipher_Big_L2:    {Hs: 4, Ss: 4, Xs: 0, Ls: 2},
+	HPKEAuth_Cipher_Big_L2:    {Hs: 4, Ss: 4, Xs: 0, Ls: 2},
+	Decimal_Big_L2:            {Hs: 4, Ss: 4, Xs: 0, Ls: 2},
 }
 
-func Hardage(c string) (uint32, error) {
-	if c >= "A" && c <= "Z" || c >= "a" && c <= "z" {
-		return 1, nil
-	}
-	if c == "0" || c == "4" || c == "5" || c == "6" {
-		return 2, nil
-	}
-	if c == "1" || c == "2" || c == "3" || c == "7" || c == "8" || c == "9" {
-		return 4, nil
+var Hards = map[byte]int{}
+var Bards = map[byte]int{}
+
+func generateHards() {
+	if len(Hards) > 0 {
+		return
 	}
 
-	if c == "-" {
-		return 0, fmt.Errorf("count code start")
-	}
-	if c == "_" {
-		return 0, fmt.Errorf("op code start")
+	for c := 'A'; c <= 'Z'; c++ {
+		Hards[byte(c)] = 1
 	}
 
-	return 0, fmt.Errorf("unknown hardage: %s", c)
+	for c := 'a'; c <= 'z'; c++ {
+		Hards[byte(c)] = 1
+	}
+
+	Hards[byte('0')] = 2
+	Hards[byte('4')] = 2
+	Hards[byte('5')] = 2
+	Hards[byte('6')] = 2
+
+	Hards[byte('1')] = 4
+	Hards[byte('2')] = 4
+	Hards[byte('3')] = 4
+	Hards[byte('7')] = 4
+	Hards[byte('8')] = 4
+	Hards[byte('9')] = 4
 }
 
-func Bardage(b byte) (uint32, error) {
-	if b <= 0x33 {
-		return 1, nil
-	}
-	if b == 0x34 || b >= 0x38 && b <= 0x3a {
-		return 2, nil
-	}
-	if b >= 0x35 && b <= 0x37 || b >= 0x3b && b <= 0x3d {
-		return 4, nil
+func generateBards() error {
+	if len(Bards) > 0 {
+		return nil
 	}
 
-	if b == 0x3e {
-		return 0, fmt.Errorf("count code start")
-	}
-	if b == 0x3f {
-		return 0, fmt.Errorf("op code start")
+	generateHards()
+
+	for hard, i := range Hards {
+		bard, err := util.CodeB64ToB2(string(hard))
+		if err != nil {
+			return err
+		}
+
+		if len(bard) != 1 {
+			return fmt.Errorf("unexpected bard length: %d", len(bard))
+		}
+		Bards[bard[0]] = i
 	}
 
-	return 0, fmt.Errorf("unknown bardage: %x", b)
+	return nil
+}
+
+func Hardage(c byte) (int, bool) {
+	generateHards()
+
+	n, ok := Hards[c]
+	return n, ok
+}
+
+func Bardage(b byte) (int, bool) {
+	generateBards()
+
+	n, ok := Bards[b]
+	return n, ok
 }

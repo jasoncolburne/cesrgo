@@ -6,6 +6,7 @@ import (
 	codex "github.com/jasoncolburne/cesrgo/indexer"
 	"github.com/jasoncolburne/cesrgo/indexer/options"
 	"github.com/jasoncolburne/cesrgo/types"
+	"github.com/jasoncolburne/cesrgo/util"
 )
 
 type Siger struct {
@@ -43,7 +44,7 @@ func NewSiger(verfer *Verfer, opts ...options.IndexerOption) (*Siger, error) {
 		return nil, err
 	}
 
-	if !validateCode(s.GetCode(), validSigerCodes) {
+	if !util.ValidateCode(s.GetCode(), validSigerCodes) {
 		return nil, fmt.Errorf("unexpected code: %s", s.GetCode())
 	}
 

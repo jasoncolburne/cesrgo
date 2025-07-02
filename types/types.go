@@ -19,6 +19,8 @@ type (
 	Index uint32
 	Ondex uint32
 
+	Count uint32
+
 	Qb64  string
 	Qb64b []byte
 	Qb2   []byte

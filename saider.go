@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jasoncolburne/cesrgo/common"
 	"github.com/jasoncolburne/cesrgo/crypto"
 	codex "github.com/jasoncolburne/cesrgo/matter"
 	"github.com/jasoncolburne/cesrgo/matter/options"
 	"github.com/jasoncolburne/cesrgo/types"
+	"github.com/jasoncolburne/cesrgo/util"
 )
 
 type Saider struct {
@@ -86,7 +88,7 @@ func NewSaider(
 			}
 		}
 
-		if !validateCode(*code, validSaiderCodes) {
+		if !util.ValidateCode(*code, validSaiderCodes) {
 			return nil, fmt.Errorf("unexpected code: %s", s.code)
 		}
 
@@ -100,7 +102,7 @@ func NewSaider(
 		}
 	}
 
-	if !validateCode(s.code, validSaiderCodes) {
+	if !util.ValidateCode(s.code, validSaiderCodes) {
 		return nil, fmt.Errorf("unexpected code: %s", s.code)
 	}
 
@@ -119,11 +121,11 @@ func derive(sad *types.Map, code *types.Code, kind *types.Kind, label *string, i
 	}
 
 	if kind == nil {
-		kindJson := Kind_JSON
+		kindJson := common.Kind_JSON
 		kind = &kindJson
 	}
 
-	if !validateCode(*code, validSaiderCodes) {
+	if !util.ValidateCode(*code, validSaiderCodes) {
 		return nil, types.Map{}, fmt.Errorf("unexpected code: %s", *code)
 	}
 
@@ -133,9 +135,9 @@ func derive(sad *types.Map, code *types.Code, kind *types.Kind, label *string, i
 		return nil, types.Map{}, fmt.Errorf("label not found: %s", *label)
 	}
 
-	szg, err := codex.GetSizage(*code)
-	if err != nil {
-		return nil, types.Map{}, fmt.Errorf("failed to get sizage: %w", err)
+	szg, ok := codex.Sizes[*code]
+	if !ok {
+		return nil, types.Map{}, fmt.Errorf("unknown code: %s", *code)
 	}
 
 	if szg.Fs == nil {
@@ -155,7 +157,7 @@ func derive(sad *types.Map, code *types.Code, kind *types.Kind, label *string, i
 		}
 	}
 
-	cpa, err := marshal(sadCopy, kind)
+	cpa, err := util.Marshal(sadCopy, kind)
 	if err != nil {
 		return nil, types.Map{}, fmt.Errorf("failed to marshal: %w", err)
 	}

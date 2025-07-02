@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jasoncolburne/cesrgo/types"
+	"github.com/jasoncolburne/cesrgo/util"
 )
 
 var SMALL_VRZ_BYTES = uint32(3)
@@ -80,65 +81,97 @@ type Sizage struct {
 	Ls uint32
 }
 
-func GetSizage(code types.Code) (Sizage, error) {
-	switch code {
-	case Ed25519, Ed25519_Crt, ECDSA_256k1, ECDSA_256k1_Crt, ECDSA_256r1, ECDSA_256r1_Crt:
-		fs := uint32(88)
-		return Sizage{Hs: 1, Ss: 1, Os: 0, Fs: &fs, Ls: 0}, nil
-	case Ed448, Ed448_Crt:
-		fs := uint32(156)
-		return Sizage{Hs: 2, Ss: 2, Os: 1, Fs: &fs, Ls: 0}, nil
-	case Ed25519_Big, Ed25519_Big_Crt, ECDSA_256k1_Big, ECDSA_256k1_Big_Crt, ECDSA_256r1_Big, ECDSA_256r1_Big_Crt:
-		fs := uint32(92)
-		return Sizage{Hs: 2, Ss: 4, Os: 2, Fs: &fs, Ls: 0}, nil
-	case Ed448_Big, Ed448_Big_Crt:
-		fs := uint32(160)
-		return Sizage{Hs: 2, Ss: 6, Os: 3, Fs: &fs, Ls: 0}, nil
-	case TBD0:
-		return Sizage{Hs: 2, Ss: 2, Os: 0, Ls: 0}, nil
-	case TBD1:
-		fs := uint32(76)
-		return Sizage{Hs: 2, Ss: 2, Os: 1, Fs: &fs, Ls: 1}, nil
-	case TBD4:
-		fs := uint32(80)
-		return Sizage{Hs: 2, Ss: 6, Os: 3, Fs: &fs, Ls: 1}, nil
-	default:
-		return Sizage{}, fmt.Errorf("unknown sizage: %s", code)
+var (
+	_76  = uint32(76)
+	_80  = uint32(80)
+	_88  = uint32(88)
+	_92  = uint32(92)
+	_156 = uint32(156)
+	_160 = uint32(160)
+)
+
+var Sizes = map[types.Code]Sizage{
+	Ed25519:         {Hs: 1, Ss: 1, Os: 0, Fs: &_88, Ls: 0},
+	Ed25519_Crt:     {Hs: 1, Ss: 1, Os: 0, Fs: &_88, Ls: 0},
+	ECDSA_256k1:     {Hs: 1, Ss: 1, Os: 0, Fs: &_88, Ls: 0},
+	ECDSA_256k1_Crt: {Hs: 1, Ss: 1, Os: 0, Fs: &_88, Ls: 0},
+	ECDSA_256r1:     {Hs: 1, Ss: 1, Os: 0, Fs: &_88, Ls: 0},
+	ECDSA_256r1_Crt: {Hs: 1, Ss: 1, Os: 0, Fs: &_88, Ls: 0},
+
+	Ed25519_Big:         {Hs: 2, Ss: 4, Os: 2, Fs: &_92, Ls: 0},
+	Ed25519_Big_Crt:     {Hs: 2, Ss: 4, Os: 2, Fs: &_92, Ls: 0},
+	ECDSA_256k1_Big:     {Hs: 2, Ss: 4, Os: 2, Fs: &_92, Ls: 0},
+	ECDSA_256k1_Big_Crt: {Hs: 2, Ss: 4, Os: 2, Fs: &_92, Ls: 0},
+	ECDSA_256r1_Big:     {Hs: 2, Ss: 4, Os: 2, Fs: &_92, Ls: 0},
+	ECDSA_256r1_Big_Crt: {Hs: 2, Ss: 4, Os: 2, Fs: &_92, Ls: 0},
+
+	Ed448:     {Hs: 2, Ss: 2, Os: 1, Fs: &_156, Ls: 0},
+	Ed448_Crt: {Hs: 2, Ss: 2, Os: 1, Fs: &_156, Ls: 0},
+
+	Ed448_Big:     {Hs: 2, Ss: 6, Os: 3, Fs: &_160, Ls: 0},
+	Ed448_Big_Crt: {Hs: 2, Ss: 6, Os: 3, Fs: &_160, Ls: 0},
+
+	TBD0: {Hs: 2, Ss: 2, Os: 0, Ls: 0},
+	TBD1: {Hs: 2, Ss: 2, Os: 1, Fs: &_76, Ls: 1},
+	TBD4: {Hs: 2, Ss: 6, Os: 3, Fs: &_80, Ls: 0},
+}
+
+var Hards = map[byte]int{}
+var Bards = map[byte]int{}
+
+func generateHards() {
+	if len(Hards) > 0 {
+		return
+	}
+
+	for c := 'A'; c <= 'Z'; c++ {
+		Hards[byte(c)] = 1
+	}
+
+	for c := 'a'; c <= 'z'; c++ {
+		Hards[byte(c)] = 1
+	}
+
+	for c := '0'; c <= '4'; c++ {
+		Hards[byte(c)] = 2
 	}
 }
 
-func GetHardage(c byte) (uint32, error) {
-	if c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' {
-		return 1, nil
-	}
-	if c >= '0' && c <= '4' {
-		return 2, nil
+func generateBards() error {
+	if len(Bards) > 0 {
+		return nil
 	}
 
-	if c == '-' {
-		return 0, fmt.Errorf("count code start")
-	}
-	if c == '_' {
-		return 0, fmt.Errorf("op code start")
+	generateHards()
+
+	for hard, i := range Hards {
+		bard, err := util.CodeB64ToB2(string(hard))
+		if err != nil {
+			return err
+		}
+
+		if len(bard) != 1 {
+			return fmt.Errorf("unexpected bard length: %d", len(bard))
+		}
+		Bards[bard[0]] = i
 	}
 
-	return 0, fmt.Errorf("unknown hardage: %c", c)
+	return nil
 }
 
-func GetBardage(b byte) (uint32, error) {
-	if b <= 0x33 {
-		return 1, nil
-	}
-	if b >= 0x34 && b <= 0x38 {
-		return 2, nil
+func Hardage(c byte) (int, bool) {
+	generateHards()
+
+	n, ok := Hards[c]
+	return n, ok
+}
+
+func Bardage(b byte) (int, bool) {
+	err := generateBards()
+	if err != nil {
+		return -1, false
 	}
 
-	if b == 0x3e {
-		return 0, fmt.Errorf("count code start")
-	}
-	if b == 0x3f {
-		return 0, fmt.Errorf("op code start")
-	}
-
-	return 0, fmt.Errorf("unknown bardage: %x", b)
+	n, ok := Bards[b]
+	return n, ok
 }

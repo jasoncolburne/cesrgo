@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jasoncolburne/cesrgo/common"
 	codex "github.com/jasoncolburne/cesrgo/matter"
 	"github.com/jasoncolburne/cesrgo/matter/options"
 	"github.com/jasoncolburne/cesrgo/types"
+	"github.com/jasoncolburne/cesrgo/util"
 )
 
 type Sad interface {
@@ -69,16 +71,16 @@ func (s *sad) SetVersion(version types.Version) {
 }
 
 func (s *Sadder) inhale(raw types.Raw) error {
-	proto, pvrsn, kind, size, _, err := smell(raw)
+	proto, pvrsn, kind, size, _, err := util.Smell(raw)
 	if err != nil {
 		return err
 	}
 
-	if pvrsn.Major != VERSION.Major && pvrsn.Minor != VERSION.Minor {
+	if pvrsn.Major != common.VERSION.Major && pvrsn.Minor != common.VERSION.Minor {
 		return fmt.Errorf("version mismatch")
 	}
 
-	ked, err := unmarshal(kind, raw)
+	ked, err := util.Unmarshal(kind, raw)
 	if err != nil {
 		return err
 	}
@@ -110,7 +112,7 @@ func (s *Sadder) exhale(ked types.Map, kind *types.Kind) (
 	types.Version,
 	error,
 ) {
-	return sizeify(ked, kind, nil)
+	return util.Sizeify(ked, kind, nil)
 }
 
 func NewSadder(
@@ -132,7 +134,7 @@ func NewSadder(
 	}
 
 	if kind == nil {
-		kindStr := Kind_JSON
+		kindStr := common.Kind_JSON
 		kind = &kindStr
 	}
 
@@ -152,9 +154,9 @@ func NewSadder(
 			return nil, fmt.Errorf("both raw and ked cannot be provided")
 		}
 
-		szg, err := codex.GetSizage(*code)
-		if err != nil {
-			return nil, err
+		szg, ok := codex.Sizes[*code]
+		if !ok {
+			return nil, fmt.Errorf("unknown code: %s", *code)
 		}
 
 		kedCopy := ked.Clone()

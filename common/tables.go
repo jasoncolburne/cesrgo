@@ -1,4 +1,4 @@
-package cesrgo
+package common
 
 import "github.com/jasoncolburne/cesrgo/types"
 

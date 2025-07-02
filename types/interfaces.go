@@ -38,4 +38,19 @@ type (
 		Qb64() (Qb64, error)
 		Qb64b() (Qb64b, error)
 	}
+
+	Counter interface {
+		SetCode(code Code)
+		GetCode() Code
+
+		SetRaw(raw Raw)
+		GetRaw() Raw
+
+		SetCount(count Count)
+		GetCount() Count
+
+		Qb2() (Qb2, error)
+		Qb64() (Qb64, error)
+		Qb64b() (Qb64b, error)
+	}
 )

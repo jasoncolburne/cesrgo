@@ -11,6 +11,7 @@ import (
 	codex "github.com/jasoncolburne/cesrgo/matter"
 	"github.com/jasoncolburne/cesrgo/matter/options"
 	"github.com/jasoncolburne/cesrgo/types"
+	"github.com/jasoncolburne/cesrgo/util"
 )
 
 const (
@@ -65,9 +66,9 @@ func (m *matter) GetSoft() string {
 }
 
 func (m *matter) Both() (string, error) {
-	szg, err := codex.GetSizage(m.GetCode())
-	if err != nil {
-		return "", err
+	szg, ok := codex.Sizes[m.GetCode()]
+	if !ok {
+		return "", fmt.Errorf("unknown code: %s", m.GetCode())
 	}
 
 	return fmt.Sprintf("%s%s%s", m.Hard(), strings.Repeat(Pad, int(szg.Xs)), m.GetSoft()), nil
@@ -98,15 +99,15 @@ func mbinfil(m types.Matter) (types.Qb2, error) {
 	}
 	raw := m.GetRaw()
 
-	szg, err := codex.GetSizage(code)
-	if err != nil {
-		return types.Qb2{}, err
+	szg, ok := codex.Sizes[code]
+	if !ok {
+		return types.Qb2{}, fmt.Errorf("unknown code: %s", code)
 	}
 	cs := szg.Hs + szg.Ss
 
 	n := int(math.Ceil(float64(cs) * 3 / 4))
 
-	i, err := b64ToU64(both)
+	i, err := util.B64ToU64(both)
 	if err != nil {
 		return types.Qb2{}, err
 	}
@@ -150,9 +151,9 @@ func minfil(m types.Matter) (types.Qb64b, error) {
 	}
 	raw := m.GetRaw()
 	rs := len(raw)
-	szg, err := codex.GetSizage(code)
-	if err != nil {
-		return types.Qb64b{}, err
+	szg, ok := codex.Sizes[code]
+	if !ok {
+		return types.Qb64b{}, fmt.Errorf("unknown code: %s", code)
 	}
 
 	cs := szg.Hs + szg.Ss
@@ -199,15 +200,15 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 		return fmt.Errorf("qb2 is empty")
 	}
 
-	sextets, err := nabSextets(qb2, 1)
+	sextets, err := util.NabSextets(qb2, 1)
 	if err != nil {
 		return err
 	}
 
 	first := sextets[0]
-	hs, err := codex.Bardage(first)
-	if err != nil {
-		return err
+	hs, ok := codex.Bardage(first)
+	if !ok {
+		return fmt.Errorf("unknown bard: %x", first)
 	}
 
 	bhs := int(math.Ceil(float64(hs) * 3 / 4))
@@ -215,14 +216,14 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 		return fmt.Errorf("insufficient material for hard part of code: qb2 size = %d, bhs = %d", len(qb2), bhs)
 	}
 
-	hard, err := codeB2ToB64(qb2, int(hs))
+	hard, err := util.CodeB2ToB64(qb2, int(hs))
 	if err != nil {
 		return err
 	}
 
-	szg, err := codex.GetSizage(types.Code(hard))
-	if err != nil {
-		return err
+	szg, ok := codex.Sizes[types.Code(hard)]
+	if !ok {
+		return fmt.Errorf("unknown hard: %s", hard)
 	}
 
 	cs := szg.Hs + szg.Ss
@@ -232,7 +233,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 		return fmt.Errorf("insufficient material: qb2 size = %d, bcs = %d", len(qb2), bcs)
 	}
 
-	both, err := codeB2ToB64(qb2, int(cs))
+	both, err := util.CodeB2ToB64(qb2, int(cs))
 	if err != nil {
 		return err
 	}
@@ -252,7 +253,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 			return fmt.Errorf("insufficient material for code: qb2 size = %d, bcs = %d", len(qb2), bcs)
 		}
 
-		i, err := b64ToU32(soft)
+		i, err := util.B64ToU32(soft)
 		if err != nil {
 			return err
 		}
@@ -277,7 +278,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 		return fmt.Errorf("non-zeroed code midpad bits")
 	}
 
-	li := bytesToInt(qb2[bcs : bcs+int(szg.Ls)])
+	li := util.BytesToInt(qb2[bcs : bcs+int(szg.Ls)])
 	if li != 0 {
 		return fmt.Errorf("non-zeroed lead midpad bytes")
 	}
@@ -299,10 +300,10 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 		return fmt.Errorf("qb64 is empty")
 	}
 
-	first := qb64[:1]
-	hs, err := codex.Hardage(string(first))
-	if err != nil {
-		return err
+	first := qb64[0]
+	hs, ok := codex.Hardage(first)
+	if !ok {
+		return fmt.Errorf("unknown hard: %x", first)
 	}
 
 	if len(qb64) < int(hs) {
@@ -311,15 +312,15 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 
 	hard := qb64[:hs]
 
-	szg, err := codex.GetSizage(types.Code(hard))
-	if err != nil {
-		return err
+	szg, ok := codex.Sizes[types.Code(hard)]
+	if !ok {
+		return fmt.Errorf("unknown code: %s", hard)
 	}
 
 	cs := szg.Hs + szg.Ss
-	soft := qb64[int(hs):int(hs+szg.Ss)]
-	xtra := soft[:int(szg.Xs)]
-	soft = soft[int(szg.Xs):]
+	soft := qb64[hs : hs+int(szg.Ss)]
+	xtra := soft[:szg.Xs]
+	soft = soft[szg.Xs:]
 
 	if string(xtra) != strings.Repeat(Pad, int(szg.Xs)) {
 		return fmt.Errorf("invalid prepad extra material: xtra = %s", xtra)
@@ -327,7 +328,7 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 
 	var fs uint32
 	if szg.Fs == nil {
-		i, err := b64ToU32(string(soft))
+		i, err := util.B64ToU32(string(soft))
 		if err != nil {
 			return err
 		}
@@ -351,7 +352,7 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 	raw := paw[int(ps+szg.Ls):]
 
 	// ensure midpad bytes are zero
-	pi := bytesToInt(paw[:int(ps+szg.Ls)])
+	pi := util.BytesToInt(paw[:int(ps+szg.Ls)])
 	if pi != 0 {
 		return fmt.Errorf("nonzero midpad bytes=0x%x", pi)
 	}
