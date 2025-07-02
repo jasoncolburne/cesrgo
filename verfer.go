@@ -3,11 +3,11 @@ package cesrgo
 import (
 	"fmt"
 
+	"github.com/jasoncolburne/cesrgo/common/util"
 	"github.com/jasoncolburne/cesrgo/crypto"
 	codex "github.com/jasoncolburne/cesrgo/matter"
 	"github.com/jasoncolburne/cesrgo/matter/options"
 	"github.com/jasoncolburne/cesrgo/types"
-	"github.com/jasoncolburne/cesrgo/util"
 )
 
 type Verfer struct {

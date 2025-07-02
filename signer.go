@@ -3,13 +3,13 @@ package cesrgo
 import (
 	"fmt"
 
+	"github.com/jasoncolburne/cesrgo/common/util"
 	"github.com/jasoncolburne/cesrgo/crypto"
 	idex "github.com/jasoncolburne/cesrgo/indexer"
 	iopts "github.com/jasoncolburne/cesrgo/indexer/options"
 	mdex "github.com/jasoncolburne/cesrgo/matter"
 	mopts "github.com/jasoncolburne/cesrgo/matter/options"
 	"github.com/jasoncolburne/cesrgo/types"
-	"github.com/jasoncolburne/cesrgo/util"
 )
 
 type Signer struct {

@@ -8,10 +8,10 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/jasoncolburne/cesrgo/common/util"
 	codex "github.com/jasoncolburne/cesrgo/indexer"
 	"github.com/jasoncolburne/cesrgo/indexer/options"
 	"github.com/jasoncolburne/cesrgo/types"
-	"github.com/jasoncolburne/cesrgo/util"
 )
 
 type indexer struct {

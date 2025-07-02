@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/jasoncolburne/cesrgo/common"
+	"github.com/jasoncolburne/cesrgo/common/util"
 	codex "github.com/jasoncolburne/cesrgo/matter"
 	"github.com/jasoncolburne/cesrgo/matter/options"
 	"github.com/jasoncolburne/cesrgo/types"
-	"github.com/jasoncolburne/cesrgo/util"
 )
 
 type Sad interface {

@@ -3,8 +3,8 @@ package indexer
 import (
 	"fmt"
 
+	"github.com/jasoncolburne/cesrgo/common/util"
 	"github.com/jasoncolburne/cesrgo/types"
-	"github.com/jasoncolburne/cesrgo/util"
 )
 
 var SMALL_VRZ_BYTES = uint32(3)
