@@ -40,6 +40,13 @@ func Test256r1Cigar(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to verify: %v", err)
 	}
+
+	badRaw := cigar.GetRaw()
+	badRaw[len(badRaw)-1] ^= 0x01
+	err = sVerfer.Verify(badRaw, []byte{})
+	if err == nil {
+		t.Fatalf("should have failed to verify")
+	}
 }
 
 func Test256k1Cigar(t *testing.T) {
@@ -73,5 +80,12 @@ func Test256k1Cigar(t *testing.T) {
 	err = sVerfer.Verify(cigar.GetRaw(), []byte{})
 	if err != nil {
 		t.Fatalf("failed to verify: %v", err)
+	}
+
+	badRaw := cigar.GetRaw()
+	badRaw[len(badRaw)-1] ^= 0x01
+	err = sVerfer.Verify(badRaw, []byte{})
+	if err == nil {
+		t.Fatalf("should have failed to verify")
 	}
 }
