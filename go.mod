@@ -3,6 +3,7 @@ module github.com/jasoncolburne/cesrgo
 go 1.24
 
 require (
+	github.com/codahale/rfc6979 v0.0.0-20141003034818-6a90f24967eb
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0
 	github.com/fxamacker/cbor/v2 v2.8.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1

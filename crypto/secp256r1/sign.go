@@ -3,10 +3,11 @@ package secp256r1
 import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"crypto/rand"
 	"crypto/sha256"
 	"fmt"
 	"math/big"
+
+	"github.com/codahale/rfc6979"
 
 	"github.com/jasoncolburne/cesrgo/types"
 )
@@ -28,7 +29,7 @@ func Sign(sk types.Raw, ser []byte) (types.Raw, error) {
 
 	hash := sha256.Sum256(ser)
 
-	r, s, err := ecdsa.Sign(rand.Reader, priv, hash[:])
+	r, s, err := rfc6979.SignECDSA(priv, hash[:], sha256.New)
 	if err != nil {
 		return nil, err
 	}

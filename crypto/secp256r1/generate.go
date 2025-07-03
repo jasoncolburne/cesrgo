@@ -32,19 +32,9 @@ func DerivePublicKey(seed types.Raw) (types.Raw, error) {
 		return nil, fmt.Errorf("invalid private key")
 	}
 
-	priv := &ecdsa.PrivateKey{
-		PublicKey: ecdsa.PublicKey{
-			Curve: curve,
-		},
-		D: privateKey,
-	}
-
-	pub, ok := priv.Public().(*ecdsa.PublicKey)
-	if !ok {
-		return nil, fmt.Errorf("failed to convert public key to bytes")
-	}
-
-	compressed := elliptic.MarshalCompressed(curve, pub.X, pub.Y)
+	//nolint:deprecated
+	X, Y := curve.ScalarBaseMult(privateKey.Bytes())
+	compressed := elliptic.MarshalCompressed(curve, X, Y)
 
 	return types.Raw(compressed), nil
 }
