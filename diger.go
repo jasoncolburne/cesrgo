@@ -15,18 +15,6 @@ type Diger struct {
 	matter
 }
 
-var implementedDigerCodes = []types.Code{
-	codex.Blake3_256,
-	codex.Blake3_512,
-	codex.Blake2b_256,
-	codex.Blake2b_512,
-	codex.Blake2s_256,
-	codex.SHA3_256,
-	codex.SHA3_512,
-	codex.SHA2_256,
-	codex.SHA2_512,
-}
-
 func NewDiger(ser []byte, opts ...options.MatterOption) (*Diger, error) {
 	d := &Diger{}
 
@@ -54,7 +42,7 @@ func NewDiger(ser []byte, opts ...options.MatterOption) (*Diger, error) {
 		}
 	}
 
-	if !util.ValidateCode(d.GetCode(), implementedDigerCodes) {
+	if !util.ValidateCode(d.GetCode(), codex.DigCodex) {
 		return nil, fmt.Errorf("unexpected code: %s", d.GetCode())
 	}
 

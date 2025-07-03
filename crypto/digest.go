@@ -44,6 +44,6 @@ func Digest(code types.Code, ser []byte) ([]byte, error) {
 		digest := sha512.Sum512(ser)
 		return digest[:], nil
 	default:
-		return nil, fmt.Errorf("unexpected code: %s", code)
+		return nil, fmt.Errorf("unimplemented digest code: %s", code)
 	}
 }

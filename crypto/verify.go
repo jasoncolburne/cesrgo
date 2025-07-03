@@ -23,6 +23,6 @@ func VerifySignature(
 	case codex.ECDSA_256r1N, codex.ECDSA_256r1:
 		return secp256r1.Verify(sig, []byte(vk), ser)
 	default:
-		return fmt.Errorf("unsupported code: %s", code)
+		return fmt.Errorf("unimplemented verification key code: %s", code)
 	}
 }

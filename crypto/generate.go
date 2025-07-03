@@ -24,7 +24,7 @@ func GenerateSeed(code types.Code) (types.Raw, error) {
 	case codex.ECDSA_256k1_Seed:
 		seed, err = secp256k1.GenerateSeed()
 	default:
-		return nil, fmt.Errorf("unexpected code: %s", code)
+		return nil, fmt.Errorf("unimplemented seed code: %s", code)
 	}
 
 	return seed, err
@@ -69,7 +69,7 @@ func DeriveCodeAndPublicKey(code types.Code, raw types.Raw, transferable bool) (
 			return "", nil, err
 		}
 	default:
-		return "", nil, fmt.Errorf("invalid code")
+		return "", nil, fmt.Errorf("unimplemented seed code")
 	}
 
 	return verferCode, verferRaw, nil

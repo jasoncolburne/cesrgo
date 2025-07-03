@@ -278,6 +278,20 @@ var PreNonDigCodex = []types.Code{
 	ECDSA_256r1,
 }
 
+var SigCodex = []types.Code{
+	Ed25519_Sig,
+	ECDSA_256k1_Sig,
+	ECDSA_256r1_Sig,
+	Ed448_Sig,
+}
+
+var SeedCodex = []types.Code{
+	Ed25519_Seed,
+	ECDSA_256k1_Seed,
+	ECDSA_256r1_Seed,
+	Ed448_Seed,
+}
+
 var SMALL_VRZ_DEX = []byte{4, 5, 6}
 var LARGE_VRZ_DEX = []byte{7, 8, 9}
 var SMALL_VRZ_BYTES = uint32(3)

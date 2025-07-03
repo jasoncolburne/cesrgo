@@ -2,4 +2,4 @@
 package cesrgo
 
 // Version represents the current version of the library.
-const Version = "0.1.0"
+const Version = "2.0.0"

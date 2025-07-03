@@ -19,6 +19,6 @@ func Sign(code types.Code, sk types.Raw, ser []byte) (types.Raw, error) {
 	case codex.ECDSA_256r1_Seed:
 		return secp256r1.Sign(sk, ser)
 	default:
-		return nil, fmt.Errorf("unsupported code: %s", code)
+		return nil, fmt.Errorf("unimplemented seed code: %s", code)
 	}
 }

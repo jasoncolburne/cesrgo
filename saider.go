@@ -16,18 +16,6 @@ type Saider struct {
 	matter
 }
 
-var implementedSaiderCodes = []types.Code{
-	codex.Blake3_256,
-	codex.Blake3_512,
-	codex.Blake2b_256,
-	codex.Blake2b_512,
-	codex.Blake2s_256,
-	codex.SHA3_256,
-	codex.SHA3_512,
-	codex.SHA2_256,
-	codex.SHA2_512,
-}
-
 func NewSaider(
 	sad *types.Map,
 	label *string,
@@ -88,7 +76,7 @@ func NewSaider(
 			}
 		}
 
-		if !util.ValidateCode(*code, implementedSaiderCodes) {
+		if !util.ValidateCode(*code, codex.DigCodex) {
 			return nil, fmt.Errorf("unexpected code: %s", s.code)
 		}
 
@@ -102,7 +90,7 @@ func NewSaider(
 		}
 	}
 
-	if !util.ValidateCode(s.code, implementedSaiderCodes) {
+	if !util.ValidateCode(s.code, codex.DigCodex) {
 		return nil, fmt.Errorf("unexpected code: %s", s.code)
 	}
 
@@ -125,7 +113,7 @@ func derive(sad *types.Map, code *types.Code, kind *types.Kind, label *string, i
 		kind = &kindJson
 	}
 
-	if !util.ValidateCode(*code, implementedSaiderCodes) {
+	if !util.ValidateCode(*code, codex.DigCodex) {
 		return nil, types.Map{}, fmt.Errorf("unexpected code: %s", *code)
 	}
 
