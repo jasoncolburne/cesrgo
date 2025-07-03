@@ -67,7 +67,7 @@ func cinfil(c types.Counter) (types.Qb64, error) {
 	code := c.GetCode()
 	count := c.GetCount()
 
-	szg, ok := codex.Sizes[common.VERSION_2_0.Major][code]
+	szg, ok := codex.Sizes[common.VERSION.Major][code]
 	if !ok {
 		return types.Qb64(""), fmt.Errorf("unknown code: %s", code)
 	}
@@ -110,7 +110,7 @@ func cexfil(c types.Counter, qb64 types.Qb64) error {
 
 	hard := qb64[:hs]
 
-	szg, ok := codex.Sizes[common.VERSION_2_0.Major][types.Code(hard)]
+	szg, ok := codex.Sizes[common.VERSION.Major][types.Code(hard)]
 	if !ok {
 		return fmt.Errorf("unsupported code=%s", hard)
 	}
@@ -161,7 +161,7 @@ func cbexfil(c types.Counter, qb2 types.Qb2) error {
 		return err
 	}
 
-	szg, ok := codex.Sizes[common.VERSION_2_0.Major][types.Code(hard)]
+	szg, ok := codex.Sizes[common.VERSION.Major][types.Code(hard)]
 	if !ok {
 		return fmt.Errorf("unsupported code=%s", hard)
 	}
