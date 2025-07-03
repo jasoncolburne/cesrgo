@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
-	"strings"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/jasoncolburne/cesrgo/common"
@@ -52,19 +51,27 @@ func ValidateCode(code types.Code, validCodes []types.Code) bool {
 }
 
 var b64Runes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+var b64Indices = map[rune]uint8{}
 
-func B64CharToIndex(c byte) (uint8, error) {
-	index := strings.Index(b64Runes, string(c))
-	if index == -1 {
-		return 0, fmt.Errorf("invalid base64 character: %c", c)
+func generateb64Indices() {
+	if len(b64Indices) > 0 {
+		return
 	}
 
-	if index > 63 {
-		return 0, fmt.Errorf("programmer error:invalid base64 character: %c", c)
+	for i, c := range b64Runes[:64] {
+		b64Indices[c] = uint8(i)
+	}
+}
+
+func B64CharToIndex(c rune) (uint8, error) {
+	generateb64Indices()
+
+	index, ok := b64Indices[c]
+	if !ok {
+		return 0, fmt.Errorf("invalid url-safe base64 character: %c", c)
 	}
 
-	//nolint:gosec
-	return uint8(index), nil
+	return index, nil
 }
 
 func B64IndexToChar(i uint8) (byte, error) {
@@ -124,7 +131,7 @@ func B64ToU16(b64 string) (uint16, error) {
 	var out uint16 = 0
 
 	for _, c := range b64 {
-		i, err := B64CharToIndex(byte(c))
+		i, err := B64CharToIndex(c)
 		if err != nil {
 			return 0, err
 		}
@@ -138,7 +145,7 @@ func B64ToU32(b64 string) (uint32, error) {
 	var out uint32 = 0
 
 	for _, c := range b64 {
-		i, err := B64CharToIndex(byte(c))
+		i, err := B64CharToIndex(c)
 		if err != nil {
 			return 0, err
 		}
@@ -152,7 +159,7 @@ func B64ToU64(b64 string) (uint64, error) {
 	var out uint64 = 0
 
 	for _, c := range b64 {
-		i, err := B64CharToIndex(byte(c))
+		i, err := B64CharToIndex(c)
 		if err != nil {
 			return 0, err
 		}
