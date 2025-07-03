@@ -27,11 +27,9 @@ var (
 	REVER *regexp.Regexp
 
 	MAXVERFULLSPAN = max(VER1FULLSPAN, VER2FULLSPAN)
-)
+	MAXVSOFFSET    = 12
 
-var (
-	MAXVSOFFSET = 12
-	SMELLSIZE   = MAXVSOFFSET + MAXVERFULLSPAN // # min buffer size to inhale
+	SMELLSIZE = MAXVSOFFSET + MAXVERFULLSPAN // # min buffer size to inhale
 )
 
 func Rever() (*regexp.Regexp, error) {
