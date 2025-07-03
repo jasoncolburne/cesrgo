@@ -4,6 +4,7 @@ import "github.com/jasoncolburne/cesrgo/types"
 
 type MatterOptions struct {
 	Code  *types.Code
+	Soft  *string
 	Raw   *types.Raw
 	Qb2   *types.Qb2
 	Qb64  *types.Qb64
@@ -15,6 +16,12 @@ type MatterOption func(options *MatterOptions)
 func WithCode(code types.Code) MatterOption {
 	return func(options *MatterOptions) {
 		options.Code = &code
+	}
+}
+
+func WithSoft(soft string) MatterOption {
+	return func(options *MatterOptions) {
+		options.Soft = &soft
 	}
 }
 

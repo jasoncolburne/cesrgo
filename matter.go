@@ -399,7 +399,7 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 		m.SetRaw(*config.Raw)
 		//nolint:gosec
 		m.SetSize(types.Size(len(*config.Raw)))
-		// m.SetSoft(config.Soft)
+		m.SetSoft(config.Soft)
 
 		return nil
 	}
