@@ -82,12 +82,13 @@ func NabSextets(bin []byte, count int) ([]byte, error) {
 		return nil, fmt.Errorf("not enough bytes in %v to nab %d sextets", bin, count)
 	}
 
-	i := BytesToInt(bin[:n])
+	//nolint:gosec
+	i := uint64(BytesToInt(bin[:n]))
 	p := 2 * (count % 4)
 	i >>= p
 	i <<= p
 
-	return binary.BigEndian.AppendUint64([]byte{}, uint64(i))[8-count:], nil
+	return binary.BigEndian.AppendUint64([]byte{}, i)[8-count:], nil
 }
 
 func CodeB2ToB64(b2 []byte, length int) (string, error) {

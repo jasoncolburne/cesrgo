@@ -59,7 +59,7 @@ func generateBards() error {
 	generateHards()
 
 	for hard, i := range Hards {
-		bard, err := util.CodeB64ToB2(string(hard))
+		bard, err := util.CodeB64ToB2(hard)
 		if err != nil {
 			return err
 		}
