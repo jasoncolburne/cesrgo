@@ -13,7 +13,6 @@ import (
 
 type counter struct {
 	code  types.Code
-	raw   types.Raw
 	count types.Count
 }
 
@@ -23,14 +22,6 @@ func (c *counter) SetCode(code types.Code) {
 
 func (c *counter) GetCode() types.Code {
 	return c.code
-}
-
-func (c *counter) SetRaw(raw types.Raw) {
-	c.raw = raw
-}
-
-func (c *counter) GetRaw() types.Raw {
-	return c.raw
 }
 
 func (c *counter) SetCount(count types.Count) {
@@ -209,8 +200,9 @@ func NewCounter(c types.Counter, opts ...options.CounterOption) error {
 		}
 
 		c.SetCode(*config.Code)
-		c.SetRaw(*config.Raw)
 		c.SetCount(*config.Count)
+
+		return nil
 	}
 
 	if config.Qb2 != nil {

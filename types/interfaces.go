@@ -43,9 +43,6 @@ type (
 		SetCode(code Code)
 		GetCode() Code
 
-		SetRaw(raw Raw)
-		GetRaw() Raw
-
 		SetCount(count Count)
 		GetCount() Count
 
