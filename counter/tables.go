@@ -30,7 +30,7 @@ var Sizes = map[uint32]map[types.Code]counter.Sizage{
 }
 
 var Hards = map[string]int{}
-var Bards = map[string]int{}
+var Bards = map[[2]byte]int{}
 
 func generateHards() {
 	if len(Hards) > 0 {
@@ -38,11 +38,13 @@ func generateHards() {
 	}
 
 	for i := 65; i < 65+26; i++ {
-		Hards["-"+string(byte(i))] = 2
+		key := "-" + string(byte(i))
+		Hards[key] = 2
 	}
 
 	for i := 97; i < 97+26; i++ {
-		Hards["-"+string(byte(i))] = 2
+		key := "-" + string(byte(i))
+		Hards[key] = 2
 	}
 
 	Hards["--"] = 3
@@ -57,11 +59,13 @@ func generateBards() error {
 	generateHards()
 
 	for hard, i := range Hards {
-		bard, err := util.CodeB64ToB2(hard)
+		bard, err := util.CodeB64ToB2(string(hard))
 		if err != nil {
 			return err
 		}
-		Bards[string(bard)] = i
+
+		key := [2]byte{bard[0], bard[1]}
+		Bards[key] = i
 	}
 
 	return nil
@@ -74,12 +78,12 @@ func Hardage(s string) (int, bool) {
 	return n, ok
 }
 
-func Bardage(b []byte) (int, bool) {
+func Bardage(b [2]byte) (int, bool) {
 	err := generateBards()
 	if err != nil {
 		return -1, false
 	}
 
-	n, ok := Bards[string(b)]
+	n, ok := Bards[b]
 	return n, ok
 }

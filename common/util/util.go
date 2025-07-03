@@ -76,35 +76,18 @@ func B64IndexToChar(i uint8) (byte, error) {
 }
 
 func NabSextets(bin []byte, count int) ([]byte, error) {
-	n := ((count + 1) * 3) / 4
+	n := int(math.Ceil(float64(count) * 3 / 4))
 
 	if n > len(bin) {
-		return nil, fmt.Errorf("binary is too small")
+		return nil, fmt.Errorf("not enough bytes in %v to nab %d sextets", bin, count)
 	}
 
-	bps := 3 - (len(bin) % 3)
-	padded := make([]byte, len(bin)+bps)
-	copy(padded, bin)
+	i := BytesToInt(bin[:n])
+	p := 2 * (count % 4)
+	i >>= p
+	i <<= p
 
-	out := make([]byte, len(padded)*4/3)
-	i := 0
-	j := 0
-	for {
-		n := uint32(padded[i])<<16 | uint32(padded[i+1])<<8 | uint32(padded[i+2])
-
-		out[j] = byte((n & 0xfc0000) >> 18)
-		out[j+1] = byte((n & 0x03f000) >> 12)
-		out[j+2] = byte((n & 0x000fc0) >> 6)
-		out[j+3] = byte(n & 0x00003f)
-
-		j += 4
-		i += 3
-		if i >= len(padded) {
-			break
-		}
-	}
-
-	return out[:count], nil
+	return binary.BigEndian.AppendUint64([]byte{}, uint64(i))[8-count:], nil
 }
 
 func CodeB2ToB64(b2 []byte, length int) (string, error) {
@@ -118,30 +101,20 @@ func CodeB2ToB64(b2 []byte, length int) (string, error) {
 		return "", fmt.Errorf("not enough bytes")
 	}
 
+	i := BytesToInt(b2[:n])
 	tbs := 2 * (length % 4)
-	if length <= 4 {
-		bytes := [4]byte{}
-		copy(bytes[:], b2[:n])
-
-		i := binary.BigEndian.Uint32(bytes[:])
-		return U32ToB64(i>>tbs, length)
-	} else if length <= 8 {
-		bytes := [8]byte{}
-		copy(bytes[:], b2[:n])
-
-		i := binary.BigEndian.Uint64(bytes[:])
-		return U64ToB64(i>>tbs, length)
-	} else {
-		return "", fmt.Errorf("unexpected length")
-	}
+	i >>= tbs
+	return IntToB64(i, length)
 }
 
 func CodeB64ToB2(code string) ([]byte, error) {
 	i, err := B64ToU64(code)
+
 	if err != nil {
 		return nil, err
 	}
 
+	i <<= 2 * (len(code) % 4)
 	n := int(math.Ceil(float64(len(code)) * 3 / 4))
 	return binary.BigEndian.AppendUint64([]byte{}, i)[8-n:], nil
 }

@@ -82,7 +82,6 @@ func cinfil(c types.Counter) (types.Qb64, error) {
 	}
 
 	both := fmt.Sprintf("%s%s", code, countB64)
-
 	if len(both)%4 != 0 {
 		return types.Qb64(""), fmt.Errorf("invalid size=%d of %s not a multiple of 4", len(both), both)
 	}
@@ -100,9 +99,9 @@ func cexfil(c types.Counter, qb64 types.Qb64) error {
 		return fmt.Errorf("unexpected op code start while extracting counter")
 	}
 
-	hs, ok := codex.Hards[first]
+	hs, ok := codex.Hardage(first)
 	if !ok {
-		return fmt.Errorf("uneunsupported code start first=%s", first)
+		return fmt.Errorf("unsupported code start first=%s", first)
 	}
 
 	if len(qb64) < hs {
@@ -146,7 +145,8 @@ func cbexfil(c types.Counter, qb2 types.Qb2) error {
 		return fmt.Errorf("unexpected op code start while extracting counter")
 	}
 
-	hs, ok := codex.Bards[string(first)]
+	b := [2]byte{first[0], first[1]}
+	hs, ok := codex.Bardage(b)
 	if !ok {
 		return fmt.Errorf("unsupported code start sextet=%s", first)
 	}
@@ -196,7 +196,7 @@ func NewCounter(opts ...options.CounterOption) (*Counter, error) {
 
 	c := &Counter{}
 
-	if config.Code != nil && config.Raw != nil && config.Count != nil {
+	if config.Code != nil && config.Count != nil {
 		if config.Qb2 != nil || config.Qb64 != nil || config.Qb64b != nil {
 			return c, fmt.Errorf("qb2, qb64, or qb64b cannot be used with code, raw, and count")
 		}
@@ -208,7 +208,7 @@ func NewCounter(opts ...options.CounterOption) (*Counter, error) {
 	}
 
 	if config.Qb2 != nil {
-		if config.Code != nil || config.Raw != nil || config.Count != nil || config.Qb64 != nil || config.Qb64b != nil {
+		if config.Code != nil || config.Count != nil || config.Qb64 != nil || config.Qb64b != nil {
 			return c, fmt.Errorf("qb2 cannot be used with code, raw, count, qb64, or qb64b")
 		}
 
@@ -220,7 +220,7 @@ func NewCounter(opts ...options.CounterOption) (*Counter, error) {
 	}
 
 	if config.Qb64 != nil {
-		if config.Code != nil || config.Raw != nil || config.Count != nil || config.Qb2 != nil || config.Qb64b != nil {
+		if config.Code != nil || config.Count != nil || config.Qb2 != nil || config.Qb64b != nil {
 			return c, fmt.Errorf("qb64 cannot be used with code, raw, count, qb2, or qb64b")
 		}
 
@@ -232,7 +232,7 @@ func NewCounter(opts ...options.CounterOption) (*Counter, error) {
 	}
 
 	if config.Qb64b != nil {
-		if config.Code != nil || config.Raw != nil || config.Count != nil || config.Qb2 != nil || config.Qb64 != nil {
+		if config.Code != nil || config.Count != nil || config.Qb2 != nil || config.Qb64 != nil {
 			return c, fmt.Errorf("qb64b cannot be used with code, raw, count, qb2, or qb64")
 		}
 

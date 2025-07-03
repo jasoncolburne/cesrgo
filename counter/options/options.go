@@ -6,7 +6,6 @@ import (
 
 type CounterOptions struct {
 	Code  *types.Code
-	Raw   *types.Raw
 	Count *types.Count
 	Qb2   *types.Qb2
 	Qb64  *types.Qb64
@@ -18,12 +17,6 @@ type CounterOption func(options *CounterOptions)
 func WithCode(code types.Code) CounterOption {
 	return func(options *CounterOptions) {
 		options.Code = &code
-	}
-}
-
-func WithRaw(raw types.Raw) CounterOption {
-	return func(options *CounterOptions) {
-		options.Raw = &raw
 	}
 }
 
