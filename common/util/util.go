@@ -57,6 +57,7 @@ func generateb64Indices() {
 	}
 
 	for i, c := range b64Runes[:64] {
+		//nolint:gosec
 		b64Indices[c] = uint8(i)
 	}
 }
