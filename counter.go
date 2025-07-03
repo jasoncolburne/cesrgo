@@ -11,36 +11,36 @@ import (
 	"github.com/jasoncolburne/cesrgo/types"
 )
 
-type counter struct {
+type Counter struct {
 	code  types.Code
 	count types.Count
 }
 
-func (c *counter) SetCode(code types.Code) {
+func (c *Counter) SetCode(code types.Code) {
 	c.code = code
 }
 
-func (c *counter) GetCode() types.Code {
+func (c *Counter) GetCode() types.Code {
 	return c.code
 }
 
-func (c *counter) SetCount(count types.Count) {
+func (c *Counter) SetCount(count types.Count) {
 	c.count = count
 }
 
-func (c *counter) GetCount() types.Count {
+func (c *Counter) GetCount() types.Count {
 	return c.count
 }
 
-func (c *counter) Qb2() (types.Qb2, error) {
+func (c *Counter) Qb2() (types.Qb2, error) {
 	return cbinfil(c)
 }
 
-func (c *counter) Qb64() (types.Qb64, error) {
+func (c *Counter) Qb64() (types.Qb64, error) {
 	return cinfil(c)
 }
 
-func (c *counter) Qb64b() (types.Qb64b, error) {
+func (c *Counter) Qb64b() (types.Qb64b, error) {
 	qb64, err := cinfil(c)
 	if err != nil {
 		return types.Qb64b{}, err
@@ -72,7 +72,7 @@ func cinfil(c types.Counter) (types.Qb64, error) {
 		return types.Qb64(""), fmt.Errorf("unknown code: %s", code)
 	}
 
-	if count < 0 || count > (1<<(6*szg.Ss)-1) {
+	if count > (1<<(6*szg.Ss) - 1) {
 		return types.Qb64(""), fmt.Errorf("invalid count=%d for code=%s", count, code)
 	}
 
@@ -97,7 +97,7 @@ func cexfil(c types.Counter, qb64 types.Qb64) error {
 
 	first := string(qb64[:2])
 	if first[0] == '_' {
-		return fmt.Errorf("unexpected op code start while extracting Counter.")
+		return fmt.Errorf("unexpected op code start while extracting counter")
 	}
 
 	hs, ok := codex.Hards[first]
@@ -143,7 +143,7 @@ func cbexfil(c types.Counter, qb2 types.Qb2) error {
 	}
 
 	if first[0] == 0xfc {
-		return fmt.Errorf("unexpected op code start while extracting Counter.")
+		return fmt.Errorf("unexpected op code start while extracting counter")
 	}
 
 	hs, ok := codex.Bards[string(first)]
@@ -156,7 +156,7 @@ func cbexfil(c types.Counter, qb2 types.Qb2) error {
 		return fmt.Errorf("need more bytes")
 	}
 
-	hard, err := util.CodeB2ToB64(qb2, int(hs))
+	hard, err := util.CodeB2ToB64(qb2, hs)
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,7 @@ func cbexfil(c types.Counter, qb2 types.Qb2) error {
 		return err
 	}
 
-	count, err := util.B64ToU32(string(both[hs:szg.Fs]))
+	count, err := util.B64ToU32(both[hs:szg.Fs])
 	if err != nil {
 		return err
 	}
@@ -187,47 +187,61 @@ func cbexfil(c types.Counter, qb2 types.Qb2) error {
 	return nil
 }
 
-func NewCounter(c types.Counter, opts ...options.CounterOption) error {
+func NewCounter(opts ...options.CounterOption) (*Counter, error) {
 	config := &options.CounterOptions{}
 
 	for _, opt := range opts {
 		opt(config)
 	}
 
+	c := &Counter{}
+
 	if config.Code != nil && config.Raw != nil && config.Count != nil {
 		if config.Qb2 != nil || config.Qb64 != nil || config.Qb64b != nil {
-			return fmt.Errorf("qb2, qb64, or qb64b cannot be used with code, raw, and count")
+			return c, fmt.Errorf("qb2, qb64, or qb64b cannot be used with code, raw, and count")
 		}
 
 		c.SetCode(*config.Code)
 		c.SetCount(*config.Count)
 
-		return nil
+		return c, nil
 	}
 
 	if config.Qb2 != nil {
 		if config.Code != nil || config.Raw != nil || config.Count != nil || config.Qb64 != nil || config.Qb64b != nil {
-			return fmt.Errorf("qb2 cannot be used with code, raw, count, qb64, or qb64b")
+			return c, fmt.Errorf("qb2 cannot be used with code, raw, count, qb64, or qb64b")
 		}
 
-		return cbexfil(c, *config.Qb2)
+		if err := cbexfil(c, *config.Qb2); err != nil {
+			return c, err
+		}
+
+		return c, nil
 	}
 
 	if config.Qb64 != nil {
 		if config.Code != nil || config.Raw != nil || config.Count != nil || config.Qb2 != nil || config.Qb64b != nil {
-			return fmt.Errorf("qb64 cannot be used with code, raw, count, qb2, or qb64b")
+			return c, fmt.Errorf("qb64 cannot be used with code, raw, count, qb2, or qb64b")
 		}
 
-		return cexfil(c, *config.Qb64)
+		if err := cexfil(c, *config.Qb64); err != nil {
+			return c, err
+		}
+
+		return c, nil
 	}
 
 	if config.Qb64b != nil {
 		if config.Code != nil || config.Raw != nil || config.Count != nil || config.Qb2 != nil || config.Qb64 != nil {
-			return fmt.Errorf("qb64b cannot be used with code, raw, count, qb2, or qb64")
+			return c, fmt.Errorf("qb64b cannot be used with code, raw, count, qb2, or qb64")
 		}
 
-		return cexfil(c, types.Qb64(*config.Qb64b))
+		if err := cexfil(c, types.Qb64(*config.Qb64b)); err != nil {
+			return c, err
+		}
+
+		return c, nil
 	}
 
-	return fmt.Errorf("no valid options provided")
+	return c, fmt.Errorf("no valid options provided")
 }
