@@ -14,15 +14,13 @@ func Verify(sig, vk, ser []byte) error {
 		return err
 	}
 
-	signature, err := ecdsa.ParseDERSignature(sig)
-	if err != nil {
-		return err
-	}
+	r := &secp256k1.ModNScalar{}
+	s := &secp256k1.ModNScalar{}
 
-	if signature == nil {
-		return fmt.Errorf("invalid signature")
-	}
+	r.SetByteSlice(sig[:32])
+	s.SetByteSlice(sig[32:])
 
+	signature := ecdsa.NewSignature(r, s)
 	hash := sha256.Sum256(ser)
 
 	if !signature.Verify(hash[:], pub) {

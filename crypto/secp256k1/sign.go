@@ -13,7 +13,15 @@ func Sign(sk types.Raw, ser []byte) (types.Raw, error) {
 	hash := sha256.Sum256(ser)
 
 	signature := ecdsa.Sign(priv, hash[:])
-	bytes := signature.Serialize()
+	r := signature.R()
+	s := signature.S()
+
+	rBytes := r.Bytes()
+	sBytes := s.Bytes()
+
+	bytes := make([]byte, 64)
+	copy(bytes[:32], rBytes[:])
+	copy(bytes[32:], sBytes[:])
 
 	return types.Raw(bytes), nil
 }

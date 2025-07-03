@@ -2,13 +2,14 @@ package ed25519
 
 import (
 	"crypto/ed25519"
+	"crypto/rand"
 	"fmt"
 
 	"github.com/jasoncolburne/cesrgo/types"
 )
 
 func GenerateSeed() (types.Raw, error) {
-	_, priv, err := ed25519.GenerateKey(nil)
+	_, priv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		return nil, err
 	}
