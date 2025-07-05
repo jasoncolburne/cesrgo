@@ -80,7 +80,7 @@ func TestMatterInvalidOptionCombinations(t *testing.T) {
 	}
 
 	for _, testVector := range testCases {
-		m := &cesr.TestMatter{}
+		m := &cesr.UndifferentiatedMatter{}
 
 		args := []options.MatterOption{}
 
@@ -111,10 +111,10 @@ func TestMatterInvalidOptionCombinations(t *testing.T) {
 }
 
 func TestMatterRoundTrip(t *testing.T) {
-	codeAndRawMatter := &cesr.TestMatter{}
-	qb2Matter := &cesr.TestMatter{}
-	qb64Matter := &cesr.TestMatter{}
-	qb64bMatter := &cesr.TestMatter{}
+	codeAndRawMatter := &cesr.UndifferentiatedMatter{}
+	qb2Matter := &cesr.UndifferentiatedMatter{}
+	qb64Matter := &cesr.UndifferentiatedMatter{}
+	qb64bMatter := &cesr.UndifferentiatedMatter{}
 
 	// from crypto.rand.Read
 	raw := types.Raw("\xeaz5\x17\xfeQ!yʹH\x9b\x1aօXO\x1a\x1aq\x17\xd7r_$9\xfaҺණ")

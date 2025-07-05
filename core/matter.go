@@ -25,7 +25,7 @@ type matter struct {
 	soft *string
 }
 
-type TestMatter struct {
+type UndifferentiatedMatter struct {
 	matter
 }
 
