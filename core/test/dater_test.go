@@ -76,12 +76,14 @@ func TestDaterQb64Represenatation(t *testing.T) {
 
 func TestDaterDefaultTemporality(t *testing.T) {
 	then := time.Now().UTC()
+	time.Sleep(1 * time.Microsecond)
 
 	dtsDater, err := cesr.NewDater(nil)
 	if err != nil {
 		t.Fatalf("failed to create dater: %v", err)
 	}
 
+	time.Sleep(1 * time.Microsecond)
 	now := time.Now().UTC()
 
 	dts, err := dtsDater.DTS()
