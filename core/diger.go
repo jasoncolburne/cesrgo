@@ -1,0 +1,59 @@
+package cesr
+
+import (
+	"crypto/subtle"
+	"fmt"
+
+	"github.com/jasoncolburne/cesrgo/core/common/util"
+	"github.com/jasoncolburne/cesrgo/core/crypto"
+	codex "github.com/jasoncolburne/cesrgo/core/matter"
+	"github.com/jasoncolburne/cesrgo/core/matter/options"
+	"github.com/jasoncolburne/cesrgo/core/types"
+)
+
+type Diger struct {
+	matter
+}
+
+func NewDiger(ser []byte, opts ...options.MatterOption) (*Diger, error) {
+	d := &Diger{}
+
+	if ser != nil {
+		config := &options.MatterOptions{}
+		for _, opt := range opts {
+			opt(config)
+		}
+
+		if config.Code == nil {
+			return nil, fmt.Errorf("code is required")
+		}
+
+		digest, err := crypto.Digest(*config.Code, ser)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := NewMatter(d, options.WithCode(*config.Code), options.WithRaw(types.Raw(digest))); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := NewMatter(d, opts...); err != nil {
+			return nil, err
+		}
+	}
+
+	if !util.ValidateCode(d.GetCode(), codex.DigCodex) {
+		return nil, fmt.Errorf("unexpected code: %s", d.GetCode())
+	}
+
+	return d, nil
+}
+
+func (d *Diger) Verify(ser []byte) (bool, error) {
+	digest, err := crypto.Digest(d.GetCode(), ser)
+	if err != nil {
+		return false, err
+	}
+
+	return subtle.ConstantTimeCompare(d.GetRaw(), digest) == 1, nil
+}
