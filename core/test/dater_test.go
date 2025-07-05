@@ -1,7 +1,6 @@
 package test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -90,8 +89,6 @@ func TestDaterDefaultTemporality(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to get dts: %v", err)
 	}
-
-	fmt.Printf("dts: %s\n", dts)
 
 	dtsTime, err := time.Parse(time.RFC3339, string(dts))
 	if err != nil {

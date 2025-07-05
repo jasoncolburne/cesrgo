@@ -27,6 +27,7 @@ var (
 	VEREX2       = "([A-Z]{4})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([A-Z]{4})([0-9A-Za-z_-]{4})\\."
 
 	REVER *regexp.Regexp
+	REB64 *regexp.Regexp
 
 	MAXVERFULLSPAN = max(VER1FULLSPAN, VER2FULLSPAN)
 	MAXVSOFFSET    = 12
@@ -44,6 +45,18 @@ func Rever() (*regexp.Regexp, error) {
 	}
 
 	return REVER, nil
+}
+
+func Reb64() (*regexp.Regexp, error) {
+	if REB64 == nil {
+		var err error
+		REB64, err = regexp.Compile("^[A-Za-z0-9_-]*$")
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return REB64, nil
 }
 
 func ValidateCode(code types.Code, validCodes []types.Code) bool {

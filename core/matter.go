@@ -389,24 +389,31 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 		opt(config)
 	}
 
-	if config.Code != nil && config.Raw != nil {
+	if config.Code != nil && (config.Raw != nil || config.Soft != nil) {
 		if config.Qb2 != nil || config.Qb64 != nil || config.Qb64b != nil {
 			return fmt.Errorf("code and raw cannot be used with qb2, qb64, or qb64b")
 		}
 
-		length := len(*config.Raw)
+		length := 0
+		var raw types.Raw
+		if config.Raw != nil {
+			length = len(*config.Raw)
+			raw = *config.Raw
+		} else {
+			raw = types.Raw{}
+		}
 		if length > 1<<32-1 {
 			return fmt.Errorf("size too large")
-		}
-
-		var cs = len(*config.Code)
-		if config.Soft != nil {
-			cs += len(*config.Soft)
 		}
 
 		szg, ok := codex.Sizes[*config.Code]
 		if !ok {
 			return fmt.Errorf("unknown code: %s", *config.Code)
+		}
+
+		var cs = len(*config.Code)
+		if config.Soft != nil {
+			cs += len(*config.Soft) + int(szg.Xs)
 		}
 
 		if cs != int(szg.Hs)+int(szg.Ss) {
@@ -415,15 +422,15 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 
 		if szg.Fs != nil {
 			expectedRawSize := (int(*szg.Fs) - cs) * 3 / 4
-			if len(*config.Raw) != expectedRawSize {
+			if len(raw) != expectedRawSize {
 				return fmt.Errorf("raw size mismatch: expected = %d, actual = %d", expectedRawSize, len(*config.Raw))
 			}
 		}
 
 		m.SetCode(*config.Code)
-		m.SetRaw(*config.Raw)
+		m.SetRaw(raw)
 		//nolint:gosec
-		m.SetSize(types.Size(len(*config.Raw)))
+		m.SetSize(types.Size(len(raw)))
 		m.SetSoft(config.Soft)
 
 		return nil
