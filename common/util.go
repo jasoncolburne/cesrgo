@@ -632,19 +632,13 @@ func Marshal(ked types.Map, kind *types.Kind) (types.Raw, error) {
 		}
 	case cesrgo.Kind_CBOR:
 		_, _ = cbor.Marshal(ked)
-		// if err != nil {
-		// 	return nil, err
-		// }
 
 		// need to implement MarshalCBOR for types.Map
 		return nil, fmt.Errorf("cbor not yet supported")
 	case cesrgo.Kind_MGPK:
 		_, _ = msgpack.Marshal(ked)
-		// if err != nil {
-		// 	return nil, err
-		// }
 
-		// need to investigate marshalling msgpack for types.Map
+		// need to investigate marshaling msgpack for types.Map
 		return nil, fmt.Errorf("mgpk not yet supported")
 	default:
 		return nil, fmt.Errorf("unsupported kind: %s", *kind)
@@ -664,16 +658,10 @@ func Unmarshal(kind types.Kind, raw types.Raw) (types.Map, error) {
 		}
 	case cesrgo.Kind_CBOR:
 		_ = cbor.Unmarshal(raw, &ked)
-		// if err != nil {
-		// 	return types.Map{}, err
-		// }
 
 		return types.Map{}, fmt.Errorf("cbor not yet supported")
 	case cesrgo.Kind_MGPK:
 		_ = msgpack.Unmarshal(raw, &ked)
-		// if err != nil {
-		// 	return types.Map{}, err
-		// }
 
 		return types.Map{}, fmt.Errorf("mgpk not yet supported")
 	default:
