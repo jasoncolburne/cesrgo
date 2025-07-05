@@ -12,6 +12,15 @@ import (
 )
 
 type Sad interface {
+	GetCode() types.Code
+	SetCode(code types.Code)
+
+	GetSize() types.Size
+	SetSize(size types.Size)
+
+	GetRaw() types.Raw
+	SetRaw(raw types.Raw)
+
 	GetKed() types.Map
 	SetKed(ked types.Map)
 
@@ -26,6 +35,10 @@ type Sad interface {
 }
 
 type sad struct {
+	code types.Code
+	size types.Size
+	raw  types.Raw
+
 	ked     types.Map
 	proto   types.Proto
 	kind    types.Kind
@@ -33,7 +46,6 @@ type sad struct {
 }
 
 type Sadder struct {
-	matter
 	sad
 	saider *Saider
 }
@@ -70,6 +82,30 @@ func (s *sad) SetVersion(version types.Version) {
 	s.version = version
 }
 
+func (s *sad) GetCode() types.Code {
+	return s.code
+}
+
+func (s *sad) SetCode(code types.Code) {
+	s.code = code
+}
+
+func (s *sad) GetSize() types.Size {
+	return s.size
+}
+
+func (s *sad) SetSize(size types.Size) {
+	s.size = size
+}
+
+func (s *sad) GetRaw() types.Raw {
+	return s.raw
+}
+
+func (s *sad) SetRaw(raw types.Raw) {
+	s.raw = raw
+}
+
 func (s *Sadder) inhale(raw types.Raw) error {
 	proto, pvrsn, kind, size, _, err := util.Smell(raw)
 	if err != nil {
@@ -85,17 +121,33 @@ func (s *Sadder) inhale(raw types.Raw) error {
 		return err
 	}
 
+	said, ok := ked.Get("d")
+	if !ok {
+		return fmt.Errorf("d not found")
+	}
+
+	saidStr, ok := said.(string)
+	if !ok {
+		return fmt.Errorf("d is not a string")
+	}
+
+	saider, err := NewSaider(nil, nil, nil, options.WithQb64(types.Qb64(saidStr)))
+	if err != nil {
+		return err
+	}
+
 	s.SetKed(ked)
 	s.SetProto(proto)
 	s.SetVersion(pvrsn)
 	s.SetKind(kind)
 
-	err = NewMatter(s, options.WithCode(s.code), options.WithRaw(raw))
-	if err != nil {
-		return err
-	}
+	s.SetCode(saider.GetCode())
+	s.SetSize(types.Size(len(raw)))
+	s.SetRaw(raw)
 
-	if s.size != size {
+	s.saider = saider
+
+	if s.GetSize() != size {
 		*s = Sadder{}
 		return fmt.Errorf("size mismatch")
 	}
@@ -116,18 +168,12 @@ func (s *Sadder) exhale(ked types.Map, kind *types.Kind) (
 }
 
 func NewSadder(
+	code *types.Code,
+	raw *types.Raw,
 	ked *types.Map,
 	kind *types.Kind,
 	saidify bool,
-	opts ...options.MatterOption,
 ) (*Sadder, error) {
-	config := &options.MatterOptions{}
-
-	for _, opt := range opts {
-		opt(config)
-	}
-
-	var code = config.Code
 	if code == nil {
 		codeStr := codex.Blake3_256
 		code = &codeStr
@@ -140,7 +186,6 @@ func NewSadder(
 
 	s := &Sadder{}
 
-	raw := config.Raw
 	if raw != nil {
 		if ked != nil {
 			return nil, fmt.Errorf("both raw and ked cannot be provided")
@@ -177,10 +222,9 @@ func NewSadder(
 		s.SetVersion(pvrsn)
 		s.SetKind(kind)
 
-		err = NewMatter(s, options.WithCode(*code), options.WithRaw(exhaledRaw))
-		if err != nil {
-			return nil, err
-		}
+		s.SetCode(*code)
+		s.SetSize(types.Size(len(exhaledRaw)))
+		s.SetRaw(exhaledRaw)
 	} else {
 		return nil, fmt.Errorf("raw or ked must be provided")
 	}
@@ -191,14 +235,30 @@ func NewSadder(
 			return nil, err
 		}
 
-		s.saider = saider
+		if s.saider != nil {
+			parsedQb64, err := s.saider.Qb64()
+			if err != nil {
+				return nil, err
+			}
 
-		ked := s.GetKed()
-		qb64, err := saider.Qb64()
-		if err != nil {
-			return nil, err
+			derivedQb64, err := saider.Qb64()
+			if err != nil {
+				return nil, err
+			}
+
+			if parsedQb64 != derivedQb64 {
+				return nil, fmt.Errorf("saider mismatch")
+			}
+		} else {
+			s.saider = saider
+
+			ked := s.GetKed()
+			qb64, err := saider.Qb64()
+			if err != nil {
+				return nil, err
+			}
+			ked.Set("d", qb64)
 		}
-		ked.Set("d", qb64)
 	}
 
 	return s, nil

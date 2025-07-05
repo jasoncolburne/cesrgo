@@ -1,4 +1,4 @@
-package cesrgo_test
+package test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	"github.com/jasoncolburne/cesrgo/types"
 )
 
-func TestNewSaider(t *testing.T) {
+func TestSaiderSaidification(t *testing.T) {
 	sad := types.NewMap()
 	sad.Set("d", "")
 

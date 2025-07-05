@@ -1,4 +1,4 @@
-package cesrgo_test
+package test
 
 import (
 	"testing"

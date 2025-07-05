@@ -224,6 +224,8 @@ func (s *Signer) SignIndexed(
 		iopts.WithIndex(index),
 	}
 
+	// if only && ondex != nil return err?
+
 	if ondex != nil {
 		opts = append(opts, iopts.WithOndex(*ondex))
 	}

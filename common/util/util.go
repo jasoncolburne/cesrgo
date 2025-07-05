@@ -358,7 +358,7 @@ func Sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 	types.Version,
 	error,
 ) {
-	vAny, ok := ked.Get("vs")
+	vAny, ok := ked.Get("v")
 	if !ok {
 		return nil, "", "", types.Map{}, types.Version{}, fmt.Errorf("version string not found")
 	}
@@ -429,7 +429,7 @@ func Sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 	copy(rawOut[fore:], vs)
 	copy(rawOut[fore+len(vs):], raw[back:])
 
-	ked.Set("vs", vs)
+	ked.Set("v", vs)
 
 	return rawOut, proto, *kind, ked, pvrsn, nil
 }

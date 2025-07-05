@@ -1,4 +1,4 @@
-package cesrgo_test
+package test
 
 import (
 	"testing"
@@ -7,13 +7,13 @@ import (
 	"github.com/jasoncolburne/cesrgo/types"
 )
 
-func TestNewSadder(t *testing.T) {
+func TestSadderMarshalling(t *testing.T) {
 	ked := types.NewMap()
 
-	ked.Set("vs", "KERICAACAAJSONAAAA.")
+	ked.Set("v", "KERICAACAAJSONAAAA.")
 	ked.Set("d", "")
 
-	sadder, err := cesrgo.NewSadder(&ked, nil, true)
+	sadder, err := cesrgo.NewSadder(nil, nil, &ked, nil, true)
 	if err != nil {
 		t.Fatalf("failed to create sadder: %v", err)
 	}
@@ -23,7 +23,7 @@ func TestNewSadder(t *testing.T) {
 		t.Fatalf("failed to marshal: %v", err)
 	}
 
-	if string(json) != "{\"vs\":\"KERICAACAAJSONAABP.\",\"d\":\"EPyO5MrDqLBmvskDfXBnwWHBv27pAPcypkDfvn9468Tr\"}" {
+	if string(json) != "{\"v\":\"KERICAACAAJSONAABO.\",\"d\":\"EHJq2PWESIo1D4z3ca3ve7UKpwZ4uzmp-LCV5VO9v7OU\"}" {
 		t.Fatalf("json mismatch: %s", string(json))
 	}
 }

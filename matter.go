@@ -25,6 +25,10 @@ type matter struct {
 	soft *string
 }
 
+type TestMatter struct {
+	matter
+}
+
 func (m *matter) SetCode(code types.Code) {
 	m.code = code
 }
@@ -393,6 +397,27 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 		length := len(*config.Raw)
 		if length > 1<<32-1 {
 			return fmt.Errorf("size too large")
+		}
+
+		var cs = len(*config.Code)
+		if config.Soft != nil {
+			cs += len(*config.Soft)
+		}
+
+		szg, ok := codex.Sizes[*config.Code]
+		if !ok {
+			return fmt.Errorf("unknown code: %s", *config.Code)
+		}
+
+		if cs != int(szg.Hs)+int(szg.Ss) {
+			return fmt.Errorf("hard and soft length mismatch: cs = %d, hs = %d, ss = %d", cs, szg.Hs, szg.Ss)
+		}
+
+		if szg.Fs != nil {
+			expectedRawSize := (int(*szg.Fs) - cs) * 3 / 4
+			if len(*config.Raw) != expectedRawSize {
+				return fmt.Errorf("raw size mismatch: expected = %d, actual = %d", expectedRawSize, len(*config.Raw))
+			}
 		}
 
 		m.SetCode(*config.Code)

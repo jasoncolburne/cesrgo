@@ -23,10 +23,14 @@ func NewVerfer(opts ...options.MatterOption) (*Verfer, error) {
 	return v, nil
 }
 
-func (v *Verfer) Verify(sig, ser []byte) error {
+func (v *Verfer) Verify(sig, ser []byte) (bool, error) {
 	if !util.ValidateCode(v.GetCode(), codex.PreNonDigCodex) {
-		return fmt.Errorf("unexpected code: %s", v.GetCode())
+		return false, fmt.Errorf("unexpected code: %s", v.GetCode())
 	}
 
-	return crypto.VerifySignature(v.GetCode(), v.GetRaw(), sig, ser)
+	if err := crypto.VerifySignature(v.GetCode(), v.GetRaw(), sig, ser); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
