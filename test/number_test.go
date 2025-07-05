@@ -99,6 +99,7 @@ func TestNumberHexEncoding(t *testing.T) {
 		t.Fatalf("expected hex %v, got %v", hex, number.Hex())
 	}
 
+	// should this bail if we create an unpadded number like this?
 	hex = "0123456789ABCDEFFEDBCA9876543210"
 	number, err = cesrgo.NewNumber(nil, &hex)
 	if err != nil {
