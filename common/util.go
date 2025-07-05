@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
+	"time"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/jasoncolburne/cesrgo"
@@ -654,4 +655,8 @@ func Unmarshal(kind types.Kind, raw types.Raw) (types.Map, error) {
 	}
 
 	return ked, nil
+}
+
+func NowISO8601() types.DateTime {
+	return types.DateTime(time.Now().UTC().Format("2006-01-02T15:04:05.000000Z07:00"))
 }

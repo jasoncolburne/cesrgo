@@ -5,6 +5,9 @@ import (
 )
 
 type (
+	Map  orderedmap.OrderedMap[string, any]
+	List []any
+
 	Code string
 	Size uint32
 	Raw  []byte
@@ -21,12 +24,11 @@ type (
 
 	Count uint32
 
+	DateTime string
+
 	Qb64  string
 	Qb64b []byte
 	Qb2   []byte
-
-	Map  orderedmap.OrderedMap[string, any]
-	List []any
 )
 
 func NewMap() Map {

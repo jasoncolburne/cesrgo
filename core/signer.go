@@ -41,7 +41,7 @@ func NewSigner(transferable bool, opts ...mopts.MatterOption) (*Signer, error) {
 			return nil, fmt.Errorf("unexpected code: %s", code)
 		}
 
-		opts = []mopts.MatterOption{}
+		opts = []mopts.MatterOption{mopts.WithCode(code)}
 		if config.Raw == nil {
 			raw, err := crypto.GenerateSeed(code)
 			if err != nil {
@@ -52,8 +52,6 @@ func NewSigner(transferable bool, opts ...mopts.MatterOption) (*Signer, error) {
 		} else {
 			opts = append(opts, mopts.WithRaw(*config.Raw))
 		}
-
-		opts = append(opts, mopts.WithCode(code))
 	}
 
 	if config.Qb2 != nil {
