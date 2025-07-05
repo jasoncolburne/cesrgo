@@ -3,7 +3,7 @@ package cesr
 import (
 	"fmt"
 
-	"github.com/jasoncolburne/cesrgo/core/common/util"
+	"github.com/jasoncolburne/cesrgo/common"
 	"github.com/jasoncolburne/cesrgo/core/crypto"
 	codex "github.com/jasoncolburne/cesrgo/core/matter"
 	"github.com/jasoncolburne/cesrgo/core/matter/options"
@@ -24,7 +24,7 @@ func NewVerfer(opts ...options.MatterOption) (*Verfer, error) {
 }
 
 func (v *Verfer) Verify(sig, ser []byte) (bool, error) {
-	if !util.ValidateCode(v.GetCode(), codex.PreNonDigCodex) {
+	if !common.ValidateCode(v.GetCode(), codex.PreNonDigCodex) {
 		return false, fmt.Errorf("unexpected code: %s", v.GetCode())
 	}
 

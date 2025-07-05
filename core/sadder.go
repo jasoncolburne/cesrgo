@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jasoncolburne/cesrgo/core/common"
-	"github.com/jasoncolburne/cesrgo/core/common/util"
+	"github.com/jasoncolburne/cesrgo"
+	"github.com/jasoncolburne/cesrgo/common"
 	codex "github.com/jasoncolburne/cesrgo/core/matter"
 	"github.com/jasoncolburne/cesrgo/core/matter/options"
 	"github.com/jasoncolburne/cesrgo/core/types"
@@ -107,16 +107,16 @@ func (s *sad) SetRaw(raw types.Raw) {
 }
 
 func (s *Sadder) inhale(raw types.Raw) error {
-	proto, pvrsn, kind, size, _, err := util.Smell(raw)
+	proto, pvrsn, kind, size, _, err := common.Smell(raw)
 	if err != nil {
 		return err
 	}
 
-	if pvrsn.Major != common.VERSION.Major && pvrsn.Minor != common.VERSION.Minor {
+	if pvrsn.Major != cesrgo.VERSION.Major && pvrsn.Minor != cesrgo.VERSION.Minor {
 		return fmt.Errorf("version mismatch")
 	}
 
-	ked, err := util.Unmarshal(kind, raw)
+	ked, err := common.Unmarshal(kind, raw)
 	if err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ func (s *Sadder) exhale(ked types.Map, kind *types.Kind) (
 	types.Version,
 	error,
 ) {
-	return util.Sizeify(ked, kind, nil)
+	return common.Sizeify(ked, kind, nil)
 }
 
 func NewSadder(
@@ -181,7 +181,7 @@ func NewSadder(
 	}
 
 	if kind == nil {
-		kindStr := common.Kind_JSON
+		kindStr := cesrgo.Kind_JSON
 		kind = &kindStr
 	}
 

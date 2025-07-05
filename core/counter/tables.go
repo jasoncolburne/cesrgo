@@ -1,8 +1,8 @@
 package counter
 
 import (
-	"github.com/jasoncolburne/cesrgo/core/common"
-	"github.com/jasoncolburne/cesrgo/core/common/util"
+	"github.com/jasoncolburne/cesrgo"
+	"github.com/jasoncolburne/cesrgo/common"
 	"github.com/jasoncolburne/cesrgo/core/counter/one"
 	counter "github.com/jasoncolburne/cesrgo/core/counter/sizage"
 	"github.com/jasoncolburne/cesrgo/core/counter/two"
@@ -10,23 +10,23 @@ import (
 )
 
 var CounterCodex = map[uint32][]types.Code{
-	common.VERSION_1_0.Major: one.CounterCodex,
-	common.VERSION_2_0.Major: two.CounterCodex,
+	cesrgo.VERSION_1_0.Major: one.CounterCodex,
+	cesrgo.VERSION_2_0.Major: two.CounterCodex,
 }
 
 var SpecialUniversalCodex = map[uint32][]types.Code{
-	common.VERSION_1_0.Major: one.SpecialUniversalCodex,
-	common.VERSION_2_0.Major: two.SpecialUniversalCodex,
+	cesrgo.VERSION_1_0.Major: one.SpecialUniversalCodex,
+	cesrgo.VERSION_2_0.Major: two.SpecialUniversalCodex,
 }
 
 var MessageUniversalCodex = map[uint32][]types.Code{
-	common.VERSION_1_0.Major: one.MessageUniversalCodex,
-	common.VERSION_2_0.Major: two.MessageUniversalCodex,
+	cesrgo.VERSION_1_0.Major: one.MessageUniversalCodex,
+	cesrgo.VERSION_2_0.Major: two.MessageUniversalCodex,
 }
 
 var Sizes = map[uint32]map[types.Code]counter.Sizage{
-	common.VERSION_1_0.Major: one.Sizes,
-	common.VERSION_2_0.Major: two.Sizes,
+	cesrgo.VERSION_1_0.Major: one.Sizes,
+	cesrgo.VERSION_2_0.Major: two.Sizes,
 }
 
 var Hards = map[string]int{}
@@ -59,7 +59,7 @@ func generateBards() error {
 	generateHards()
 
 	for hard, i := range Hards {
-		bard, err := util.CodeB64ToB2(hard)
+		bard, err := common.CodeB64ToB2(hard)
 		if err != nil {
 			return err
 		}

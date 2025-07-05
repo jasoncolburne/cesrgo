@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/jasoncolburne/cesrgo/core/common"
-	"github.com/jasoncolburne/cesrgo/core/common/util"
+	"github.com/jasoncolburne/cesrgo"
+	"github.com/jasoncolburne/cesrgo/common"
 	codex "github.com/jasoncolburne/cesrgo/core/counter"
 	"github.com/jasoncolburne/cesrgo/core/counter/options"
 	"github.com/jasoncolburne/cesrgo/core/types"
@@ -55,7 +55,7 @@ func cbinfil(c types.Counter) (types.Qb2, error) {
 		return types.Qb2{}, err
 	}
 
-	b2, err := util.CodeB64ToB2(string(qb64))
+	b2, err := common.CodeB64ToB2(string(qb64))
 	if err != nil {
 		return types.Qb2{}, err
 	}
@@ -67,7 +67,7 @@ func cinfil(c types.Counter) (types.Qb64, error) {
 	code := c.GetCode()
 	count := c.GetCount()
 
-	szg, ok := codex.Sizes[common.VERSION.Major][code]
+	szg, ok := codex.Sizes[cesrgo.VERSION.Major][code]
 	if !ok {
 		return types.Qb64(""), fmt.Errorf("unknown code: %s", code)
 	}
@@ -76,7 +76,7 @@ func cinfil(c types.Counter) (types.Qb64, error) {
 		return types.Qb64(""), fmt.Errorf("invalid count=%d for code=%s", count, code)
 	}
 
-	countB64, err := util.IntToB64(int(count), int(szg.Ss))
+	countB64, err := common.IntToB64(int(count), int(szg.Ss))
 	if err != nil {
 		return types.Qb64(""), err
 	}
@@ -110,7 +110,7 @@ func cexfil(c types.Counter, qb64 types.Qb64) error {
 
 	hard := qb64[:hs]
 
-	szg, ok := codex.Sizes[common.VERSION.Major][types.Code(hard)]
+	szg, ok := codex.Sizes[cesrgo.VERSION.Major][types.Code(hard)]
 	if !ok {
 		return fmt.Errorf("unsupported code=%s", hard)
 	}
@@ -120,7 +120,7 @@ func cexfil(c types.Counter, qb64 types.Qb64) error {
 	}
 
 	count := qb64[hs:szg.Fs]
-	countInt, err := util.B64ToU32(string(count))
+	countInt, err := common.B64ToU32(string(count))
 	if err != nil {
 		return err
 	}
@@ -136,7 +136,7 @@ func cbexfil(c types.Counter, qb2 types.Qb2) error {
 		return fmt.Errorf("empty material, need more bytes")
 	}
 
-	first, err := util.NabSextets(qb2, 2)
+	first, err := common.NabSextets(qb2, 2)
 	if err != nil {
 		return err
 	}
@@ -156,12 +156,12 @@ func cbexfil(c types.Counter, qb2 types.Qb2) error {
 		return fmt.Errorf("need more bytes")
 	}
 
-	hard, err := util.CodeB2ToB64(qb2, hs)
+	hard, err := common.CodeB2ToB64(qb2, hs)
 	if err != nil {
 		return err
 	}
 
-	szg, ok := codex.Sizes[common.VERSION.Major][types.Code(hard)]
+	szg, ok := codex.Sizes[cesrgo.VERSION.Major][types.Code(hard)]
 	if !ok {
 		return fmt.Errorf("unsupported code=%s", hard)
 	}
@@ -171,12 +171,12 @@ func cbexfil(c types.Counter, qb2 types.Qb2) error {
 		return fmt.Errorf("need more bytes")
 	}
 
-	both, err := util.CodeB2ToB64(qb2, int(szg.Fs))
+	both, err := common.CodeB2ToB64(qb2, int(szg.Fs))
 	if err != nil {
 		return err
 	}
 
-	count, err := util.B64ToU32(both[hs:szg.Fs])
+	count, err := common.B64ToU32(both[hs:szg.Fs])
 	if err != nil {
 		return err
 	}

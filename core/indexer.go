@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/jasoncolburne/cesrgo/core/common/util"
+	"github.com/jasoncolburne/cesrgo/common"
 	codex "github.com/jasoncolburne/cesrgo/core/indexer"
 	"github.com/jasoncolburne/cesrgo/core/indexer/options"
 	"github.com/jasoncolburne/cesrgo/core/types"
@@ -75,7 +75,7 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 		return fmt.Errorf("qb2 is empty")
 	}
 
-	first, err := util.NabSextets(qb2, 1)
+	first, err := common.NabSextets(qb2, 1)
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 		return fmt.Errorf("insufficient material for hard part of code: qb2 size = %d, bhs = %d", len(qb2), bhs)
 	}
 
-	hard, err := util.CodeB2ToB64(qb2, hs)
+	hard, err := common.CodeB2ToB64(qb2, hs)
 	if err != nil {
 		return err
 	}
@@ -107,20 +107,20 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 		return fmt.Errorf("insufficient material for code: qb2 size = %d, bcs = %d", len(qb2), bcs)
 	}
 
-	both, err := util.CodeB2ToB64(qb2, int(cs))
+	both, err := common.CodeB2ToB64(qb2, int(cs))
 	if err != nil {
 		return err
 	}
 
-	index, err := util.B64ToU32(both[hs : hs+int(ms)])
+	index, err := common.B64ToU32(both[hs : hs+int(ms)])
 	if err != nil {
 		return err
 	}
 
 	var ondex *types.Ondex
-	if util.ValidateCode(types.Code(hard), codex.IndexedCurrentSigCodex) {
+	if common.ValidateCode(types.Code(hard), codex.IndexedCurrentSigCodex) {
 		if szg.Os != 0 {
-			odx, err := util.B64ToU32(both[hs+int(ms) : hs+int(ms)+int(szg.Os)])
+			odx, err := common.B64ToU32(both[hs+int(ms) : hs+int(ms)+int(szg.Os)])
 			if err != nil {
 				return err
 			}
@@ -130,7 +130,7 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 			}
 		}
 	} else if szg.Os != 0 {
-		odx, err := util.B64ToU32(both[hs+int(ms) : hs+int(ms)+int(szg.Os)])
+		odx, err := common.B64ToU32(both[hs+int(ms) : hs+int(ms)+int(szg.Os)])
 		if err != nil {
 			return err
 		}
@@ -246,12 +246,12 @@ func ibinfil(i types.Indexer) (types.Qb2, error) {
 		odx = int(*ondex)
 	}
 
-	indexB64, err := util.IntToB64(int(index), int(ms))
+	indexB64, err := common.IntToB64(int(index), int(ms))
 	if err != nil {
 		return types.Qb2{}, err
 	}
 
-	ondexB64, err := util.IntToB64(odx, int(szg.Os))
+	ondexB64, err := common.IntToB64(odx, int(szg.Os))
 	if err != nil {
 		return types.Qb2{}, err
 	}
@@ -266,7 +266,7 @@ func ibinfil(i types.Indexer) (types.Qb2, error) {
 		return types.Qb2{}, fmt.Errorf("invalid code=%s for converted raw pad size=%d", both, ps)
 	}
 
-	bothU16, err := util.B64ToU16(both)
+	bothU16, err := common.B64ToU16(both)
 	if err != nil {
 		return types.Qb2{}, err
 	}
@@ -328,12 +328,12 @@ func iinfil(i types.Indexer) (types.Qb64, error) {
 		odx = int(*ondex)
 	}
 
-	indexB64, err := util.IntToB64(int(index), int(ms))
+	indexB64, err := common.IntToB64(int(index), int(ms))
 	if err != nil {
 		return "", err
 	}
 
-	ondexB64, err := util.IntToB64(odx, int(szg.Os))
+	ondexB64, err := common.IntToB64(odx, int(szg.Os))
 	if err != nil {
 		return "", err
 	}
@@ -385,7 +385,7 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 	}
 
 	indexB64 := qb64[hs : hs+int(ms)]
-	index, err := util.B64ToU32(string(indexB64))
+	index, err := common.B64ToU32(string(indexB64))
 	if err != nil {
 		return err
 	}
@@ -395,7 +395,7 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 	var ondex *types.Ondex
 	if slices.Contains(codex.IndexedCurrentSigCodex, types.Code(hard)) {
 		if szg.Os != 0 {
-			odx, err := util.B64ToU32(string(ondexB64))
+			odx, err := common.B64ToU32(string(ondexB64))
 			if err != nil {
 				return err
 			}
@@ -408,7 +408,7 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 			ondex = &_ondex
 		}
 	} else if szg.Os != 0 {
-		odx, err := util.B64ToU32(string(ondexB64))
+		odx, err := common.B64ToU32(string(ondexB64))
 		if err != nil {
 			return err
 		}
@@ -457,7 +457,7 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 			return err
 		}
 
-		pi := util.BytesToInt(paw[:ps])
+		pi := common.BytesToInt(paw[:ps])
 		if pi&(1<<pbs-1) != 0 {
 			return fmt.Errorf("non-zeroed pad bits: %x", pi&(1<<pbs-1))
 		}
@@ -470,7 +470,7 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 			return err
 		}
 
-		li := util.BytesToInt(paw[:szg.Ls])
+		li := common.BytesToInt(paw[:szg.Ls])
 		if li != 0 {
 			return fmt.Errorf("non-zeroed lead byte: %x", li)
 		}
@@ -519,11 +519,11 @@ func NewIndexer(i types.Indexer, opts ...options.IndexerOption) error {
 			}
 		}
 
-		if util.ValidateCode(*config.Code, codex.IndexedCurrentSigCodex) && config.Ondex != nil {
+		if common.ValidateCode(*config.Code, codex.IndexedCurrentSigCodex) && config.Ondex != nil {
 			return fmt.Errorf("non-nil ondex %d for code %s", *config.Ondex, *config.Code)
 		}
 
-		if util.ValidateCode(*config.Code, codex.IndexedBothSigCodex) {
+		if common.ValidateCode(*config.Code, codex.IndexedBothSigCodex) {
 			ondex := types.Ondex(*config.Index)
 			if config.Ondex == nil {
 				config.Ondex = &ondex

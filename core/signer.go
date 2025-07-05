@@ -3,7 +3,7 @@ package cesr
 import (
 	"fmt"
 
-	"github.com/jasoncolburne/cesrgo/core/common/util"
+	"github.com/jasoncolburne/cesrgo/common"
 	"github.com/jasoncolburne/cesrgo/core/crypto"
 	idex "github.com/jasoncolburne/cesrgo/core/indexer"
 	iopts "github.com/jasoncolburne/cesrgo/core/indexer/options"
@@ -37,7 +37,7 @@ func NewSigner(transferable bool, opts ...mopts.MatterOption) (*Signer, error) {
 			code = *config.Code
 		}
 
-		if !util.ValidateCode(code, mdex.SeedCodex) {
+		if !common.ValidateCode(code, mdex.SeedCodex) {
 			return nil, fmt.Errorf("unexpected code: %s", code)
 		}
 
@@ -78,7 +78,7 @@ func NewSigner(transferable bool, opts ...mopts.MatterOption) (*Signer, error) {
 		return nil, err
 	}
 
-	if !util.ValidateCode(s.code, mdex.SeedCodex) {
+	if !common.ValidateCode(s.code, mdex.SeedCodex) {
 		return nil, fmt.Errorf("unexpected code: %s", *config.Code)
 	}
 
@@ -106,7 +106,7 @@ func (s *Signer) deriveVerfer(transferable bool) error {
 }
 
 func (s *Signer) SignUnindexed(ser []byte) (*Cigar, error) {
-	if !util.ValidateCode(s.code, mdex.SeedCodex) {
+	if !common.ValidateCode(s.code, mdex.SeedCodex) {
 		return nil, fmt.Errorf("unexpected code: %s", s.code)
 	}
 
@@ -146,7 +146,7 @@ func (s *Signer) SignIndexed(
 	index types.Index,
 	ondex *types.Ondex,
 ) (*Siger, error) {
-	if !util.ValidateCode(s.code, mdex.SeedCodex) {
+	if !common.ValidateCode(s.code, mdex.SeedCodex) {
 		return nil, fmt.Errorf("unexpected code: %s", s.code)
 	}
 

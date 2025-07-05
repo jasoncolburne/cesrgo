@@ -4,7 +4,7 @@ import (
 	"crypto/subtle"
 	"fmt"
 
-	"github.com/jasoncolburne/cesrgo/core/common/util"
+	"github.com/jasoncolburne/cesrgo/common"
 	"github.com/jasoncolburne/cesrgo/core/crypto"
 	codex "github.com/jasoncolburne/cesrgo/core/matter"
 	"github.com/jasoncolburne/cesrgo/core/matter/options"
@@ -42,7 +42,7 @@ func NewDiger(ser []byte, opts ...options.MatterOption) (*Diger, error) {
 		}
 	}
 
-	if !util.ValidateCode(d.GetCode(), codex.DigCodex) {
+	if !common.ValidateCode(d.GetCode(), codex.DigCodex) {
 		return nil, fmt.Errorf("unexpected code: %s", d.GetCode())
 	}
 

@@ -1,4 +1,4 @@
-package util
+package common
 
 import (
 	"encoding/binary"
@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/fxamacker/cbor/v2"
-	"github.com/jasoncolburne/cesrgo/core/common"
+	"github.com/jasoncolburne/cesrgo"
 	"github.com/jasoncolburne/cesrgo/core/types"
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -369,7 +369,7 @@ func Sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 	}
 
 	if version == nil {
-		version = &common.VERSION
+		version = &cesrgo.VERSION
 	}
 
 	proto, pvrsn, knd, _, gvrsn, err := Deversify(v)
@@ -389,7 +389,7 @@ func Sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 		kind = &knd
 	}
 
-	if !slices.Contains(common.KINDS, *kind) {
+	if !slices.Contains(cesrgo.KINDS, *kind) {
 		return nil, "", "", types.Map{}, types.Version{}, fmt.Errorf("kind not supported")
 	}
 
@@ -436,16 +436,16 @@ func Sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 
 func Versify(proto *types.Proto, pvrsn *types.Version, kind *types.Kind, size types.Size, gvrsn *types.Version) (string, error) {
 	if proto == nil {
-		protoKeri := common.Proto_KERI
+		protoKeri := cesrgo.Proto_KERI
 		proto = &protoKeri
 	}
 
 	if pvrsn == nil {
-		pvrsn = &common.VERSION
+		pvrsn = &cesrgo.VERSION
 	}
 
 	if kind == nil {
-		kindJson := common.Kind_JSON
+		kindJson := cesrgo.Kind_JSON
 		kind = &kindJson
 	}
 
@@ -453,11 +453,11 @@ func Versify(proto *types.Proto, pvrsn *types.Version, kind *types.Kind, size ty
 		gvrsn = pvrsn
 	}
 
-	if !slices.Contains(common.PROTOS, *proto) {
+	if !slices.Contains(cesrgo.PROTOS, *proto) {
 		return "", fmt.Errorf("proto not supported")
 	}
 
-	if !slices.Contains(common.KINDS, *kind) {
+	if !slices.Contains(cesrgo.KINDS, *kind) {
 		return "", fmt.Errorf("kind not supported")
 	}
 
@@ -598,7 +598,7 @@ func Rematch(match [][]byte) (
 
 func Marshal(ked types.Map, kind *types.Kind) (types.Raw, error) {
 	if kind == nil {
-		kindJson := common.Kind_JSON
+		kindJson := cesrgo.Kind_JSON
 		kind = &kindJson
 	}
 
@@ -608,17 +608,17 @@ func Marshal(ked types.Map, kind *types.Kind) (types.Raw, error) {
 	)
 
 	switch *kind {
-	case common.Kind_JSON:
+	case cesrgo.Kind_JSON:
 		raw, err = json.Marshal(ked)
 		if err != nil {
 			return nil, err
 		}
-	case common.Kind_CBOR:
+	case cesrgo.Kind_CBOR:
 		raw, err = cbor.Marshal(ked)
 		if err != nil {
 			return nil, err
 		}
-	case common.Kind_MGPK:
+	case cesrgo.Kind_MGPK:
 		raw, err = msgpack.Marshal(ked)
 		if err != nil {
 			return nil, err
@@ -634,17 +634,17 @@ func Unmarshal(kind types.Kind, raw types.Raw) (types.Map, error) {
 	var ked types.Map
 
 	switch kind {
-	case common.Kind_JSON:
+	case cesrgo.Kind_JSON:
 		err := json.Unmarshal(raw, &ked)
 		if err != nil {
 			return types.Map{}, err
 		}
-	case common.Kind_CBOR:
+	case cesrgo.Kind_CBOR:
 		err := cbor.Unmarshal(raw, &ked)
 		if err != nil {
 			return types.Map{}, err
 		}
-	case common.Kind_MGPK:
+	case cesrgo.Kind_MGPK:
 		err := msgpack.Unmarshal(raw, &ked)
 		if err != nil {
 			return types.Map{}, err

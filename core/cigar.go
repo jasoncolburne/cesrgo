@@ -4,7 +4,7 @@ package cesr
 import (
 	"fmt"
 
-	"github.com/jasoncolburne/cesrgo/core/common/util"
+	"github.com/jasoncolburne/cesrgo/common"
 	codex "github.com/jasoncolburne/cesrgo/core/matter"
 	"github.com/jasoncolburne/cesrgo/core/matter/options"
 )
@@ -25,7 +25,7 @@ func NewCigar(verfer *Verfer, opts ...options.MatterOption) (*Cigar, error) {
 		return nil, err
 	}
 
-	if !util.ValidateCode(c.GetCode(), codex.SigCodex) {
+	if !common.ValidateCode(c.GetCode(), codex.SigCodex) {
 		return nil, fmt.Errorf("unexpected code: %s", c.GetCode())
 	}
 

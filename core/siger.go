@@ -4,7 +4,7 @@ package cesr
 import (
 	"fmt"
 
-	"github.com/jasoncolburne/cesrgo/core/common/util"
+	"github.com/jasoncolburne/cesrgo/common"
 	codex "github.com/jasoncolburne/cesrgo/core/indexer"
 	"github.com/jasoncolburne/cesrgo/core/indexer/options"
 )
@@ -25,7 +25,7 @@ func NewSiger(verfer *Verfer, opts ...options.IndexerOption) (*Siger, error) {
 		return nil, err
 	}
 
-	if !util.ValidateCode(s.GetCode(), codex.IndexedSigCodex) {
+	if !common.ValidateCode(s.GetCode(), codex.IndexedSigCodex) {
 		return nil, fmt.Errorf("unexpected code: %s", s.GetCode())
 	}
 

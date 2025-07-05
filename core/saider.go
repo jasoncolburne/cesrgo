@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jasoncolburne/cesrgo/core/common"
-	"github.com/jasoncolburne/cesrgo/core/common/util"
+	"github.com/jasoncolburne/cesrgo"
+	"github.com/jasoncolburne/cesrgo/common"
 	"github.com/jasoncolburne/cesrgo/core/crypto"
 	codex "github.com/jasoncolburne/cesrgo/core/matter"
 	"github.com/jasoncolburne/cesrgo/core/matter/options"
@@ -76,7 +76,7 @@ func NewSaider(
 			}
 		}
 
-		if !util.ValidateCode(*code, codex.DigCodex) {
+		if !common.ValidateCode(*code, codex.DigCodex) {
 			return nil, fmt.Errorf("unexpected code: %s", s.code)
 		}
 
@@ -90,7 +90,7 @@ func NewSaider(
 		}
 	}
 
-	if !util.ValidateCode(s.code, codex.DigCodex) {
+	if !common.ValidateCode(s.code, codex.DigCodex) {
 		return nil, fmt.Errorf("unexpected code: %s", s.code)
 	}
 
@@ -109,11 +109,11 @@ func derive(sad *types.Map, code *types.Code, kind *types.Kind, label *string, i
 	}
 
 	if kind == nil {
-		kindJson := common.Kind_JSON
+		kindJson := cesrgo.Kind_JSON
 		kind = &kindJson
 	}
 
-	if !util.ValidateCode(*code, codex.DigCodex) {
+	if !common.ValidateCode(*code, codex.DigCodex) {
 		return nil, types.Map{}, fmt.Errorf("unexpected code: %s", *code)
 	}
 
@@ -145,7 +145,7 @@ func derive(sad *types.Map, code *types.Code, kind *types.Kind, label *string, i
 		}
 	}
 
-	cpa, err := util.Marshal(sadCopy, kind)
+	cpa, err := common.Marshal(sadCopy, kind)
 	if err != nil {
 		return nil, types.Map{}, fmt.Errorf("failed to marshal: %w", err)
 	}

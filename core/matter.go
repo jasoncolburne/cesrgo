@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/jasoncolburne/cesrgo/core/common/util"
+	"github.com/jasoncolburne/cesrgo/common"
 	codex "github.com/jasoncolburne/cesrgo/core/matter"
 	"github.com/jasoncolburne/cesrgo/core/matter/options"
 	"github.com/jasoncolburne/cesrgo/core/types"
@@ -111,7 +111,7 @@ func mbinfil(m types.Matter) (types.Qb2, error) {
 
 	n := int(math.Ceil(float64(cs) * 3 / 4))
 
-	i, err := util.B64ToU64(both)
+	i, err := common.B64ToU64(both)
 	if err != nil {
 		return types.Qb2{}, err
 	}
@@ -204,7 +204,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 		return fmt.Errorf("qb2 is empty")
 	}
 
-	sextets, err := util.NabSextets(qb2, 1)
+	sextets, err := common.NabSextets(qb2, 1)
 	if err != nil {
 		return err
 	}
@@ -220,7 +220,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 		return fmt.Errorf("insufficient material for hard part of code: qb2 size = %d, bhs = %d", len(qb2), bhs)
 	}
 
-	hard, err := util.CodeB2ToB64(qb2, hs)
+	hard, err := common.CodeB2ToB64(qb2, hs)
 	if err != nil {
 		return err
 	}
@@ -237,7 +237,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 		return fmt.Errorf("insufficient material: qb2 size = %d, bcs = %d", len(qb2), bcs)
 	}
 
-	both, err := util.CodeB2ToB64(qb2, int(cs))
+	both, err := common.CodeB2ToB64(qb2, int(cs))
 	if err != nil {
 		return err
 	}
@@ -257,7 +257,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 			return fmt.Errorf("insufficient material for code: qb2 size = %d, bcs = %d", len(qb2), bcs)
 		}
 
-		i, err := util.B64ToU32(soft)
+		i, err := common.B64ToU32(soft)
 		if err != nil {
 			return err
 		}
@@ -282,7 +282,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 		return fmt.Errorf("non-zeroed code midpad bits")
 	}
 
-	li := util.BytesToInt(qb2[bcs : bcs+int(szg.Ls)])
+	li := common.BytesToInt(qb2[bcs : bcs+int(szg.Ls)])
 	if li != 0 {
 		return fmt.Errorf("non-zeroed lead midpad bytes")
 	}
@@ -332,7 +332,7 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 
 	var fs uint32
 	if szg.Fs == nil {
-		i, err := util.B64ToU32(string(soft))
+		i, err := common.B64ToU32(string(soft))
 		if err != nil {
 			return err
 		}
@@ -356,7 +356,7 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 	raw := paw[int(ps+szg.Ls):]
 
 	// ensure midpad bytes are zero
-	pi := util.BytesToInt(paw[:int(ps+szg.Ls)])
+	pi := common.BytesToInt(paw[:int(ps+szg.Ls)])
 	if pi != 0 {
 		return fmt.Errorf("nonzero midpad bytes=0x%x", pi)
 	}
