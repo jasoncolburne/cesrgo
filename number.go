@@ -36,14 +36,6 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 		if err != nil {
 			return nil, err
 		}
-
-		if !slices.Contains(codex.NumCodex, n.GetCode()) {
-			return nil, fmt.Errorf("invalid number code")
-		}
-
-		n.number.SetBytes(n.GetRaw())
-
-		return n, nil
 	}
 
 	if config.Qb64 != nil {
@@ -58,14 +50,6 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 		if err != nil {
 			return nil, err
 		}
-
-		if !slices.Contains(codex.NumCodex, n.GetCode()) {
-			return nil, fmt.Errorf("invalid number code")
-		}
-
-		n.number.SetBytes(n.GetRaw())
-
-		return n, nil
 	}
 
 	if config.Qb64b != nil {
@@ -80,12 +64,18 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 		if err != nil {
 			return nil, err
 		}
+	}
 
+	// if we've processed qualified data, return now
+	if config.Qb2 != nil || config.Qb64 != nil || config.Qb64b != nil {
 		if !slices.Contains(codex.NumCodex, n.GetCode()) {
 			return nil, fmt.Errorf("invalid number code")
 		}
 
 		n.number.SetBytes(n.GetRaw())
+		if err := n.validateSizeUnderLimit(); err != nil {
+			return nil, err
+		}
 
 		return n, nil
 	}
@@ -99,6 +89,9 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 		bigNum.SetBytes(*config.Raw)
 
 		n.number = bigNum
+		if err := n.validateSizeUnderLimit(); err != nil {
+			return nil, err
+		}
 
 		var code types.Code
 		switch len(*config.Raw) {
@@ -198,6 +191,9 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 
 	raw := make([]byte, requiredBytes)
 	n.number.FillBytes(raw)
+	if err := n.validateSizeUnderLimit(); err != nil {
+		return nil, err
+	}
 
 	err := NewMatter(
 		n,
@@ -239,4 +235,15 @@ func (n *Number) Hex() string {
 	}
 
 	return hex
+}
+
+func (n *Number) validateSizeUnderLimit() error {
+	limit := &big.Int{}
+	limit.Exp(big.NewInt(2), big.NewInt(128), nil)
+
+	if n.number.Cmp(limit) >= 0 {
+		return fmt.Errorf("number too large to represent by 16 octets")
+	}
+
+	return nil
 }
