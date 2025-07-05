@@ -684,9 +684,5 @@ func LessThanMaxON(num big.Int) bool {
 	limit := &big.Int{}
 	limit.Exp(big.NewInt(2), big.NewInt(128), nil)
 
-	if num.Cmp(limit) >= 0 {
-		return false
-	}
-
-	return true
+	return num.Cmp(limit) < 0
 }
