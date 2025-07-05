@@ -37,6 +37,10 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 			return nil, err
 		}
 
+		if !slices.Contains(codex.NumCodex, n.GetCode()) {
+			return nil, fmt.Errorf("invalid number code")
+		}
+
 		n.number.SetBytes(n.GetRaw())
 
 		return n, nil
@@ -55,6 +59,10 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 			return nil, err
 		}
 
+		if !slices.Contains(codex.NumCodex, n.GetCode()) {
+			return nil, fmt.Errorf("invalid number code")
+		}
+
 		n.number.SetBytes(n.GetRaw())
 
 		return n, nil
@@ -71,6 +79,10 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 		)
 		if err != nil {
 			return nil, err
+		}
+
+		if !slices.Contains(codex.NumCodex, n.GetCode()) {
+			return nil, fmt.Errorf("invalid number code")
 		}
 
 		n.number.SetBytes(n.GetRaw())
@@ -140,6 +152,10 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 
 	if config.Code != nil {
 		code = *config.Code
+
+		if !slices.Contains(codex.NumCodex, code) {
+			return nil, fmt.Errorf("invalid number code")
+		}
 	} else {
 		if byteLen <= 2 {
 			code = codex.Short
