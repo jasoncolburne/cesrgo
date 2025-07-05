@@ -56,17 +56,17 @@ func TestSignerDeterminism(t *testing.T) {
 	}{
 		{
 			Code:          mdex.Ed25519_Seed,
-			Raw:           []byte{73, 101, 58, 239, 142, 157, 136, 49, 137, 118, 128, 4, 230, 235, 118, 214, 151, 48, 147, 53, 222, 192, 90, 217, 81, 203, 48, 204, 29, 249, 88, 187},
+			Raw:           types.Raw("Ie:\uf39d\x881\x89v\x80\x04\xe6\xebv֗0\x935\xde\xc0Z\xd9Q\xcb0\xcc\x1d\xf9X\xbb"),
 			NullCigarQb64: types.Qb64("0BANAYU1Rk-fC1Xc26rbjfbh4Wwm0Ghnhe_oJ3Gc8ka10DCAUwTd_iscBGzX0ppRmi2jeizchGwJiO0jli8zbckF"),
 		},
 		{
 			Code:          mdex.ECDSA_256k1_Seed,
-			Raw:           []byte{180, 254, 124, 246, 186, 56, 94, 128, 161, 224, 100, 126, 79, 97, 198, 211, 228, 84, 105, 175, 28, 77, 33, 245, 29, 156, 241, 90, 87, 104, 189, 156},
+			Raw:           types.Raw("\xb4\xfe|\xf6\xba8^\x80\xa1\xe0d~Oa\xc6\xd3\xe4Ti\xaf\x1cM!\xf5\x1d\x9c\xf1ZWh\xbd\x9c"),
 			NullCigarQb64: types.Qb64("0CAAeEWPU1gVoz3p804jwDbJiPDveINH3oNf3oPjJydiO2nM4V0qpB6tYgQ8LAVnItykoTC9xXJlHwNTjKVWBHNq"),
 		},
 		{
 			Code:          mdex.ECDSA_256r1_Seed,
-			Raw:           []byte{144, 11, 61, 132, 63, 222, 90, 96, 110, 254, 120, 210, 211, 210, 189, 21, 4, 3, 68, 77, 226, 196, 142, 2, 42, 115, 37, 125, 244, 132, 176, 2},
+			Raw:           types.Raw("\x90\v=\x84?\xdeZ`n\xfex\xd2\xd3ҽ\x15\x04\x03DM\xe2Ď\x02*s%}\xf4\x84\xb0\x02"),
 			NullCigarQb64: types.Qb64("0IDp2liCC2HmkE3TaemOVpL2snwPoCYON58LIDbMOTKYPhDxPW6181HZLdyt6f03pcrtb-f38KLQLjHoCbqR7NIA"),
 		},
 	}
