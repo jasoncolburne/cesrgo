@@ -16,7 +16,7 @@ func TestSigerCodesAndIndicies(t *testing.T) {
 	_73 := types.Ondex(73)
 	_81 := types.Ondex(81)
 
-	testVectors := []struct {
+	testCases := []struct {
 		SignerCode types.Code
 		SigerCode  types.Code
 		Only       bool
@@ -100,7 +100,7 @@ func TestSigerCodesAndIndicies(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s->%s[%t]", testVector.SignerCode, testVector.SigerCode, testVector.Only)
 		t.Run(label, func(t *testing.T) {
 			signer, err := cesrgo.NewSigner(true, options.WithCode(testVector.SignerCode))

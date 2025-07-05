@@ -11,7 +11,7 @@ import (
 )
 
 func TestDigerCodesAndSizes(t *testing.T) {
-	var testVectors = []struct {
+	var testCases = []struct {
 		DigerCode types.Code
 		DigerSize types.Size
 	}{
@@ -53,7 +53,7 @@ func TestDigerCodesAndSizes(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s", testVector.DigerCode)
 		t.Run(label, func(t *testing.T) {
 			Diger, err := cesrgo.NewDiger([]byte{}, options.WithCode(testVector.DigerCode))
@@ -73,7 +73,7 @@ func TestDigerCodesAndSizes(t *testing.T) {
 }
 
 func TestDigerVerification(t *testing.T) {
-	testVectors := []struct {
+	testCases := []struct {
 		Code types.Code
 	}{
 		{
@@ -105,7 +105,7 @@ func TestDigerVerification(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s[+]", testVector.Code)
 		t.Run(label, func(t *testing.T) {
 			diger, err := cesrgo.NewDiger([]byte{}, options.WithCode(testVector.Code))
@@ -124,7 +124,7 @@ func TestDigerVerification(t *testing.T) {
 		})
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s[-]", testVector.Code)
 		t.Run(label, func(t *testing.T) {
 			diger, err := cesrgo.NewDiger([]byte{}, options.WithCode(testVector.Code))

@@ -11,7 +11,7 @@ import (
 )
 
 func TestSignerCodesAndSizes(t *testing.T) {
-	testVectors := []struct {
+	testCases := []struct {
 		Code types.Code
 		Size types.Size
 	}{
@@ -29,7 +29,7 @@ func TestSignerCodesAndSizes(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s", testVector.Code)
 		t.Run(label, func(t *testing.T) {
 			signer, err := cesrgo.NewSigner(true, options.WithCode(testVector.Code))
@@ -49,7 +49,7 @@ func TestSignerCodesAndSizes(t *testing.T) {
 }
 
 func TestSignerDeterminism(t *testing.T) {
-	testVectors := []struct {
+	testCases := []struct {
 		Code          types.Code
 		Raw           []byte
 		NullCigarQb64 types.Qb64
@@ -71,7 +71,7 @@ func TestSignerDeterminism(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s", testVector.Code)
 		t.Run(label, func(t *testing.T) {
 			signer, err := cesrgo.NewSigner(true, options.WithCode(testVector.Code), options.WithRaw(testVector.Raw))
@@ -98,7 +98,7 @@ func TestSignerDeterminism(t *testing.T) {
 }
 
 func TestSignerUnindexedSignatureCreation(t *testing.T) {
-	testVectors := []struct {
+	testCases := []struct {
 		Code types.Code
 	}{
 		{
@@ -112,7 +112,7 @@ func TestSignerUnindexedSignatureCreation(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s", testVector.Code)
 		t.Run(label, func(t *testing.T) {
 			signer, err := cesrgo.NewSigner(true, options.WithCode(testVector.Code))
@@ -129,7 +129,7 @@ func TestSignerUnindexedSignatureCreation(t *testing.T) {
 }
 
 func TestSignerIndexedSignatureCreation(t *testing.T) {
-	testVectors := []struct {
+	testCases := []struct {
 		Code types.Code
 	}{
 		{
@@ -143,7 +143,7 @@ func TestSignerIndexedSignatureCreation(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s", testVector.Code)
 		t.Run(label, func(t *testing.T) {
 			signer, err := cesrgo.NewSigner(true, options.WithCode(testVector.Code))

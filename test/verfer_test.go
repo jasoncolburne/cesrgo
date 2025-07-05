@@ -11,7 +11,7 @@ import (
 )
 
 func TestVerferCodesAndSizes(t *testing.T) {
-	var testVectors = []struct {
+	var testCases = []struct {
 		Code types.Code
 		Size types.Size
 	}{
@@ -41,7 +41,7 @@ func TestVerferCodesAndSizes(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s[+]", testVector.Code)
 		t.Run(label, func(t *testing.T) {
 			raw := make(types.Raw, testVector.Size)
@@ -60,7 +60,7 @@ func TestVerferCodesAndSizes(t *testing.T) {
 		})
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s[-]", testVector.Code)
 		t.Run(label, func(t *testing.T) {
 			raw := make(types.Raw, testVector.Size+1)
@@ -73,7 +73,7 @@ func TestVerferCodesAndSizes(t *testing.T) {
 }
 
 func TestVerferVerification(t *testing.T) {
-	testVectors := []struct {
+	testCases := []struct {
 		SignerCode types.Code
 	}{
 		{
@@ -87,7 +87,7 @@ func TestVerferVerification(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s[+]", testVector.SignerCode)
 		t.Run(label, func(t *testing.T) {
 			signer, err := cesrgo.NewSigner(false, options.WithCode(testVector.SignerCode))
@@ -116,7 +116,7 @@ func TestVerferVerification(t *testing.T) {
 		})
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s[-]", testVector.SignerCode)
 		t.Run(label, func(t *testing.T) {
 			signer, err := cesrgo.NewSigner(false, options.WithCode(testVector.SignerCode))

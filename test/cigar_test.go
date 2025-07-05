@@ -11,7 +11,7 @@ import (
 )
 
 func TestCigarCodesAndSizes(t *testing.T) {
-	var testVectors = []struct {
+	var testCases = []struct {
 		SignerCode types.Code
 		CigarCode  types.Code
 		CigarSize  types.Size
@@ -33,7 +33,7 @@ func TestCigarCodesAndSizes(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s->%s", testVector.SignerCode, testVector.CigarCode)
 		t.Run(label, func(t *testing.T) {
 			signer, err := cesrgo.NewSigner(true, options.WithCode(testVector.SignerCode))

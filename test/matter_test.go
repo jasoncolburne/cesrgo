@@ -17,7 +17,7 @@ func TestMatterInvalidOptionCombinations(t *testing.T) {
 	qb64 := types.Qb64("")
 	qb64b := types.Qb64b{}
 
-	testVectors := []options.MatterOptions{
+	testCases := []options.MatterOptions{
 		// missing data
 		{
 			Code:  &code,
@@ -79,7 +79,7 @@ func TestMatterInvalidOptionCombinations(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testVectors {
+	for _, testVector := range testCases {
 		m := &cesrgo.TestMatter{}
 
 		args := []options.MatterOption{}
