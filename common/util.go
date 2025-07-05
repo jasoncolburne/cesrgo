@@ -26,6 +26,8 @@ var (
 	VER2TERM     = '.'
 	VEREX2       = "([A-Z]{4})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([A-Z]{4})([0-9A-Za-z_-]{4})\\."
 
+	B64EX = "^[A-Za-z0-9_-]*$"
+
 	REVER *regexp.Regexp
 	REB64 *regexp.Regexp
 
@@ -50,7 +52,7 @@ func Rever() (*regexp.Regexp, error) {
 func Reb64() (*regexp.Regexp, error) {
 	if REB64 == nil {
 		var err error
-		REB64, err = regexp.Compile("^[A-Za-z0-9_-]*$")
+		REB64, err = regexp.Compile(B64EX)
 		if err != nil {
 			return nil, err
 		}
