@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"math/big"
 	"regexp"
 	"slices"
 	"strconv"
@@ -677,4 +678,15 @@ func NowISO8601() types.DateTime {
 		timeStr = strings.Replace(timeStr, "Z", "+00:00", 1)
 	}
 	return types.DateTime(timeStr)
+}
+
+func LessThanMaxON(num big.Int) bool {
+	limit := &big.Int{}
+	limit.Exp(big.NewInt(2), big.NewInt(128), nil)
+
+	if num.Cmp(limit) >= 0 {
+		return false
+	}
+
+	return true
 }

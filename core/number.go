@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/jasoncolburne/cesrgo/common"
 	codex "github.com/jasoncolburne/cesrgo/core/matter"
 	"github.com/jasoncolburne/cesrgo/core/matter/options"
 	"github.com/jasoncolburne/cesrgo/core/types"
@@ -73,8 +74,8 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 		}
 
 		n.number.SetBytes(n.GetRaw())
-		if err := n.validateSizeUnderLimit(); err != nil {
-			return nil, err
+		if !common.LessThanMaxON(n.number) {
+			return nil, fmt.Errorf("number is too large to be represented by 16 octets")
 		}
 
 		return n, nil
@@ -89,8 +90,8 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 		bigNum.SetBytes(*config.Raw)
 
 		n.number = bigNum
-		if err := n.validateSizeUnderLimit(); err != nil {
-			return nil, err
+		if !common.LessThanMaxON(n.number) {
+			return nil, fmt.Errorf("number is too large to be represented by 16 octets")
 		}
 
 		var code types.Code
@@ -191,8 +192,8 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 
 	raw := make([]byte, requiredBytes)
 	n.number.FillBytes(raw)
-	if err := n.validateSizeUnderLimit(); err != nil {
-		return nil, err
+	if !common.LessThanMaxON(n.number) {
+		return nil, fmt.Errorf("number is too large to be represented by 16 octets")
 	}
 
 	err := NewMatter(
@@ -235,15 +236,4 @@ func (n *Number) Hex() string {
 	}
 
 	return hex
-}
-
-func (n *Number) validateSizeUnderLimit() error {
-	limit := &big.Int{}
-	limit.Exp(big.NewInt(2), big.NewInt(128), nil)
-
-	if n.number.Cmp(limit) >= 0 {
-		return fmt.Errorf("number too large to represent by 16 octets")
-	}
-
-	return nil
 }

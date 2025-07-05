@@ -462,3 +462,20 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 
 	return fmt.Errorf("no inputs provided")
 }
+
+func rawSize(code types.Code) (uint32, error) {
+	szg, ok := codex.Sizes[code]
+	if !ok {
+		return 0, fmt.Errorf("unknown code: %s", code)
+	}
+
+	if szg.Fs == nil {
+		return 0, fmt.Errorf("non-fixed raw size for code: %s", code)
+	}
+
+	cs := szg.Hs + szg.Ss
+	fs := *szg.Fs
+	ls := szg.Ls
+
+	return (fs-cs)*3/4 - ls, nil
+}
