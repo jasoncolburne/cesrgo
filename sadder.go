@@ -142,6 +142,7 @@ func (s *Sadder) inhale(raw types.Raw) error {
 	s.SetKind(kind)
 
 	s.SetCode(saider.GetCode())
+	//nolint:gosec
 	s.SetSize(types.Size(len(raw)))
 	s.SetRaw(raw)
 
@@ -219,6 +220,7 @@ func NewSadder(
 		s.SetKind(kind)
 
 		s.SetCode(*code)
+		//nolint:gosec
 		s.SetSize(types.Size(len(exhaledRaw)))
 		s.SetRaw(exhaledRaw)
 	} else {
