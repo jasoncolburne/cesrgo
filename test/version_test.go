@@ -11,6 +11,6 @@ func TestVersion(t *testing.T) {
 	expected := "2.0.0"
 
 	if version != expected {
-		t.Errorf("Version = %q, want %q", version, expected)
+		t.Errorf("version = %q, want %q", version, expected)
 	}
 }
