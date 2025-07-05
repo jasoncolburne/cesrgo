@@ -195,10 +195,6 @@ func NewSadder(
 			return nil, err
 		}
 	} else if ked != nil {
-		if raw != nil {
-			return nil, fmt.Errorf("both raw and ked cannot be provided")
-		}
-
 		szg, ok := codex.Sizes[*code]
 		if !ok {
 			return nil, fmt.Errorf("unknown code: %s", *code)
