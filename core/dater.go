@@ -42,6 +42,9 @@ func NewDater(dts *types.DateTime, opts ...options.MatterOption) (*Dater, error)
 
 		qb64Str := types.Qb64(fmt.Sprintf("%s%s", codex.DateTime, dtsStr))
 		qb64 = &qb64Str
+
+		fmt.Printf("dtsStr: %s\n", dtsStr)
+		fmt.Printf("qb64Str: %s\n", qb64Str)
 	}
 
 	if qb64 != nil {

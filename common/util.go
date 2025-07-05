@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/fxamacker/cbor/v2"
@@ -658,5 +659,9 @@ func Unmarshal(kind types.Kind, raw types.Raw) (types.Map, error) {
 }
 
 func NowISO8601() types.DateTime {
-	return types.DateTime(time.Now().UTC().Format("2006-01-02T15:04:05.000000Z07:00"))
+	timeStr := time.Now().UTC().Format("2006-01-02T15:04:05.000000Z07:00")
+	if strings.HasSuffix(timeStr, "Z") {
+		timeStr = strings.Replace(timeStr, "Z", "+00:00", 1)
+	}
+	return types.DateTime(timeStr)
 }

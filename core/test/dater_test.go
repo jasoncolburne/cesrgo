@@ -1,7 +1,9 @@
 package test
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	cesr "github.com/jasoncolburne/cesrgo/core"
 	"github.com/jasoncolburne/cesrgo/core/matter/options"
@@ -69,5 +71,32 @@ func TestDaterQb64Represenatation(t *testing.T) {
 
 	if qb64 != "1AAG2006-01-02T15c04c05d000000p07c00" {
 		t.Fatalf("qb64 %s does not match expected %s", qb64, "1AAG2006-01-02T15c04c05d000000p07c00")
+	}
+}
+
+func TestDaterDefaultTemporality(t *testing.T) {
+	then := time.Now().UTC()
+
+	dtsDater, err := cesr.NewDater(nil)
+	if err != nil {
+		t.Fatalf("failed to create dater: %v", err)
+	}
+
+	now := time.Now().UTC()
+
+	dts, err := dtsDater.DTS()
+	if err != nil {
+		t.Fatalf("failed to get dts: %v", err)
+	}
+
+	fmt.Printf("dts: %s\n", dts)
+
+	dtsTime, err := time.Parse(time.RFC3339, string(dts))
+	if err != nil {
+		t.Fatalf("failed to parse dts: %v", err)
+	}
+
+	if dtsTime.Before(then) || dtsTime.After(now) {
+		t.Fatalf("dts time %s is not within the range of then %s and now %s", dtsTime, then, now)
 	}
 }
