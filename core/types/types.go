@@ -24,6 +24,7 @@ type (
 
 	Count uint32
 	Ilk   string
+	Trait string
 
 	DateTime string
 

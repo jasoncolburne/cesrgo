@@ -8,7 +8,7 @@ import (
 	"github.com/jasoncolburne/cesrgo/core/matter/options"
 )
 
-func TestIlks(t *testing.T) {
+func TestIlkerIlks(t *testing.T) {
 	for _, ilk := range cesrgo.ILKS {
 		label := string(ilk)
 		t.Run(label, func(t *testing.T) {
@@ -29,7 +29,7 @@ func TestIlks(t *testing.T) {
 	}
 }
 
-func TestRoundTrip(t *testing.T) {
+func TestIlkerRoundTrip(t *testing.T) {
 	ilk := cesrgo.Ilk_ICP
 	ilkIlker, err := cesr.NewIlker(&ilk)
 	if err != nil {

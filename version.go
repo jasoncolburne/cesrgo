@@ -45,6 +45,13 @@ const (
 	Ilk_AGG = types.Ilk("agg")
 	Ilk_EDG = types.Ilk("edg")
 	Ilk_RUL = types.Ilk("rul")
+
+	Trait_EstOnly             = types.Trait("EO")
+	Trait_DoNotDelay          = types.Trait("DND")
+	Trait_RegistrarBackers    = types.Trait("RB")
+	Trait_NoBackers           = types.Trait("NB")
+	Trait_NoRegistrarBackers  = types.Trait("NRB")
+	Trait_DelegateIsDelegator = types.Trait("DID")
 )
 
 var (
@@ -91,6 +98,15 @@ var (
 		Ilk_AGG,
 		Ilk_EDG,
 		Ilk_RUL,
+	}
+
+	TRAITS = []types.Trait{
+		Trait_EstOnly,
+		Trait_DoNotDelay,
+		Trait_RegistrarBackers,
+		Trait_NoBackers,
+		Trait_NoRegistrarBackers,
+		Trait_DelegateIsDelegator,
 	}
 
 	VERSION_1_0 = types.Version{
