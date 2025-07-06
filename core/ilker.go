@@ -48,3 +48,13 @@ func NewIlker(ilk *types.Ilk, opts ...options.MatterOption) (*Ilker, error) {
 
 	return i, nil
 }
+
+func (i *Ilker) Ilk() (types.Ilk, error) {
+	szg, ok := codex.Sizes[i.GetCode()]
+	if !ok {
+		return "", fmt.Errorf("unknown code %s", i.GetCode())
+	}
+
+	xs := int(szg.Xs)
+	return types.Ilk(i.GetSoft()[xs:]), nil
+}

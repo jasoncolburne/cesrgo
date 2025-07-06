@@ -17,8 +17,13 @@ func TestIlks(t *testing.T) {
 				t.Fatalf("failed to create ilker for %s: %v", ilk, err)
 			}
 
-			if ilker.GetSoft() != string(ilk) {
-				t.Fatalf("ilker.GetSoft() != %s", ilk)
+			derivedIlk, err := ilker.Ilk()
+			if err != nil {
+				t.Fatalf("failed to get ilk: %v", err)
+			}
+
+			if derivedIlk != ilk {
+				t.Fatalf("derivedIlk != %s", ilk)
 			}
 		})
 	}
@@ -61,7 +66,8 @@ func TestRoundTrip(t *testing.T) {
 		t.Fatalf("failed to create ilker from qb64b: %v", err)
 	}
 
-	if qb64bIlker.GetSoft() != string(ilk) {
-		t.Fatalf("qb64bIlker.GetSoft() != %s", ilk)
+	qb64bIlk, err := qb64bIlker.Ilk()
+	if qb64bIlk != ilk {
+		t.Fatalf("qb64bIlker.Ilk() != %s", ilk)
 	}
 }
