@@ -55,7 +55,7 @@ func NewTagger(tag *string, opts ...options.MatterOption) (*Tagger, error) {
 		if err := NewMatter(t, opts...); err != nil {
 			return nil, err
 		}
-	} else if config.Qb2 == nil || config.Qb64 == nil || config.Qb64b == nil {
+	} else if config.Qb2 == nil && config.Qb64 == nil && config.Qb64b == nil {
 		return nil, fmt.Errorf("tag is required when qb2, qb64, or qb64b is not provided")
 	} else {
 		if err := NewMatter(t, opts...); err != nil {

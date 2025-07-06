@@ -277,7 +277,7 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 	pbs := 2 * ps
 
 	pi := int(qb2[bcs-1 : bcs][0])
-	pi &= 2<<pbs - 1
+	pi &= 1<<pbs - 1
 	if pi != 0 {
 		return fmt.Errorf("non-zeroed code midpad bits")
 	}

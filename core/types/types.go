@@ -23,6 +23,7 @@ type (
 	Ondex uint32
 
 	Count uint32
+	Ilk   string
 
 	DateTime string
 
