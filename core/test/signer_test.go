@@ -2,6 +2,7 @@ package test
 
 import (
 	"bytes"
+	"crypto/rand"
 	"fmt"
 	"testing"
 
@@ -147,12 +148,13 @@ func TestSignerIndexedSignatureCreation(t *testing.T) {
 }
 
 func TestSignerRoundTrip(t *testing.T) {
-	codeSigner, err := cesr.NewSigner(true, options.WithCode(mdex.Ed25519_Seed))
+	raw := [32]byte{}
+	rand.Read(raw[:])
+
+	codeSigner, err := cesr.NewSigner(true, options.WithCode(mdex.Ed25519_Seed), options.WithRaw(raw[:]))
 	if err != nil {
 		t.Fatalf("failed to create signer: %v", err)
 	}
-
-	raw := codeSigner.GetRaw()
 
 	qb2, err := codeSigner.Qb2()
 	if err != nil {
