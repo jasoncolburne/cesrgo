@@ -1,6 +1,8 @@
 package test
 
 import (
+	"bytes"
+	"crypto/rand"
 	"fmt"
 	"testing"
 
@@ -139,5 +141,50 @@ func TestVerferVerification(t *testing.T) {
 				t.Fatalf("unexpected valid signature")
 			}
 		})
+	}
+}
+
+func TestVerferRoundTrip(t *testing.T) {
+	raw := [32]byte{}
+	rand.Read(raw[:])
+
+	verfer, err := cesr.NewVerfer(options.WithCode(codex.Ed25519), options.WithRaw(raw[:]))
+	if err != nil {
+		t.Fatalf("failed to create verfer: %v", err)
+	}
+
+	qb2, err := verfer.Qb2()
+	if err != nil {
+		t.Fatalf("failed to get qb2: %v", err)
+	}
+
+	qb2Verfer, err := cesr.NewVerfer(options.WithQb2(qb2))
+	if err != nil {
+		t.Fatalf("failed to create verfer: %v", err)
+	}
+
+	qb64, err := qb2Verfer.Qb64()
+	if err != nil {
+		t.Fatalf("failed to get qb64: %v", err)
+	}
+
+	qb64Verfer, err := cesr.NewVerfer(options.WithQb64(qb64))
+	if err != nil {
+		t.Fatalf("failed to create verfer: %v", err)
+	}
+
+	qb64b, err := qb64Verfer.Qb64b()
+	if err != nil {
+		t.Fatalf("failed to get qb64b: %v", err)
+	}
+
+	qb64bVerfer, err := cesr.NewVerfer(options.WithQb64b(qb64b))
+	if err != nil {
+		t.Fatalf("failed to create verfer: %v", err)
+	}
+
+	qb64bRaw := qb64bVerfer.GetRaw()
+	if !bytes.Equal(qb64bRaw, raw[:]) {
+		t.Fatalf("qb64b raw mismatch: %x != %x", qb64bRaw, raw[:])
 	}
 }
