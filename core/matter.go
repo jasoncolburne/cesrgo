@@ -292,7 +292,6 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 	}
 
 	m.SetCode(types.Code(hard))
-	//nolint:gosec
 	if szg.Fs == nil {
 		size := types.Size(fs / 4)
 		m.SetSize(&size)
@@ -442,6 +441,7 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 
 		if szg.Fs == nil {
 			size := types.Size(fs / 4)
+			//nolint:gosec
 			m.SetSize(&size)
 		}
 		m.SetSoft(config.Soft)
