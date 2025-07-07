@@ -1,6 +1,8 @@
 package test
 
 import (
+	"bytes"
+	"crypto/rand"
 	"fmt"
 	"testing"
 
@@ -105,5 +107,53 @@ func TestDigerVerification(t *testing.T) {
 				t.Fatalf("unexpected valid digest")
 			}
 		})
+	}
+}
+
+func TestDigerRoundTrip(t *testing.T) {
+	raw := [32]byte{}
+	_, err := rand.Read(raw[:])
+	if err != nil {
+		t.Fatalf("failed to read random bytes: %v", err)
+	}
+
+	diger, err := cesr.NewDiger(nil, options.WithCode(codex.Blake3_256), options.WithRaw(raw[:]))
+	if err != nil {
+		t.Fatalf("failed to create diger: %v", err)
+	}
+
+	qb2, err := diger.Qb2()
+	if err != nil {
+		t.Fatalf("failed to get qb2: %v", err)
+	}
+
+	qb2Diger, err := cesr.NewDiger(nil, options.WithQb2(qb2))
+	if err != nil {
+		t.Fatalf("failed to create diger from qb2: %v", err)
+	}
+
+	qb64, err := qb2Diger.Qb64()
+	if err != nil {
+		t.Fatalf("failed to get qb64: %v", err)
+	}
+
+	qb64Diger, err := cesr.NewDiger(nil, options.WithQb64(qb64))
+	if err != nil {
+		t.Fatalf("failed to create diger from qb64: %v", err)
+	}
+
+	qb64b, err := qb64Diger.Qb64b()
+	if err != nil {
+		t.Fatalf("failed to get qb64b: %v", err)
+	}
+
+	qb64bDiger, err := cesr.NewDiger(nil, options.WithQb64b(qb64b))
+	if err != nil {
+		t.Fatalf("failed to create diger from qb64b: %v", err)
+	}
+
+	qb64bRaw := qb64bDiger.GetRaw()
+	if !bytes.Equal(qb64bRaw, raw[:]) {
+		t.Fatalf("qb64b raw mismatch: %x != %x", qb64bRaw, raw[:])
 	}
 }
