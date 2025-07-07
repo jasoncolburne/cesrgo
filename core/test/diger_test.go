@@ -10,47 +10,19 @@ import (
 	"github.com/jasoncolburne/cesrgo/core/types"
 )
 
-func TestDigerCodesAndSizes(t *testing.T) {
+func TestDigerCodes(t *testing.T) {
 	var testCases = []struct {
 		DigerCode types.Code
-		DigerSize types.Size
 	}{
-		{
-			DigerCode: codex.Blake3_256,
-			DigerSize: 32,
-		},
-		{
-			DigerCode: codex.Blake3_512,
-			DigerSize: 64,
-		},
-		{
-			DigerCode: codex.Blake2b_256,
-			DigerSize: 32,
-		},
-		{
-			DigerCode: codex.Blake2b_512,
-			DigerSize: 64,
-		},
-		{
-			DigerCode: codex.Blake2s_256,
-			DigerSize: 32,
-		},
-		{
-			DigerCode: codex.SHA2_256,
-			DigerSize: 32,
-		},
-		{
-			DigerCode: codex.SHA2_512,
-			DigerSize: 64,
-		},
-		{
-			DigerCode: codex.SHA3_256,
-			DigerSize: 32,
-		},
-		{
-			DigerCode: codex.SHA3_512,
-			DigerSize: 64,
-		},
+		{DigerCode: codex.Blake3_256},
+		{DigerCode: codex.Blake3_512},
+		{DigerCode: codex.Blake2b_256},
+		{DigerCode: codex.Blake2b_512},
+		{DigerCode: codex.Blake2s_256},
+		{DigerCode: codex.SHA2_256},
+		{DigerCode: codex.SHA2_512},
+		{DigerCode: codex.SHA3_256},
+		{DigerCode: codex.SHA3_512},
 	}
 
 	for _, testVector := range testCases {
@@ -63,10 +35,6 @@ func TestDigerCodesAndSizes(t *testing.T) {
 
 			if Diger.GetCode() != testVector.DigerCode {
 				t.Fatalf("Diger code mismatch: %s != %s", Diger.GetCode(), testVector.DigerCode)
-			}
-
-			if Diger.GetSize() != testVector.DigerSize {
-				t.Fatalf("Diger size mismatch: %d != %d", Diger.GetSize(), testVector.DigerSize)
 			}
 		})
 	}

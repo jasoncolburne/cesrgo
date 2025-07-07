@@ -53,10 +53,6 @@ func TestVerferCodesAndSizes(t *testing.T) {
 			if verfer.GetCode() != testVector.Code {
 				t.Fatalf("verfer code mismatch: %s != %s", verfer.GetCode(), testVector.Code)
 			}
-
-			if verfer.GetSize() != testVector.Size {
-				t.Fatalf("verfer size mismatch: %d != %d", verfer.GetSize(), testVector.Size)
-			}
 		})
 	}
 

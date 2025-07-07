@@ -8,8 +8,8 @@ type (
 		SetRaw(raw Raw)
 		GetRaw() Raw
 
-		SetSize(size Size)
-		GetSize() Size
+		SetSize(size *Size)
+		GetSize() *Size
 
 		Hard() string
 		SetSoft(soft *string)

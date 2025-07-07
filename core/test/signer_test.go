@@ -13,20 +13,10 @@ import (
 func TestSignerCodesAndSizes(t *testing.T) {
 	testCases := []struct {
 		Code types.Code
-		Size types.Size
 	}{
-		{
-			Code: mdex.Ed25519_Seed,
-			Size: 32,
-		},
-		{
-			Code: mdex.ECDSA_256k1_Seed,
-			Size: 32,
-		},
-		{
-			Code: mdex.ECDSA_256r1_Seed,
-			Size: 32,
-		},
+		{Code: mdex.Ed25519_Seed},
+		{Code: mdex.ECDSA_256k1_Seed},
+		{Code: mdex.ECDSA_256r1_Seed},
 	}
 
 	for _, testVector := range testCases {
@@ -39,10 +29,6 @@ func TestSignerCodesAndSizes(t *testing.T) {
 
 			if signer.GetCode() != testVector.Code {
 				t.Fatalf("signer code mismatch: %s != %s", signer.GetCode(), testVector.Code)
-			}
-
-			if signer.GetSize() != testVector.Size {
-				t.Fatalf("signer size mismatch: %d != %d", signer.GetSize(), testVector.Size)
 			}
 		})
 	}

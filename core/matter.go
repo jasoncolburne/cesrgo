@@ -20,7 +20,7 @@ const (
 
 type matter struct {
 	code types.Code
-	size types.Size
+	size *types.Size
 	raw  types.Raw
 	soft *string
 }
@@ -45,11 +45,11 @@ func (m *matter) GetRaw() types.Raw {
 	return m.raw
 }
 
-func (m *matter) SetSize(size types.Size) {
+func (m *matter) SetSize(size *types.Size) {
 	m.size = size
 }
 
-func (m *matter) GetSize() types.Size {
+func (m *matter) GetSize() *types.Size {
 	return m.size
 }
 
@@ -293,7 +293,11 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 
 	m.SetCode(types.Code(hard))
 	//nolint:gosec
-	m.SetSize(types.Size(len(raw)))
+	if szg.Fs == nil {
+		size := types.Size(fs / 4)
+		m.SetSize(&size)
+	}
+
 	m.SetRaw(raw)
 	if soft != "" {
 		m.SetSoft(&soft)
@@ -381,7 +385,10 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 		return fmt.Errorf("size too large")
 	}
 
-	m.SetSize(types.Size(length))
+	if szg.Fs == nil {
+		size := types.Size(fs / 4)
+		m.SetSize(&size)
+	}
 
 	return nil
 }
@@ -398,16 +405,11 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 			return fmt.Errorf("code and raw cannot be used with qb2, qb64, or qb64b")
 		}
 
-		length := 0
 		var raw types.Raw
 		if config.Raw != nil {
-			length = len(*config.Raw)
 			raw = *config.Raw
 		} else {
 			raw = types.Raw{}
-		}
-		if length > 1<<32-1 {
-			return fmt.Errorf("size too large")
 		}
 
 		szg, ok := codex.Sizes[*config.Code]
@@ -431,10 +433,17 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 			}
 		}
 
+		rize := len(raw)
+		ls := (3 - (rize % 3)) % 3
+		fs := cs + ls + rize
+
 		m.SetCode(*config.Code)
 		m.SetRaw(raw)
-		//nolint:gosec
-		m.SetSize(types.Size(len(raw)))
+
+		if szg.Fs == nil {
+			size := types.Size(fs / 4)
+			m.SetSize(&size)
+		}
 		m.SetSoft(config.Soft)
 
 		return nil
