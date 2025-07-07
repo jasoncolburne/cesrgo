@@ -1,13 +1,16 @@
 package test
 
 import (
+	"bytes"
+	"crypto/rand"
 	"fmt"
 	"testing"
 
 	cesr "github.com/jasoncolburne/cesrgo/core"
 	idex "github.com/jasoncolburne/cesrgo/core/indexer"
+	iopts "github.com/jasoncolburne/cesrgo/core/indexer/options"
 	mdex "github.com/jasoncolburne/cesrgo/core/matter"
-	"github.com/jasoncolburne/cesrgo/core/matter/options"
+	mopts "github.com/jasoncolburne/cesrgo/core/matter/options"
 	"github.com/jasoncolburne/cesrgo/core/types"
 )
 
@@ -103,7 +106,7 @@ func TestSigerCodesAndIndicies(t *testing.T) {
 	for _, testVector := range testCases {
 		label := fmt.Sprintf("%s->%s[%t]", testVector.SignerCode, testVector.SigerCode, testVector.Only)
 		t.Run(label, func(t *testing.T) {
-			signer, err := cesr.NewSigner(true, options.WithCode(testVector.SignerCode))
+			signer, err := cesr.NewSigner(true, mopts.WithCode(testVector.SignerCode))
 			if err != nil {
 				t.Fatalf("failed to create signer: %v", err)
 			}
@@ -136,5 +139,56 @@ func TestSigerCodesAndIndicies(t *testing.T) {
 
 			t.Fatalf("siger ondex mismatch: %d", *ondex)
 		})
+	}
+}
+
+func TestSigerRoundTrip(t *testing.T) {
+	raw := [64]byte{}
+	rand.Read(raw[:])
+
+	siger, err := cesr.NewSiger(
+		nil,
+		iopts.WithCode(idex.Ed25519_Big),
+		iopts.WithRaw(raw[:]),
+		iopts.WithIndex(37),
+		iopts.WithOndex(581),
+	)
+	if err != nil {
+		t.Fatalf("failed to create signer: %v", err)
+	}
+
+	qb2, err := siger.Qb2()
+	if err != nil {
+		t.Fatalf("failed to get qb2: %v", err)
+	}
+
+	qb2Siger, err := cesr.NewSiger(nil, iopts.WithQb2(qb2))
+	if err != nil {
+		t.Fatalf("failed to create siger from qb2: %v", err)
+	}
+
+	qb64, err := qb2Siger.Qb64()
+	if err != nil {
+		t.Fatalf("failed to get qb64: %v", err)
+	}
+
+	qb64Siger, err := cesr.NewSiger(nil, iopts.WithQb64(qb64))
+	if err != nil {
+		t.Fatalf("failed to create siger from qb64: %v", err)
+	}
+
+	qb64b, err := qb64Siger.Qb64b()
+	if err != nil {
+		t.Fatalf("failed to get qb64b: %v", err)
+	}
+
+	qb64bSiger, err := cesr.NewSiger(nil, iopts.WithQb64b(qb64b))
+	if err != nil {
+		t.Fatalf("failed to create siger from qb64b: %v", err)
+	}
+
+	qb64bRaw := qb64bSiger.GetRaw()
+	if !bytes.Equal(qb64bRaw, raw[:]) {
+		t.Fatalf("qb64b raw mismatch: %x != %x", qb64bRaw, raw[:])
 	}
 }

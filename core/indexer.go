@@ -161,7 +161,7 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 		fs = *szg.Fs
 	}
 
-	bfs := ((fs + 1) * 3) / 4
+	bfs := int(math.Ceil(float64(fs)*3) / 4)
 	if len(qb2) < int(bfs) {
 		return fmt.Errorf("insufficient material: qb2 size = %d, bfs = %d", len(qb2), bfs)
 	}
@@ -236,9 +236,12 @@ func ibinfil(i types.Indexer) (types.Qb2, error) {
 		if cs%4 != 0 {
 			return types.Qb2{}, fmt.Errorf("whole code size not multiple of 4 for variable length material. cs = %d", cs)
 		}
+
 		if szg.Os != 0 {
 			return types.Qb2{}, fmt.Errorf("non-zero other index size for variable length material. os = %d", szg.Os)
 		}
+
+		// ?
 		fs = (uint32(index) * 4) + cs
 	} else {
 		fs = *szg.Fs
@@ -280,7 +283,8 @@ func ibinfil(i types.Indexer) (types.Qb2, error) {
 
 	//nolint:gosec
 	bothInt.Lsh(bothInt, uint(2*(ps-int(szg.Ls))))
-	bcode := make([]byte, cs)
+	bcs := int(math.Ceil(float64(cs) * 3 / 4))
+	bcode := make([]byte, bcs)
 	bothInt.FillBytes(bcode)
 	full := make([]byte, len(bcode)+int(szg.Ls)+len(raw))
 
@@ -290,7 +294,7 @@ func ibinfil(i types.Indexer) (types.Qb2, error) {
 
 	bfs := len(full)
 	if bfs%3 != 0 || bfs*4/3 != int(fs) {
-		return types.Qb2{}, fmt.Errorf("invalid code=%s (%s) for raw size=%d", code, both, len(raw))
+		return types.Qb2{}, fmt.Errorf("invalid code=%s (%s) for raw size=%d, bfs=%d, fs=%d", code, both, len(raw), bfs, fs)
 	}
 
 	return types.Qb2(full), nil

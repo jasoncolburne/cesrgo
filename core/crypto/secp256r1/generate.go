@@ -1,6 +1,7 @@
 package secp256r1
 
 import (
+	"crypto/ecdh"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -25,16 +26,37 @@ func GenerateSeed() (types.Raw, error) {
 }
 
 func DerivePublicKey(seed types.Raw) (types.Raw, error) {
-	curve := elliptic.P256()
+	curve := ecdh.P256()
 
-	privateKey := new(big.Int).SetBytes(seed)
-	if privateKey.Cmp(big.NewInt(0)) == 0 || privateKey.Cmp(curve.Params().N) >= 0 {
-		return nil, fmt.Errorf("invalid private key")
+	privateKey, err := curve.NewPrivateKey([]byte(seed))
+	if err != nil {
+		return nil, err
 	}
 
-	//nolint:deprecated
-	X, Y := curve.ScalarBaseMult(privateKey.Bytes())
-	compressed := elliptic.MarshalCompressed(curve, X, Y)
+	publicKey := privateKey.PublicKey()
+	pubBytes := publicKey.Bytes() // 65 bytes: 0x04 || X (32) || Y (32)
+
+	if len(pubBytes) != 65 || pubBytes[0] != 0x04 {
+		return nil, fmt.Errorf("unexpected public key format")
+	}
+
+	x := new(big.Int).SetBytes(pubBytes[1:33])
+	y := new(big.Int).SetBytes(pubBytes[33:65])
+
+	// Compressed format: 0x02 if y is even, 0x03 if y is odd
+	prefix := byte(0x02)
+	if y.Bit(0) == 1 {
+		prefix = 0x03
+	}
+
+	compressed := make([]byte, 33)
+	compressed[0] = prefix
+	copy(compressed[1:], x.Bytes())
+
+	// Ensure x is 32 bytes (pad if necessary)
+	if len(x.Bytes()) < 32 {
+		copy(compressed[1+32-len(x.Bytes()):], x.Bytes())
+	}
 
 	return types.Raw(compressed), nil
 }
