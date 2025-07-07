@@ -404,6 +404,8 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 			return fmt.Errorf("code and raw cannot be used with qb2, qb64, or qb64b")
 		}
 
+		code := *config.Code
+
 		var raw types.Raw
 		if config.Raw != nil {
 			raw = *config.Raw
@@ -416,27 +418,75 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 			return fmt.Errorf("unknown code: %s", *config.Code)
 		}
 
-		var cs = len(*config.Code)
-		if config.Soft != nil {
-			cs += len(*config.Soft) + int(szg.Xs)
-		}
-
-		if cs != int(szg.Hs)+int(szg.Ss) {
-			return fmt.Errorf("hard and soft length mismatch: cs = %d, hs = %d, ss = %d", cs, szg.Hs, szg.Ss)
-		}
-
+		var (
+			soft string
+			err  error
+			cs   int
+		)
 		if szg.Fs != nil {
+			cs = len(code)
+			if config.Soft != nil {
+				soft = *config.Soft
+				cs += len(*config.Soft) + int(szg.Xs)
+			}
+
 			expectedRawSize := (int(*szg.Fs) - cs) * 3 / 4
 			if len(raw) != expectedRawSize {
 				return fmt.Errorf("raw size mismatch: expected = %d, actual = %d", expectedRawSize, len(*config.Raw))
 			}
+		} else {
+			rize := len(raw)
+
+			ls := (3 - (rize % 3)) % 3
+			size := (rize + ls) / 3
+
+			var ss int
+
+			if slices.Contains(codex.SMALL_VRZ_DEX, rune(code[0])) {
+				if size <= 1<<12-1 {
+					hs := 2
+					s := codex.SMALL_VRZ_DEX[ls]
+					code = types.Code(fmt.Sprintf("%c%s", s, code[1:hs]))
+					ss = 2
+				} else if size <= 1<<24-1 {
+					hs := 4
+					s := codex.LARGE_VRZ_DEX[ls]
+					code = types.Code(fmt.Sprintf("%c%s%s", s, strings.Repeat("A", hs-2), code[1:]))
+					soft, err = common.BigIntToB64(big.NewInt(int64(size)), 4)
+					if err != nil {
+						return err
+					}
+					ss = 4
+				} else {
+					return fmt.Errorf("unsupported raw size for %s", code)
+				}
+			} else if slices.Contains(codex.LARGE_VRZ_DEX, rune(code[0])) {
+				if size <= 1<<24-1 {
+					hs := 4
+					s := codex.LARGE_VRZ_DEX[ls]
+					code = types.Code(fmt.Sprintf("%c%s", s, code[1:hs]))
+					ss = 4
+				} else {
+					return fmt.Errorf("unsupported raw size for large %s. %d <= %d", code, size, 1<<24-1)
+				}
+			} else {
+				return fmt.Errorf("unsupported variable raw size, code=%c, size=%d", code[0], size)
+			}
+
+			var err error
+			soft, err = common.BigIntToB64(big.NewInt(int64(size)), ss)
+			if err != nil {
+				return err
+			}
+
+			cs = len(code)
 		}
 
 		rize := len(raw)
 		ls := (3 - (rize % 3)) % 3
 		fs := cs + ls + rize
 
-		m.SetCode(*config.Code)
+		m.SetCode(code)
 		m.SetRaw(raw)
 
 		if szg.Fs == nil {
@@ -444,7 +494,10 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 			size := types.Size(fs / 4)
 			m.SetSize(&size)
 		}
-		m.SetSoft(config.Soft)
+
+		if soft != "" {
+			m.SetSoft(&soft)
+		}
 
 		return nil
 	}

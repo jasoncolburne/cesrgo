@@ -290,8 +290,8 @@ var SeedCodex = []types.Code{
 	Ed448_Seed,
 }
 
-var SMALL_VRZ_DEX = []byte{4, 5, 6}
-var LARGE_VRZ_DEX = []byte{7, 8, 9}
+var SMALL_VRZ_DEX = []rune{'4', '5', '6'}
+var LARGE_VRZ_DEX = []rune{'7', '8', '9'}
 var SMALL_VRZ_BYTES = uint32(3)
 var LARGE_VRZ_BYTES = uint32(6)
 
