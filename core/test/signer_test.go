@@ -1,6 +1,7 @@
 package test
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
@@ -142,5 +143,49 @@ func TestSignerIndexedSignatureCreation(t *testing.T) {
 				t.Fatalf("failed to sign indexed: %v", err)
 			}
 		})
+	}
+}
+
+func TestSignerRoundTrip(t *testing.T) {
+	codeSigner, err := cesr.NewSigner(true, options.WithCode(mdex.Ed25519_Seed))
+	if err != nil {
+		t.Fatalf("failed to create signer: %v", err)
+	}
+
+	raw := codeSigner.GetRaw()
+
+	qb2, err := codeSigner.Qb2()
+	if err != nil {
+		t.Fatalf("failed to get qb2: %v", err)
+	}
+
+	qb2Signer, err := cesr.NewSigner(true, options.WithQb2(qb2))
+	if err != nil {
+		t.Fatalf("failed to create signer from qb2: %v", err)
+	}
+
+	qb64, err := qb2Signer.Qb64()
+	if err != nil {
+		t.Fatalf("failed to get qb64: %v", err)
+	}
+
+	qb64Signer, err := cesr.NewSigner(true, options.WithQb64(qb64))
+	if err != nil {
+		t.Fatalf("failed to create signer from qb64: %v", err)
+	}
+
+	qb64b, err := qb64Signer.Qb64b()
+	if err != nil {
+		t.Fatalf("failed to get qb64b: %v", err)
+	}
+
+	qb64bSigner, err := cesr.NewSigner(true, options.WithQb64b(qb64b))
+	if err != nil {
+		t.Fatalf("failed to create signer from qb64b: %v", err)
+	}
+
+	qb64bRaw := qb64bSigner.GetRaw()
+	if !bytes.Equal(qb64bRaw, raw[:]) {
+		t.Fatalf("qb64b raw mismatch: %x != %x", qb64bRaw, raw[:])
 	}
 }
