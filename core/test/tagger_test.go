@@ -5,6 +5,7 @@ import (
 
 	cesr "github.com/jasoncolburne/cesrgo/core"
 	codex "github.com/jasoncolburne/cesrgo/core/matter"
+	"github.com/jasoncolburne/cesrgo/core/matter/options"
 	"github.com/jasoncolburne/cesrgo/core/types"
 )
 
@@ -70,5 +71,52 @@ func TestTaggerCodesAndTags(t *testing.T) {
 				t.Fatalf("expected code %s, got %s", testCase.code, tagger.GetCode())
 			}
 		})
+	}
+}
+
+func TestTaggerRoundTrip(t *testing.T) {
+	tag := "fakelongtag"
+	tagTagger, err := cesr.NewTagger(&tag)
+	if err != nil {
+		t.Fatalf("failed to create tagger: %v", err)
+	}
+
+	qb2, err := tagTagger.Qb2()
+	if err != nil {
+		t.Fatalf("failed to get qb2: %v", err)
+	}
+
+	qb2Tagger, err := cesr.NewTagger(nil, options.WithQb2(qb2))
+	if err != nil {
+		t.Fatalf("failed to create tagger from qb2: %v", err)
+	}
+
+	qb64, err := qb2Tagger.Qb64()
+	if err != nil {
+		t.Fatalf("failed to get qb64: %v", err)
+	}
+
+	qb64Tagger, err := cesr.NewTagger(nil, options.WithQb64(qb64))
+	if err != nil {
+		t.Fatalf("failed to create tagger from qb64: %v", err)
+	}
+
+	qb64b, err := qb64Tagger.Qb64b()
+	if err != nil {
+		t.Fatalf("failed to get qb64b: %v", err)
+	}
+
+	qb64bTagger, err := cesr.NewTagger(nil, options.WithQb64b(qb64b))
+	if err != nil {
+		t.Fatalf("failed to create tagger from qb64b: %v", err)
+	}
+
+	qb64bTag, err := qb64bTagger.Tag()
+	if err != nil {
+		t.Fatalf("failed to get tag: %v", err)
+	}
+
+	if qb64bTag != tag {
+		t.Fatalf("qb64b tag mismatch: %s != %s", qb64bTag, tag)
 	}
 }
