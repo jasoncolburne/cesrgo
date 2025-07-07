@@ -149,7 +149,10 @@ func TestSignerIndexedSignatureCreation(t *testing.T) {
 
 func TestSignerRoundTrip(t *testing.T) {
 	raw := [32]byte{}
-	rand.Read(raw[:])
+	_, err := rand.Read(raw[:])
+	if err != nil {
+		t.Fatalf("failed to read random bytes: %v", err)
+	}
 
 	codeSigner, err := cesr.NewSigner(true, options.WithCode(mdex.Ed25519_Seed), options.WithRaw(raw[:]))
 	if err != nil {

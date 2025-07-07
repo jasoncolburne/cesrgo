@@ -162,7 +162,7 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 	}
 
 	bfs := int(math.Ceil(float64(fs)*3) / 4)
-	if len(qb2) < int(bfs) {
+	if len(qb2) < bfs {
 		return fmt.Errorf("insufficient material: qb2 size = %d, bfs = %d", len(qb2), bfs)
 	}
 

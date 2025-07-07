@@ -144,7 +144,10 @@ func TestSigerCodesAndIndicies(t *testing.T) {
 
 func TestSigerRoundTrip(t *testing.T) {
 	raw := [64]byte{}
-	rand.Read(raw[:])
+	_, err := rand.Read(raw[:])
+	if err != nil {
+		t.Fatalf("failed to read random bytes: %v", err)
+	}
 
 	siger, err := cesr.NewSiger(
 		nil,

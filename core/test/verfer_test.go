@@ -146,7 +146,10 @@ func TestVerferVerification(t *testing.T) {
 
 func TestVerferRoundTrip(t *testing.T) {
 	raw := [32]byte{}
-	rand.Read(raw[:])
+	_, err := rand.Read(raw[:])
+	if err != nil {
+		t.Fatalf("failed to read random bytes: %v", err)
+	}
 
 	verfer, err := cesr.NewVerfer(options.WithCode(codex.Ed25519), options.WithRaw(raw[:]))
 	if err != nil {
