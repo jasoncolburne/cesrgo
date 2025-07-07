@@ -82,7 +82,9 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 	}
 
 	if config.Raw != nil {
-		if !slices.Contains([]int{2, 5, 8, 11, 14, 17}, len(*config.Raw)) {
+		rize := len(*config.Raw)
+
+		if rize > 17 {
 			return nil, fmt.Errorf("raw must be a valid size for typed numbers")
 		}
 
@@ -94,28 +96,36 @@ func NewNumber(number *big.Int, hex *string, opts ...options.MatterOption) (*Num
 			return nil, fmt.Errorf("number is too large to be represented by 16 octets")
 		}
 
+		var raw types.Raw
 		var code types.Code
-		switch len(*config.Raw) {
-		case 2:
+		if rize < 3 {
+			raw = make([]byte, 2)
 			code = codex.Short
-		case 5:
+		} else if rize < 6 {
+			raw = make([]byte, 5)
 			code = codex.Tall
-		case 8:
+		} else if rize < 9 {
+			raw = make([]byte, 8)
 			code = codex.Big
-		case 11:
+		} else if rize < 12 {
+			raw = make([]byte, 11)
 			code = codex.Large
-		case 14:
+		} else if rize < 15 {
+			raw = make([]byte, 14)
 			code = codex.Great
-		case 17:
+		} else if rize < 18 {
+			raw = make([]byte, 17)
 			code = codex.Vast
-		default:
+		} else {
 			return nil, fmt.Errorf("raw must be a valid size for typed numbers")
 		}
+
+		n.number.FillBytes(raw)
 
 		err := NewMatter(
 			n,
 			options.WithCode(code),
-			options.WithRaw(*config.Raw),
+			options.WithRaw(raw),
 		)
 		if err != nil {
 			return nil, err

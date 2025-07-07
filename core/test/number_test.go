@@ -1,6 +1,8 @@
 package test
 
 import (
+	"bytes"
+	"crypto/rand"
 	"math/big"
 	"slices"
 	"testing"
@@ -123,5 +125,55 @@ func TestNumberHexEncoding(t *testing.T) {
 
 	if number.Hex() != "00"+hex {
 		t.Fatalf("expected hex %v, got %v", "00"+hex, number.Hex())
+	}
+}
+
+func TestNumberRoundTrip(t *testing.T) {
+	raw := [15]byte{}
+	_, err := rand.Read(raw[:])
+	if err != nil {
+		t.Fatalf("failed to read random bytes: %v", err)
+	}
+
+	number, err := cesr.NewNumber(nil, nil, options.WithRaw(raw[:]))
+	if err != nil {
+		t.Fatalf("failed to create number: %v", err)
+	}
+
+	qb2, err := number.Qb2()
+	if err != nil {
+		t.Fatalf("failed to get qb2: %v", err)
+	}
+
+	qb2Number, err := cesr.NewNumber(nil, nil, options.WithQb2(qb2))
+	if err != nil {
+		t.Fatalf("failed to create number from qb2: %v", err)
+	}
+
+	qb64, err := qb2Number.Qb64()
+	if err != nil {
+		t.Fatalf("failed to get qb64: %v", err)
+	}
+
+	qb64Number, err := cesr.NewNumber(nil, nil, options.WithQb64(qb64))
+	if err != nil {
+		t.Fatalf("failed to create number from qb64: %v", err)
+	}
+
+	qb64b, err := qb64Number.Qb64b()
+	if err != nil {
+		t.Fatalf("failed to get qb64b: %v", err)
+	}
+
+	qb64bNumber, err := cesr.NewNumber(nil, nil, options.WithQb64b(qb64b))
+	if err != nil {
+		t.Fatalf("failed to create number from qb64b: %v", err)
+	}
+
+	padded := make([]byte, 17)
+	copy(padded[2:], raw[:])
+	qb64bRaw := qb64bNumber.GetRaw()
+	if !bytes.Equal(qb64bRaw, padded) {
+		t.Fatalf("qb64b raw mismatch: %x != %x", qb64bRaw, padded)
 	}
 }
