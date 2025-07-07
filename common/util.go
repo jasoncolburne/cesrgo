@@ -1,7 +1,6 @@
 package common
 
 import (
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -106,13 +105,61 @@ func NabSextets(bin []byte, count int) ([]byte, error) {
 		return nil, fmt.Errorf("not enough bytes in %v to nab %d sextets", bin, count)
 	}
 
-	//nolint:gosec
-	i := uint64(BytesToInt(bin[:n]))
+	inInt := BytesToBigInt(bin[:n])
 	p := 2 * (count % 4)
-	i >>= p
-	i <<= p
 
-	return binary.BigEndian.AppendUint64([]byte{}, i)[8-count:], nil
+	inInt.Rsh(inInt, uint(p))
+	out := make([]byte, count)
+	for j := count - 1; j >= 0; j-- {
+		out[j] = byte(inInt.Uint64() & 0x3F)
+		inInt.Rsh(inInt, 6)
+	}
+
+	return out, nil
+}
+
+func BytesToBigInt(bin []byte) *big.Int {
+	return big.NewInt(0).SetBytes(bin)
+}
+
+func BigIntToB64(n *big.Int, b64Length int) (string, error) {
+	if b64Length == 0 {
+		return "", nil
+	}
+
+	x := big.NewInt(0).Set(n)
+	out := ""
+
+	for x.Cmp(big.NewInt(0)) > 0 {
+		c, err := B64IndexToChar(byte(x.Uint64() % 64))
+		if err != nil {
+			return "", err
+		}
+		out = string(c) + out
+
+		x.Div(x, big.NewInt(64))
+	}
+
+	for len(out) < b64Length {
+		out = "A" + out
+	}
+
+	return out[:b64Length], nil
+}
+
+func B64ToBigInt(b64 string) (*big.Int, error) {
+	n := big.NewInt(0)
+
+	for _, c := range b64 {
+		i, err := B64CharToIndex(c)
+		if err != nil {
+			return nil, err
+		}
+		n.Mul(n, big.NewInt(64))
+		n.Add(n, big.NewInt(int64(i)))
+	}
+
+	return n, nil
 }
 
 func CodeB2ToB64(b2 []byte, length int) (string, error) {
@@ -126,35 +173,34 @@ func CodeB2ToB64(b2 []byte, length int) (string, error) {
 		return "", fmt.Errorf("not enough bytes")
 	}
 
-	i := BytesToInt(b2[:n])
-	tbs := 2 * (length % 4)
-	i >>= tbs
-	return IntToB64(i, length)
+	sextets, err := NabSextets(b2[:n], length)
+	if err != nil {
+		return "", err
+	}
+
+	out := make([]byte, length)
+	for i, sextet := range sextets {
+		c, err := B64IndexToChar(sextet)
+		if err != nil {
+			return "", err
+		}
+		out[i] = c
+	}
+
+	return string(out), nil
 }
 
 func CodeB64ToB2(code string) ([]byte, error) {
-	i, err := B64ToU64(code)
+	i, err := B64ToBigInt(code)
 
 	if err != nil {
 		return nil, err
 	}
 
-	i <<= 2 * (len(code) % 4)
+	i.Lsh(i, uint(2*(len(code)%4)))
 	n := int(math.Ceil(float64(len(code)) * 3 / 4))
-	return binary.BigEndian.AppendUint64([]byte{}, i)[8-n:], nil
-}
-
-func B64ToU16(b64 string) (uint16, error) {
-	var out uint16 = 0
-
-	for _, c := range b64 {
-		i, err := B64CharToIndex(c)
-		if err != nil {
-			return 0, err
-		}
-		out = (out << 6) + uint16(i)
-	}
-
+	out := make([]byte, n)
+	i.FillBytes(out)
 	return out, nil
 }
 
@@ -173,7 +219,7 @@ func B64ToU32(b64 string) (uint32, error) {
 }
 
 func B64ToU64(b64 string) (uint64, error) {
-	var out uint64 = 0
+	var out uint64
 
 	for _, c := range b64 {
 		i, err := B64CharToIndex(c)
@@ -184,75 +230,6 @@ func B64ToU64(b64 string) (uint64, error) {
 	}
 
 	return out, nil
-}
-
-func U32ToB64(n uint32, length int) (string, error) {
-	if length == 0 {
-		return "", nil
-	}
-
-	x := n
-	out := ""
-
-	for x > 0 {
-		c, err := B64IndexToChar(byte(x % 64))
-		if err != nil {
-			return "", err
-		}
-		out = string(c) + out
-
-		x /= 64
-	}
-
-	for len(out) < length {
-		out = "A" + out
-	}
-
-	return out[:length], nil
-}
-
-func U64ToB64(n uint64, length int) (string, error) {
-	if length == 0 {
-		return "", nil
-	}
-
-	x := n
-	out := ""
-
-	for x > 0 {
-		c, err := B64IndexToChar(byte(x % 64))
-		if err != nil {
-			return "", err
-		}
-		out = string(c) + out
-
-		x /= 64
-	}
-
-	for len(out) < length {
-		out = "A" + out
-	}
-
-	return out[:length], nil
-}
-
-func BytesToInt(in []byte) int {
-	length := len(in)
-
-	if length <= 4 {
-		bytes := [4]byte{}
-		copy(bytes[4-length:], in)
-		i := binary.BigEndian.Uint32(bytes[:])
-		return int(i)
-	} else if length <= 8 {
-		bytes := [8]byte{}
-		copy(bytes[8-length:], in)
-		i := binary.BigEndian.Uint64(bytes[:])
-		//nolint:gosec
-		return int(i)
-	} else {
-		return -1
-	}
 }
 
 func IntToB64(n, length int) (string, error) {
@@ -269,7 +246,7 @@ func IntToB64(n, length int) (string, error) {
 	}
 
 	limit := length - len(s)
-	for i := 0; i < limit; i++ {
+	for range limit {
 		s = "A" + s
 	}
 

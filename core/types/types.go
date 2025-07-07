@@ -18,6 +18,11 @@ type (
 		Major uint32
 		Minor uint32
 	}
+	Versage struct {
+		Proto Proto
+		Pvrsn Version
+		Gvrsn *Version
+	}
 
 	Index uint32
 	Ondex uint32

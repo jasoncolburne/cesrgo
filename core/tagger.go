@@ -79,3 +79,14 @@ func codify(tag string) (types.Code, error) {
 
 	return codex.TagCodex[l-1], nil
 }
+
+func (t *Tagger) Tag() (string, error) {
+	szg, ok := codex.Sizes[t.GetCode()]
+	if !ok {
+		return "", fmt.Errorf("unknown code %s", t.GetCode())
+	}
+
+	xs := int(szg.Xs)
+
+	return t.GetSoft()[xs:], nil
+}

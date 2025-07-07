@@ -3,6 +3,7 @@ package cesr
 import (
 	"fmt"
 	"math"
+	"math/big"
 
 	"github.com/jasoncolburne/cesrgo"
 	"github.com/jasoncolburne/cesrgo/common"
@@ -76,7 +77,7 @@ func cinfil(c types.Counter) (types.Qb64, error) {
 		return types.Qb64(""), fmt.Errorf("invalid count=%d for code=%s", count, code)
 	}
 
-	countB64, err := common.IntToB64(int(count), int(szg.Ss))
+	countB64, err := common.BigIntToB64(big.NewInt(int64(count)), int(szg.Ss))
 	if err != nil {
 		return types.Qb64(""), err
 	}
@@ -119,14 +120,15 @@ func cexfil(c types.Counter, qb64 types.Qb64) error {
 		return fmt.Errorf("need more characters")
 	}
 
-	count := qb64[hs:szg.Fs]
-	countInt, err := common.B64ToU32(string(count))
+	countStr := string(qb64[hs:szg.Fs])
+	// u64 is safe here because the maximum length is 5 b64 octets
+	count, err := common.B64ToU64(countStr)
 	if err != nil {
 		return err
 	}
 
 	c.SetCode(types.Code(hard))
-	c.SetCount(types.Count(countInt))
+	c.SetCount(types.Count(count))
 
 	return nil
 }
@@ -176,7 +178,8 @@ func cbexfil(c types.Counter, qb2 types.Qb2) error {
 		return err
 	}
 
-	count, err := common.B64ToU32(both[hs:szg.Fs])
+	// u64 is safe here, max length is 5 b64 octets
+	count, err := common.B64ToU64(both[hs:szg.Fs])
 	if err != nil {
 		return err
 	}

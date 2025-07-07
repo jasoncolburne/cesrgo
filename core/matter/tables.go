@@ -1,8 +1,6 @@
 package matter
 
 import (
-	"fmt"
-
 	"github.com/jasoncolburne/cesrgo/common"
 	"github.com/jasoncolburne/cesrgo/core/types"
 )
@@ -529,15 +527,12 @@ func generateBards() error {
 	generateHards()
 
 	for hard, i := range Hards {
-		bard, err := common.CodeB64ToB2(string(hard))
+		bard, err := common.B64CharToIndex(rune(hard))
 		if err != nil {
 			return err
 		}
 
-		if len(bard) != 1 {
-			return fmt.Errorf("unexpected bard length: %d", len(bard))
-		}
-		Bards[bard[0]] = i
+		Bards[bard] = i
 	}
 
 	return nil

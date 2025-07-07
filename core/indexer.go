@@ -2,9 +2,9 @@ package cesr
 
 import (
 	"encoding/base64"
-	"encoding/binary"
 	"fmt"
 	"math"
+	"math/big"
 	"slices"
 	"strings"
 
@@ -112,6 +112,7 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 		return err
 	}
 
+	// u32 safe here, max length is 3 b64 octets
 	index, err := common.B64ToU32(both[hs : hs+int(ms)])
 	if err != nil {
 		return err
@@ -120,6 +121,7 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 	var ondex *types.Ondex
 	if common.ValidateCode(types.Code(hard), codex.IndexedCurrentSigCodex) {
 		if szg.Os != 0 {
+			// u32 safe here, max length is 3 b64 octets
 			odx, err := common.B64ToU32(both[hs+int(ms) : hs+int(ms)+int(szg.Os)])
 			if err != nil {
 				return err
@@ -130,6 +132,7 @@ func ibexfil(i types.Indexer, qb2 types.Qb2) error {
 			}
 		}
 	} else if szg.Os != 0 {
+		// u32 safe here, max length is 3 b64 octets
 		odx, err := common.B64ToU32(both[hs+int(ms) : hs+int(ms)+int(szg.Os)])
 		if err != nil {
 			return err
@@ -246,12 +249,12 @@ func ibinfil(i types.Indexer) (types.Qb2, error) {
 		odx = int(*ondex)
 	}
 
-	indexB64, err := common.IntToB64(int(index), int(ms))
+	indexB64, err := common.BigIntToB64(big.NewInt(int64(index)), int(ms))
 	if err != nil {
 		return types.Qb2{}, err
 	}
 
-	ondexB64, err := common.IntToB64(odx, int(szg.Os))
+	ondexB64, err := common.BigIntToB64(big.NewInt(int64(odx)), int(szg.Os))
 	if err != nil {
 		return types.Qb2{}, err
 	}
@@ -266,12 +269,14 @@ func ibinfil(i types.Indexer) (types.Qb2, error) {
 		return types.Qb2{}, fmt.Errorf("invalid code=%s for converted raw pad size=%d", both, ps)
 	}
 
-	bothU16, err := common.B64ToU16(both)
+	bothInt, err := common.B64ToBigInt(both)
 	if err != nil {
 		return types.Qb2{}, err
 	}
 
-	bcode := binary.BigEndian.AppendUint16([]byte{}, bothU16<<(2*(ps-int(szg.Ls))))
+	bothInt.Lsh(bothInt, uint(2*(ps-int(szg.Ls))))
+	bcode := make([]byte, cs)
+	bothInt.FillBytes(bcode)
 	full := make([]byte, len(bcode)+int(szg.Ls)+len(raw))
 
 	copy(full[:len(bcode)], bcode)
@@ -328,12 +333,12 @@ func iinfil(i types.Indexer) (types.Qb64, error) {
 		odx = int(*ondex)
 	}
 
-	indexB64, err := common.IntToB64(int(index), int(ms))
+	indexB64, err := common.BigIntToB64(big.NewInt(int64(index)), int(ms))
 	if err != nil {
 		return "", err
 	}
 
-	ondexB64, err := common.IntToB64(odx, int(szg.Os))
+	ondexB64, err := common.BigIntToB64(big.NewInt(int64(odx)), int(szg.Os))
 	if err != nil {
 		return "", err
 	}
@@ -385,6 +390,7 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 	}
 
 	indexB64 := qb64[hs : hs+int(ms)]
+	// u32 safe here, max length is 3 b64 octets
 	index, err := common.B64ToU32(string(indexB64))
 	if err != nil {
 		return err
@@ -395,6 +401,7 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 	var ondex *types.Ondex
 	if slices.Contains(codex.IndexedCurrentSigCodex, types.Code(hard)) {
 		if szg.Os != 0 {
+			// u32 safe here, max length is 3 b64 octets
 			odx, err := common.B64ToU32(string(ondexB64))
 			if err != nil {
 				return err
@@ -408,6 +415,7 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 			ondex = &_ondex
 		}
 	} else if szg.Os != 0 {
+		// u32 safe here, max length is 3 b64 octets
 		odx, err := common.B64ToU32(string(ondexB64))
 		if err != nil {
 			return err
@@ -457,9 +465,12 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 			return err
 		}
 
-		pi := common.BytesToInt(paw[:ps])
-		if pi&(1<<pbs-1) != 0 {
-			return fmt.Errorf("non-zeroed pad bits: %x", pi&(1<<pbs-1))
+		pi := common.BytesToBigInt(paw[:ps])
+		mask := big.NewInt(1)
+		mask.Lsh(mask, uint(pbs))
+		mask.Sub(mask, big.NewInt(1))
+		if pi.And(pi, mask).Cmp(big.NewInt(0)) != 0 {
+			return fmt.Errorf("non-zeroed pad bits: %x", pi.And(pi, mask))
 		}
 
 		raw = paw[ps:]
@@ -470,8 +481,8 @@ func iexfil(i types.Indexer, qb64 types.Qb64) error {
 			return err
 		}
 
-		li := common.BytesToInt(paw[:szg.Ls])
-		if li != 0 {
+		li := common.BytesToBigInt(paw[:szg.Ls])
+		if li.Cmp(big.NewInt(0)) != 0 {
 			return fmt.Errorf("non-zeroed lead byte: %x", li)
 		}
 

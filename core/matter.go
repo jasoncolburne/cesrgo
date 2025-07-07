@@ -2,9 +2,9 @@ package cesr
 
 import (
 	"encoding/base64"
-	"encoding/binary"
 	"fmt"
 	"math"
+	"math/big"
 	"slices"
 	"strings"
 
@@ -109,17 +109,15 @@ func mbinfil(m types.Matter) (types.Qb2, error) {
 	}
 	cs := szg.Hs + szg.Ss
 
-	n := int(math.Ceil(float64(cs) * 3 / 4))
-
-	i, err := common.B64ToU64(both)
+	bigNum, err := common.B64ToBigInt(both)
 	if err != nil {
 		return types.Qb2{}, err
 	}
 
-	shifted := i << (2 * (cs % 4))
-	bcode := make([]byte, 8)
-	binary.BigEndian.PutUint64(bcode, shifted)
-	bcode = bcode[8-n:]
+	bcs := int(math.Ceil(float64(cs) * 3 / 4))
+	bigNum.Lsh(bigNum, uint(2*(cs%4)))
+	bcode := make([]byte, bcs)
+	bigNum.FillBytes(bcode)
 
 	full := make([]byte, len(bcode)+int(szg.Ls)+len(raw))
 	copy(full[:len(bcode)], bcode)
@@ -251,12 +249,12 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 	}
 
 	var fs uint32
-	var size uint32
 	if szg.Fs == nil {
 		if len(qb2) < bcs {
 			return fmt.Errorf("insufficient material for code: qb2 size = %d, bcs = %d", len(qb2), bcs)
 		}
 
+		// u32 safe here, max length is 4 b64 octets
 		i, err := common.B64ToU32(soft)
 		if err != nil {
 			return err
@@ -282,15 +280,19 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 		return fmt.Errorf("non-zeroed code midpad bits")
 	}
 
-	li := common.BytesToInt(qb2[bcs : bcs+int(szg.Ls)])
-	if li != 0 {
+	li := common.BytesToBigInt(qb2[bcs : bcs+int(szg.Ls)])
+	if li.Cmp(big.NewInt(0)) != 0 {
 		return fmt.Errorf("non-zeroed lead midpad bytes")
 	}
 
-	raw := qb2[bcs+int(szg.Ls):]
+	raw := types.Raw(qb2[bcs+int(szg.Ls):])
+
+	if len(raw) != len(qb2)-bcs-int(szg.Ls) {
+		return fmt.Errorf("improperly qualified material: qb2 = %s", qb2)
+	}
 
 	m.SetCode(types.Code(hard))
-	m.SetSize(types.Size(size))
+	m.SetSize(types.Size(len(raw)))
 	m.SetRaw(types.Raw(raw))
 	if soft != "" {
 		m.SetSoft(&soft)
@@ -332,6 +334,7 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 
 	var fs uint32
 	if szg.Fs == nil {
+		// u32 safe here, max length is 4 b64 octets
 		i, err := common.B64ToU32(string(soft))
 		if err != nil {
 			return err
@@ -356,8 +359,8 @@ func mexfil(m types.Matter, qb64 types.Qb64) error {
 	raw := paw[int(ps+szg.Ls):]
 
 	// ensure midpad bytes are zero
-	pi := common.BytesToInt(paw[:int(ps+szg.Ls)])
-	if pi != 0 {
+	pi := common.BytesToBigInt(paw[:int(ps+szg.Ls)])
+	if pi.Cmp(big.NewInt(0)) != 0 {
 		return fmt.Errorf("nonzero midpad bytes=0x%x", pi)
 	}
 
