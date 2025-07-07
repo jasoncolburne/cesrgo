@@ -440,8 +440,8 @@ func NewMatter(m types.Matter, opts ...options.MatterOption) error {
 		m.SetRaw(raw)
 
 		if szg.Fs == nil {
-			size := types.Size(fs / 4)
 			//nolint:gosec
+			size := types.Size(fs / 4)
 			m.SetSize(&size)
 		}
 		m.SetSoft(config.Soft)
