@@ -65,6 +65,10 @@ func generateBards() error {
 		}
 
 		nabbed, err := common.NabSextets(bard, 2)
+		if err != nil {
+			return err
+		}
+
 		key := [2]byte{nabbed[0], nabbed[1]}
 		Bards[key] = i
 	}

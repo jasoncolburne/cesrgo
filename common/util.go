@@ -108,6 +108,7 @@ func NabSextets(bin []byte, count int) ([]byte, error) {
 	inInt := BytesToBigInt(bin[:n])
 	p := 2 * (count % 4)
 
+	//nolint:gosec
 	inInt.Rsh(inInt, uint(p))
 	out := make([]byte, count)
 	for j := count - 1; j >= 0; j-- {
@@ -197,6 +198,7 @@ func CodeB64ToB2(code string) ([]byte, error) {
 		return nil, err
 	}
 
+	//nolint:gosec
 	i.Lsh(i, uint(2*(len(code)%4)))
 	n := int(math.Ceil(float64(len(code)) * 3 / 4))
 	out := make([]byte, n)

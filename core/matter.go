@@ -292,8 +292,9 @@ func mbexfil(m types.Matter, qb2 types.Qb2) error {
 	}
 
 	m.SetCode(types.Code(hard))
+	//nolint:gosec
 	m.SetSize(types.Size(len(raw)))
-	m.SetRaw(types.Raw(raw))
+	m.SetRaw(raw)
 	if soft != "" {
 		m.SetSoft(&soft)
 	}

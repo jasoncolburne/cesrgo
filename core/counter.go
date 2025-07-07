@@ -128,6 +128,7 @@ func cexfil(c types.Counter, qb64 types.Qb64) error {
 	}
 
 	c.SetCode(types.Code(hard))
+	//nolint:gosec
 	c.SetCount(types.Count(count))
 
 	return nil
@@ -185,6 +186,7 @@ func cbexfil(c types.Counter, qb2 types.Qb2) error {
 	}
 
 	c.SetCode(types.Code(hard))
+	//nolint:gosec
 	c.SetCount(types.Count(count))
 
 	return nil

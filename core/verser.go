@@ -83,6 +83,9 @@ func (i *Verser) Versage() (types.Versage, error) {
 
 	proto := types.Proto(tag[:4])
 	pvrsn, err := b64ToVer(tag[4:7])
+	if err != nil {
+		return types.Versage{}, fmt.Errorf("failed to convert pvrsn to version: %v", err)
+	}
 
 	var gvrsn *types.Version
 	if len(tag) == 10 {

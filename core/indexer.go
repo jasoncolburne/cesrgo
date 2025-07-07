@@ -274,6 +274,11 @@ func ibinfil(i types.Indexer) (types.Qb2, error) {
 		return types.Qb2{}, err
 	}
 
+	if ps < int(szg.Ls) {
+		return types.Qb2{}, fmt.Errorf("invalid pad size=%d", ps)
+	}
+
+	//nolint:gosec
 	bothInt.Lsh(bothInt, uint(2*(ps-int(szg.Ls))))
 	bcode := make([]byte, cs)
 	bothInt.FillBytes(bcode)
