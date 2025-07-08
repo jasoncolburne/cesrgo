@@ -26,10 +26,12 @@ var (
 	VER2TERM     = '.'
 	VEREX2       = "([A-Z]{4})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([A-Z]{4})([0-9A-Za-z_-]{4})\\."
 
-	B64EX = "^[A-Za-z0-9_-]*$"
+	B64EX   = "^[A-Za-z0-9_-]*$"
+	PATHREX = "^[a-zA-Z0-9_]*$"
 
-	REVER *regexp.Regexp
-	REB64 *regexp.Regexp
+	REVER  *regexp.Regexp
+	REB64  *regexp.Regexp
+	REPATH *regexp.Regexp
 
 	MAXVERFULLSPAN = max(VER1FULLSPAN, VER2FULLSPAN)
 	MAXVSOFFSET    = 12
@@ -59,6 +61,18 @@ func ReB64() (*regexp.Regexp, error) {
 	}
 
 	return REB64, nil
+}
+
+func RePath() (*regexp.Regexp, error) {
+	if REPATH == nil {
+		var err error
+		REPATH, err = regexp.Compile(B64EX)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return REPATH, nil
 }
 
 func ValidateCode(code types.Code, validCodes []types.Code) bool {
