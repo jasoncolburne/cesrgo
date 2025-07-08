@@ -81,7 +81,6 @@ func NewLabeler(label *string, opts ...options.MatterOption) (*Labeler, error) {
 }
 
 func (l *Labeler) Label() (string, error) {
-
 	var (
 		label string
 		err   error
