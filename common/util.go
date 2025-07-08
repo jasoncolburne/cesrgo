@@ -28,9 +28,11 @@ var (
 
 	B64EX   = "^[A-Za-z0-9_-]*$"
 	PATHREX = "^[a-zA-Z0-9_]*$"
+	ATREX   = "^[a-zA-Z_][a-zA-Z0-9_]*$"
 
 	REVER  *regexp.Regexp
 	REB64  *regexp.Regexp
+	REATT  *regexp.Regexp
 	REPATH *regexp.Regexp
 
 	MAXVERFULLSPAN = max(VER1FULLSPAN, VER2FULLSPAN)
@@ -73,6 +75,18 @@ func RePath() (*regexp.Regexp, error) {
 	}
 
 	return REPATH, nil
+}
+
+func ReAtt() (*regexp.Regexp, error) {
+	if REATT == nil {
+		var err error
+		REATT, err = regexp.Compile(ATREX)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return REATT, nil
 }
 
 func ValidateCode(code types.Code, validCodes []types.Code) bool {
