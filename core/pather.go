@@ -15,6 +15,8 @@ type Pather struct {
 	matter
 }
 
+// pather needs to be tested more thoroughly, and there are many helper functions to add
+
 func NewPather(path *string, parts []string, relative, pathive bool, opts ...options.MatterOption) (*Pather, error) {
 	if parts == nil {
 		parts = []string{}
