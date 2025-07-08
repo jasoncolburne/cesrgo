@@ -164,7 +164,7 @@ func verToB64(version *types.Version, text *string) (types.Qb64, error) {
 }
 
 func b64ToVer(b64 string) (types.Version, error) {
-	re, err := common.Reb64()
+	re, err := common.ReB64()
 	if err != nil {
 		return types.Version{}, fmt.Errorf("failed to create re: %v", err)
 	}

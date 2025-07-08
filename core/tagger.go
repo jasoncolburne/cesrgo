@@ -31,7 +31,7 @@ func NewTagger(tag *string, opts ...options.MatterOption) (*Tagger, error) {
 	}
 
 	if tag != nil {
-		re, err := common.Reb64()
+		re, err := common.ReB64()
 		if err != nil {
 			return nil, err
 		}

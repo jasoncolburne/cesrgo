@@ -49,7 +49,7 @@ func Rever() (*regexp.Regexp, error) {
 	return REVER, nil
 }
 
-func Reb64() (*regexp.Regexp, error) {
+func ReB64() (*regexp.Regexp, error) {
 	if REB64 == nil {
 		var err error
 		REB64, err = regexp.Compile(B64EX)
