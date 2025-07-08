@@ -43,7 +43,7 @@ func NewBexter(bext *string, opts ...options.MatterOption) (*Bexter, error) {
 			return nil, fmt.Errorf("invalid bext: %s", *bext)
 		}
 
-		raw, err := rawify(*bext)
+		raw, err := brawify(*bext)
 		if err != nil {
 			return nil, err
 		}
@@ -63,7 +63,7 @@ func NewBexter(bext *string, opts ...options.MatterOption) (*Bexter, error) {
 	return b, nil
 }
 
-func rawify(bext string) (types.Raw, error) {
+func brawify(bext string) (types.Raw, error) {
 	ts := len(bext) % 4
 	ws := (4 - ts) % 4
 	ls := (3 - ts) % 3
@@ -76,7 +76,7 @@ func rawify(bext string) (types.Raw, error) {
 	return raw[ls:], nil
 }
 
-func derawify(raw types.Raw, code types.Code) (string, error) {
+func debrawify(raw types.Raw, code types.Code) (string, error) {
 	szg, ok := codex.Sizes[code]
 	if !ok {
 		return "", fmt.Errorf("invalid code: %s", code)
@@ -100,5 +100,5 @@ func derawify(raw types.Raw, code types.Code) (string, error) {
 }
 
 func (b *Bexter) Bext() (string, error) {
-	return derawify(b.GetRaw(), b.GetCode())
+	return debrawify(b.GetRaw(), b.GetCode())
 }

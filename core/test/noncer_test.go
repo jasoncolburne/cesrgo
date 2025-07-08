@@ -2,7 +2,6 @@ package test
 
 import (
 	"bytes"
-	"fmt"
 	"testing"
 
 	cesr "github.com/jasoncolburne/cesrgo/core"
@@ -56,7 +55,6 @@ func TestNoncerRoundTrip(t *testing.T) {
 		t.Fatalf("failed to get nonce: %v", err)
 	}
 
-	fmt.Printf("nonce: %q", noncerNonce)
 	if !bytes.Equal(noncerNonce, qb64bNonce) {
 		t.Fatalf("nonce mismatch: %v != %v", noncerNonce, qb64bNonce)
 	}

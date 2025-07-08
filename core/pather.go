@@ -96,7 +96,7 @@ func NewPather(path *string, parts []string, relative, pathive bool, opts ...opt
 					pathStr := "--" + *path
 					path = &pathStr
 				}
-				raw, err = rawify(*path)
+				raw, err = brawify(*path)
 				if err != nil {
 					return nil, err
 				}
@@ -125,7 +125,7 @@ func NewPather(path *string, parts []string, relative, pathive bool, opts ...opt
 
 func (p *Pather) Path() (string, error) {
 	if slices.Contains(codex.BextCodex, p.GetCode()) {
-		path, err := derawify(p.GetRaw(), p.GetCode())
+		path, err := debrawify(p.GetRaw(), p.GetCode())
 		if err != nil {
 			return "", err
 		}
@@ -144,7 +144,7 @@ func (p *Pather) Parts() ([]string, error) {
 	var parts []string
 
 	if slices.Contains(codex.BextCodex, p.GetCode()) {
-		path, err := derawify(p.GetRaw(), p.GetCode())
+		path, err := debrawify(p.GetRaw(), p.GetCode())
 		if err != nil {
 			return nil, err
 		}

@@ -46,7 +46,7 @@ func NewLabeler(label *string, opts ...options.MatterOption) (*Labeler, error) {
 				label = &labelStr
 			}
 			code = codex.StrB64_L0
-			rawBytes, err := rawify(*label)
+			rawBytes, err := brawify(*label)
 			if err != nil {
 				return nil, err
 			}
@@ -88,7 +88,7 @@ func (l *Labeler) Label() (string, error) {
 	if slices.Contains(codex.TagCodex, l.GetCode()) {
 		label = l.GetSoft()
 	} else if slices.Contains(codex.BextCodex, l.GetCode()) {
-		label, err = derawify(l.GetRaw(), l.GetCode())
+		label, err = debrawify(l.GetRaw(), l.GetCode())
 		if err != nil {
 			return "", err
 		}
