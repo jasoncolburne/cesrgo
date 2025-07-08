@@ -20,7 +20,7 @@ func TestPatherRoundTrip(t *testing.T) {
 		t.Fatalf("failed to create qb2: %v", err)
 	}
 
-	qb2Pather, err := cesr.NewPather(nil, nil, false, true, options.WithQb2(qb2))
+	qb2Pather, err := cesr.NewPather(nil, nil, true, true, options.WithQb2(qb2))
 	if err != nil {
 		t.Fatalf("failed to get qb2 path: %v", err)
 	}
@@ -30,7 +30,7 @@ func TestPatherRoundTrip(t *testing.T) {
 		t.Fatalf("failed to get qb64: %v", err)
 	}
 
-	qb64Pather, err := cesr.NewPather(nil, nil, false, true, options.WithQb64(qb64))
+	qb64Pather, err := cesr.NewPather(nil, nil, true, true, options.WithQb64(qb64))
 	if err != nil {
 		t.Fatalf("failed to create qb64 pather: %v", err)
 	}
@@ -40,7 +40,7 @@ func TestPatherRoundTrip(t *testing.T) {
 		t.Fatalf("failed to get qb64b: %v", err)
 	}
 
-	qb64bPather, err := cesr.NewPather(nil, nil, false, true, options.WithQb64b(qb64b))
+	qb64bPather, err := cesr.NewPather(nil, nil, true, true, options.WithQb64b(qb64b))
 	if err != nil {
 		t.Fatalf("failed to create qb64b pather: %v", err)
 	}
