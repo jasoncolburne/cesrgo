@@ -51,12 +51,9 @@ func DerivePublicKey(seed types.Raw) (types.Raw, error) {
 
 	compressed := make([]byte, 33)
 	compressed[0] = prefix
-	copy(compressed[1:], x.Bytes())
-
-	// Ensure x is 32 bytes (pad if necessary)
-	if len(x.Bytes()) < 32 {
-		copy(compressed[1+32-len(x.Bytes()):], x.Bytes())
-	}
+	bytes := [32]byte{}
+	x.FillBytes(bytes[:])
+	copy(compressed[1:], bytes[:])
 
 	return types.Raw(compressed), nil
 }
