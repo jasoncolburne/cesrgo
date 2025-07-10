@@ -93,13 +93,13 @@ func (t *Tholder) Sith() (any, error) {
 								return "", fmt.Errorf("invalid clause, value is a %T, not a rational", _v)
 							}
 
-							v = append(v, extractIntOrRational(s, "/"))
+							v = append(v, extractIntOrRationalString(s, "/"))
 						}
 
 						clause = append(clause, map[string]any{k: v})
 					}
 				case *big.Rat:
-					clause = append(clause, extractIntOrRational(eType, "/"))
+					clause = append(clause, extractIntOrRationalString(eType, "/"))
 				default:
 					return "", fmt.Errorf("invalid clause, member is a %t", eType)
 				}
@@ -126,15 +126,6 @@ func (t *Tholder) Sith() (any, error) {
 
 func (t *Tholder) Size() types.Size {
 	return t.size
-}
-
-func extractIntOrRational(r *big.Rat, sep string) string {
-	if r.Cmp(big.NewRat(1, 1)) >= 0 || r.Cmp(big.NewRat(0, 1)) == 0 {
-		value, _ := r.Float64()
-		return fmt.Sprintf("%d", int(value))
-	} else {
-		return fmt.Sprintf("%d%s%d", r.Num(), sep, r.Denom())
-	}
 }
 
 func NewTholder(thold any, limen *types.Qb64, sith any, opts ...options.MatterOption) (*Tholder, error) {
@@ -229,7 +220,7 @@ func (t *Tholder) processLimen(limen types.Qb64, opts ...options.MatterOption) e
 					weights := strings.SplitSeq(e[i+1:], "v")
 
 					for w := range weights {
-						r, err := weight(w)
+						r, err := parseWeight(w)
 						if err != nil {
 							return err
 						}
@@ -238,7 +229,7 @@ func (t *Tholder) processLimen(limen types.Qb64, opts ...options.MatterOption) e
 
 					clause = append(clause, map[string]any{k: v})
 				} else {
-					r, err := weight(e)
+					r, err := parseWeight(e)
 					if err != nil {
 						return err
 					}
@@ -288,10 +279,10 @@ func (t *Tholder) processSith(sith any) error {
 				return fmt.Errorf("empty weight list")
 			}
 
-			err = t.processInternalThold(thold)
+			err = t.processTholdInternal(thold)
 		}
 	case []any:
-		err = t.processInternalThold(x)
+		err = t.processTholdInternal(x)
 	default:
 		err = fmt.Errorf("invalid sith type %T", sith)
 	}
@@ -299,7 +290,7 @@ func (t *Tholder) processSith(sith any) error {
 	return err
 }
 
-func (t *Tholder) processInternalThold(thold []any) error {
+func (t *Tholder) processTholdInternal(thold []any) error {
 	sith := thold
 	mask := []bool{}
 	for _, potentialSequence := range thold {
@@ -357,7 +348,7 @@ func (t *Tholder) processInternalThold(thold []any) error {
 							return fmt.Errorf("invalid sith, nested value not a string")
 						}
 
-						w, err := weight(s)
+						w, err := parseWeight(s)
 						if err != nil {
 							return fmt.Errorf("invalid sith, nested value not a weight")
 						}
@@ -371,7 +362,7 @@ func (t *Tholder) processInternalThold(thold []any) error {
 				if !ok {
 					return fmt.Errorf("invalid sith, weight not a string")
 				}
-				w, err := weight(s)
+				w, err := parseWeight(s)
 				if err != nil {
 					return fmt.Errorf("invalid sith, weight not a weight")
 				}
@@ -478,7 +469,7 @@ func (t *Tholder) processWeighted(thold any) error {
 			for _, e := range cType {
 				switch eType := e.(type) {
 				case *big.Rat:
-					v = append(v, extractIntOrRational(eType, "s"))
+					v = append(v, extractIntOrRationalString(eType, "s"))
 				case map[string]any:
 					if len(eType) > 1 {
 						return fmt.Errorf("invalid clause, map length > 1")
@@ -492,10 +483,10 @@ func (t *Tholder) processWeighted(thold any) error {
 					var k string
 					_v := []string{}
 
-					k = extractIntOrRational(rational, "s")
+					k = extractIntOrRationalString(rational, "s")
 
 					for _, e := range list {
-						_v = append(_v, extractIntOrRational(e, "s"))
+						_v = append(_v, extractIntOrRationalString(e, "s"))
 					}
 
 					kv := k + "k" + strings.Join(_v, "v")
@@ -554,7 +545,7 @@ func decomposeMapClause(clause map[string]any) (*big.Rat, []*big.Rat, error) {
 		}
 	}
 
-	r, err := weight(k)
+	r, err := parseWeight(k)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -562,7 +553,7 @@ func decomposeMapClause(clause map[string]any) (*big.Rat, []*big.Rat, error) {
 	return r, v, nil
 }
 
-func sumClause(clause any, depth int) (*big.Rat, error) {
+func sumClause(clause any, depth uint) (*big.Rat, error) {
 	if depth > 3 {
 		return nil, fmt.Errorf("invalid clause depth")
 	}
@@ -600,7 +591,7 @@ func sumClause(clause any, depth int) (*big.Rat, error) {
 			sum.Add(sum, itemSum)
 		}
 	case string:
-		w, err := weight(t)
+		w, err := parseWeight(t)
 		if err != nil {
 			return nil, err
 		}
@@ -682,7 +673,7 @@ func satisfyWeighted(t *Tholder, indices []types.Index) bool {
 					}
 
 					var err error
-					k, err = weight(_k)
+					k, err = parseWeight(_k)
 					if err != nil {
 						return false
 					}
@@ -709,7 +700,7 @@ func satisfyWeighted(t *Tholder, indices []types.Index) bool {
 	return true
 }
 
-func weight(w string) (*big.Rat, error) {
+func parseWeight(w string) (*big.Rat, error) {
 	parts := strings.Split(w, "/")
 	if len(parts) > 2 {
 		return nil, fmt.Errorf("invalid weight")
@@ -734,4 +725,13 @@ func weight(w string) (*big.Rat, error) {
 	}
 
 	return big.NewRat(n, d), nil
+}
+
+func extractIntOrRationalString(r *big.Rat, sep string) string {
+	if r.Cmp(big.NewRat(1, 1)) >= 0 || r.Cmp(big.NewRat(0, 1)) == 0 {
+		value, _ := r.Float64()
+		return fmt.Sprintf("%d", int(value))
+	} else {
+		return fmt.Sprintf("%d%s%d", r.Num(), sep, r.Denom())
+	}
 }
