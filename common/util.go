@@ -26,6 +26,11 @@ var (
 	VER2TERM     = '.'
 	VEREX2       = "([A-Z]{4})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([A-Z]{4})([0-9A-Za-z_-]{4})\\."
 
+	MAXVERFULLSPAN = max(VER1FULLSPAN, VER2FULLSPAN)
+	MAXVSOFFSET    = 12
+
+	SMELLSIZE = MAXVSOFFSET + MAXVERFULLSPAN
+
 	B64RUNES   = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 	B64INDICES = map[rune]uint8{}
 
@@ -37,11 +42,6 @@ var (
 	REB64  *regexp.Regexp
 	REATT  *regexp.Regexp
 	REPATH *regexp.Regexp
-
-	MAXVERFULLSPAN = max(VER1FULLSPAN, VER2FULLSPAN)
-	MAXVSOFFSET    = 12
-
-	SMELLSIZE = MAXVSOFFSET + MAXVERFULLSPAN // # min buffer size to inhale
 )
 
 func ReVer() (*regexp.Regexp, error) {
