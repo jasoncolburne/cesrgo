@@ -76,10 +76,7 @@ func NewVerser(
 }
 
 func (i *Verser) Versage() (types.Versage, error) {
-	tag, err := i.Tag()
-	if err != nil {
-		return types.Versage{}, fmt.Errorf("failed to get tag: %v", err)
-	}
+	tag := i.Tag()
 
 	proto := types.Proto(tag[:4])
 	pvrsn, err := b64ToVer(tag[4:7])

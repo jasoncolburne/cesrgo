@@ -74,19 +74,12 @@ func codify(tag string) (types.Code, error) {
 	l := len(tag)
 
 	if l < 1 || l > len(codex.TagCodex) {
-		return "", fmt.Errorf("tag %s empty of oversized", tag)
+		return "", fmt.Errorf("tag %s empty or oversized", tag)
 	}
 
 	return codex.TagCodex[l-1], nil
 }
 
-func (t *Tagger) Tag() (string, error) {
-	szg, ok := codex.Sizes[t.GetCode()]
-	if !ok {
-		return "", fmt.Errorf("unknown code %s", t.GetCode())
-	}
-
-	xs := int(szg.Xs)
-
-	return t.GetSoft()[xs:], nil
+func (t *Tagger) Tag() string {
+	return t.GetSoft()
 }
