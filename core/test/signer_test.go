@@ -21,16 +21,16 @@ func TestSignerCodesAndSizes(t *testing.T) {
 		{Code: mdex.ECDSA_256r1_Seed},
 	}
 
-	for _, testVector := range testCases {
-		label := fmt.Sprintf("%s", testVector.Code)
+	for _, testCase := range testCases {
+		label := fmt.Sprintf("%s", testCase.Code)
 		t.Run(label, func(t *testing.T) {
-			signer, err := cesr.NewSigner(true, options.WithCode(testVector.Code))
+			signer, err := cesr.NewSigner(true, options.WithCode(testCase.Code))
 			if err != nil {
 				t.Fatalf("failed to create signer: %v", err)
 			}
 
-			if signer.GetCode() != testVector.Code {
-				t.Fatalf("signer code mismatch: %s != %s", signer.GetCode(), testVector.Code)
+			if signer.GetCode() != testCase.Code {
+				t.Fatalf("signer code mismatch: %s != %s", signer.GetCode(), testCase.Code)
 			}
 		})
 	}
@@ -59,10 +59,10 @@ func TestSignerDeterminism(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testCases {
-		label := fmt.Sprintf("%s", testVector.Code)
+	for _, testCase := range testCases {
+		label := fmt.Sprintf("%s", testCase.Code)
 		t.Run(label, func(t *testing.T) {
-			signer, err := cesr.NewSigner(true, options.WithCode(testVector.Code), options.WithRaw(testVector.Raw))
+			signer, err := cesr.NewSigner(true, options.WithCode(testCase.Code), options.WithRaw(testCase.Raw))
 			if err != nil {
 				t.Fatalf("failed to create signer: %v", err)
 			}
@@ -77,8 +77,8 @@ func TestSignerDeterminism(t *testing.T) {
 				t.Fatalf("failed to get qb64: %v", err)
 			}
 
-			if qb64 != testVector.NullCigarQb64 {
-				t.Fatalf("cigar qb64 mismatch: %s != %s", qb64, testVector.NullCigarQb64)
+			if qb64 != testCase.NullCigarQb64 {
+				t.Fatalf("cigar qb64 mismatch: %s != %s", qb64, testCase.NullCigarQb64)
 			}
 		})
 	}
@@ -100,10 +100,10 @@ func TestSignerUnindexedSignatureCreation(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testCases {
-		label := fmt.Sprintf("%s", testVector.Code)
+	for _, testCase := range testCases {
+		label := fmt.Sprintf("%s", testCase.Code)
 		t.Run(label, func(t *testing.T) {
-			signer, err := cesr.NewSigner(true, options.WithCode(testVector.Code))
+			signer, err := cesr.NewSigner(true, options.WithCode(testCase.Code))
 			if err != nil {
 				t.Fatalf("failed to create signer: %v", err)
 			}
@@ -131,10 +131,10 @@ func TestSignerIndexedSignatureCreation(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testCases {
-		label := fmt.Sprintf("%s", testVector.Code)
+	for _, testCase := range testCases {
+		label := fmt.Sprintf("%s", testCase.Code)
 		t.Run(label, func(t *testing.T) {
-			signer, err := cesr.NewSigner(true, options.WithCode(testVector.Code))
+			signer, err := cesr.NewSigner(true, options.WithCode(testCase.Code))
 			if err != nil {
 				t.Fatalf("failed to create signer: %v", err)
 			}

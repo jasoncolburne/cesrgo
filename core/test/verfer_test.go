@@ -43,26 +43,26 @@ func TestVerferCodesAndSizes(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testCases {
-		label := fmt.Sprintf("%s[+]", testVector.Code)
+	for _, testCase := range testCases {
+		label := fmt.Sprintf("%s[+]", testCase.Code)
 		t.Run(label, func(t *testing.T) {
-			raw := make(types.Raw, testVector.Size)
-			verfer, err := cesr.NewVerfer(options.WithCode(testVector.Code), options.WithRaw(raw))
+			raw := make(types.Raw, testCase.Size)
+			verfer, err := cesr.NewVerfer(options.WithCode(testCase.Code), options.WithRaw(raw))
 			if err != nil {
 				t.Fatalf("failed to create verfer: %v", err)
 			}
 
-			if verfer.GetCode() != testVector.Code {
-				t.Fatalf("verfer code mismatch: %s != %s", verfer.GetCode(), testVector.Code)
+			if verfer.GetCode() != testCase.Code {
+				t.Fatalf("verfer code mismatch: %s != %s", verfer.GetCode(), testCase.Code)
 			}
 		})
 	}
 
-	for _, testVector := range testCases {
-		label := fmt.Sprintf("%s[-]", testVector.Code)
+	for _, testCase := range testCases {
+		label := fmt.Sprintf("%s[-]", testCase.Code)
 		t.Run(label, func(t *testing.T) {
-			raw := make(types.Raw, testVector.Size+1)
-			_, err := cesr.NewVerfer(options.WithCode(testVector.Code), options.WithRaw(raw))
+			raw := make(types.Raw, testCase.Size+1)
+			_, err := cesr.NewVerfer(options.WithCode(testCase.Code), options.WithRaw(raw))
 			if err == nil {
 				t.Fatalf("created verfer with invalid raw")
 			}
@@ -85,10 +85,10 @@ func TestVerferVerification(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testCases {
-		label := fmt.Sprintf("%s[+]", testVector.SignerCode)
+	for _, testCase := range testCases {
+		label := fmt.Sprintf("%s[+]", testCase.SignerCode)
 		t.Run(label, func(t *testing.T) {
-			signer, err := cesr.NewSigner(false, options.WithCode(testVector.SignerCode))
+			signer, err := cesr.NewSigner(false, options.WithCode(testCase.SignerCode))
 			if err != nil {
 				t.Fatalf("failed to create signer: %v", err)
 			}
@@ -114,10 +114,10 @@ func TestVerferVerification(t *testing.T) {
 		})
 	}
 
-	for _, testVector := range testCases {
-		label := fmt.Sprintf("%s[-]", testVector.SignerCode)
+	for _, testCase := range testCases {
+		label := fmt.Sprintf("%s[-]", testCase.SignerCode)
 		t.Run(label, func(t *testing.T) {
-			signer, err := cesr.NewSigner(false, options.WithCode(testVector.SignerCode))
+			signer, err := cesr.NewSigner(false, options.WithCode(testCase.SignerCode))
 			if err != nil {
 				t.Fatalf("failed to create signer: %v", err)
 			}

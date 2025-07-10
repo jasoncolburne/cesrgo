@@ -79,29 +79,29 @@ func TestMatterInvalidOptionCombinations(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testCases {
+	for _, testCase := range testCases {
 		m := &cesr.UndifferentiatedMatter{}
 
 		args := []options.MatterOption{}
 
-		if testVector.Code != nil {
-			args = append(args, options.WithCode(*testVector.Code))
+		if testCase.Code != nil {
+			args = append(args, options.WithCode(*testCase.Code))
 		}
 
-		if testVector.Raw != nil {
-			args = append(args, options.WithRaw(*testVector.Raw))
+		if testCase.Raw != nil {
+			args = append(args, options.WithRaw(*testCase.Raw))
 		}
 
-		if testVector.Qb2 != nil {
-			args = append(args, options.WithQb2(*testVector.Qb2))
+		if testCase.Qb2 != nil {
+			args = append(args, options.WithQb2(*testCase.Qb2))
 		}
 
-		if testVector.Qb64 != nil {
-			args = append(args, options.WithQb64(*testVector.Qb64))
+		if testCase.Qb64 != nil {
+			args = append(args, options.WithQb64(*testCase.Qb64))
 		}
 
-		if testVector.Qb64b != nil {
-			args = append(args, options.WithQb64b(*testVector.Qb64b))
+		if testCase.Qb64b != nil {
+			args = append(args, options.WithQb64b(*testCase.Qb64b))
 		}
 
 		if err := cesr.NewMatter(m, args...); err == nil {

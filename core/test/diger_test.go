@@ -27,16 +27,16 @@ func TestDigerCodes(t *testing.T) {
 		{DigerCode: codex.SHA3_512},
 	}
 
-	for _, testVector := range testCases {
-		label := fmt.Sprintf("%s", testVector.DigerCode)
+	for _, testCase := range testCases {
+		label := fmt.Sprintf("%s", testCase.DigerCode)
 		t.Run(label, func(t *testing.T) {
-			Diger, err := cesr.NewDiger([]byte{}, options.WithCode(testVector.DigerCode))
+			Diger, err := cesr.NewDiger([]byte{}, options.WithCode(testCase.DigerCode))
 			if err != nil {
 				t.Fatalf("failed to create Diger: %v", err)
 			}
 
-			if Diger.GetCode() != testVector.DigerCode {
-				t.Fatalf("Diger code mismatch: %s != %s", Diger.GetCode(), testVector.DigerCode)
+			if Diger.GetCode() != testCase.DigerCode {
+				t.Fatalf("Diger code mismatch: %s != %s", Diger.GetCode(), testCase.DigerCode)
 			}
 		})
 	}
@@ -75,10 +75,10 @@ func TestDigerVerification(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testCases {
-		label := fmt.Sprintf("%s[+]", testVector.Code)
+	for _, testCase := range testCases {
+		label := fmt.Sprintf("%s[+]", testCase.Code)
 		t.Run(label, func(t *testing.T) {
-			diger, err := cesr.NewDiger([]byte{}, options.WithCode(testVector.Code))
+			diger, err := cesr.NewDiger([]byte{}, options.WithCode(testCase.Code))
 			if err != nil {
 				t.Fatalf("failed to create Diger: %v", err)
 			}
@@ -94,10 +94,10 @@ func TestDigerVerification(t *testing.T) {
 		})
 	}
 
-	for _, testVector := range testCases {
-		label := fmt.Sprintf("%s[-]", testVector.Code)
+	for _, testCase := range testCases {
+		label := fmt.Sprintf("%s[-]", testCase.Code)
 		t.Run(label, func(t *testing.T) {
-			diger, err := cesr.NewDiger([]byte{}, options.WithCode(testVector.Code))
+			diger, err := cesr.NewDiger([]byte{}, options.WithCode(testCase.Code))
 			if err != nil {
 				t.Fatalf("failed to create Diger: %v", err)
 			}

@@ -103,37 +103,37 @@ func TestSigerCodesAndIndicies(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testCases {
-		label := fmt.Sprintf("%s->%s[%t]", testVector.SignerCode, testVector.SigerCode, testVector.Only)
+	for _, testCase := range testCases {
+		label := fmt.Sprintf("%s->%s[%t]", testCase.SignerCode, testCase.SigerCode, testCase.Only)
 		t.Run(label, func(t *testing.T) {
-			signer, err := cesr.NewSigner(true, mopts.WithCode(testVector.SignerCode))
+			signer, err := cesr.NewSigner(true, mopts.WithCode(testCase.SignerCode))
 			if err != nil {
 				t.Fatalf("failed to create signer: %v", err)
 			}
 
-			siger, err := signer.SignIndexed([]byte{}, testVector.Only, testVector.Index, testVector.Ondex)
+			siger, err := signer.SignIndexed([]byte{}, testCase.Only, testCase.Index, testCase.Ondex)
 			if err != nil {
 				t.Fatalf("failed to sign indexed: %v", err)
 			}
 
-			if siger.GetCode() != testVector.SigerCode {
-				t.Fatalf("siger code mismatch: %s != %s", siger.GetCode(), testVector.SigerCode)
+			if siger.GetCode() != testCase.SigerCode {
+				t.Fatalf("siger code mismatch: %s != %s", siger.GetCode(), testCase.SigerCode)
 			}
 
-			if siger.GetIndex() != testVector.Index {
-				t.Fatalf("siger index mismatch: %d != %d", siger.GetIndex(), testVector.Index)
+			if siger.GetIndex() != testCase.Index {
+				t.Fatalf("siger index mismatch: %d != %d", siger.GetIndex(), testCase.Index)
 			}
 
 			ondex := siger.GetOndex()
-			if testVector.Only && ondex == nil {
+			if testCase.Only && ondex == nil {
 				return
 			}
 
-			if testVector.Ondex == nil && *ondex == types.Ondex(testVector.Index) {
+			if testCase.Ondex == nil && *ondex == types.Ondex(testCase.Index) {
 				return
 			}
 
-			if testVector.Ondex != nil && *ondex == *testVector.Ondex {
+			if testCase.Ondex != nil && *ondex == *testCase.Ondex {
 				return
 			}
 

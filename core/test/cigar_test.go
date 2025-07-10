@@ -31,10 +31,10 @@ func TestCigarCodesAndSizes(t *testing.T) {
 		},
 	}
 
-	for _, testVector := range testCases {
-		label := fmt.Sprintf("%s->%s", testVector.SignerCode, testVector.CigarCode)
+	for _, testCase := range testCases {
+		label := fmt.Sprintf("%s->%s", testCase.SignerCode, testCase.CigarCode)
 		t.Run(label, func(t *testing.T) {
-			signer, err := cesr.NewSigner(true, options.WithCode(testVector.SignerCode))
+			signer, err := cesr.NewSigner(true, options.WithCode(testCase.SignerCode))
 			if err != nil {
 				t.Fatalf("failed to create signer: %v", err)
 			}
@@ -44,8 +44,8 @@ func TestCigarCodesAndSizes(t *testing.T) {
 				t.Fatalf("failed to sign unindexed: %v", err)
 			}
 
-			if cigar.GetCode() != testVector.CigarCode {
-				t.Fatalf("cigar code mismatch: %s != %s", cigar.GetCode(), testVector.CigarCode)
+			if cigar.GetCode() != testCase.CigarCode {
+				t.Fatalf("cigar code mismatch: %s != %s", cigar.GetCode(), testCase.CigarCode)
 			}
 		})
 	}
