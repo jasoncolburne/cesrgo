@@ -9,7 +9,7 @@ test:
 
 # Run tests with coverage
 test-coverage:
-	go test -v -coverprofile=coverage.out ./...
+	go test -v -coverprofile=coverage.out -coverpkg=./core/...,./common/... ./...
 	go tool cover -html=coverage.out -o coverage.html
 
 # Build the library
