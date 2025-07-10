@@ -38,10 +38,6 @@ deps:
 	go mod tidy
 	go mod download
 
-# Run the example
-example:
-	go run examples/main.go
-
 # Show help
 help:
 	@echo "Available targets:"
@@ -53,5 +49,4 @@ help:
 	@echo "  fmt           - Format code"
 	@echo "  vet           - Run go vet"
 	@echo "  deps          - Install dependencies"
-	@echo "  example       - Run the example"
 	@echo "  help          - Show this help"
