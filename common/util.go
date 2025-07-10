@@ -26,6 +26,9 @@ var (
 	VER2TERM     = '.'
 	VEREX2       = "([A-Z]{4})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([0-9A-Za-z_-])([0-9A-Za-z_-]{2})([A-Z]{4})([0-9A-Za-z_-]{4})\\."
 
+	B64RUNES   = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+	B64INDICES = map[rune]uint8{}
+
 	B64EX   = "^[A-Za-z0-9_-]*$"
 	PATHREX = "^[a-zA-Z0-9_]*$"
 	ATREX   = "^[a-zA-Z_][a-zA-Z0-9_]*$"
@@ -93,24 +96,21 @@ func ValidateCode(code types.Code, validCodes []types.Code) bool {
 	return slices.Contains(validCodes, code)
 }
 
-var b64Runes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
-var b64Indices = map[rune]uint8{}
-
 func generateb64Indices() {
-	if len(b64Indices) > 0 {
+	if len(B64INDICES) > 0 {
 		return
 	}
 
-	for i, c := range b64Runes[:64] {
+	for i, c := range B64RUNES[:64] {
 		//nolint:gosec
-		b64Indices[c] = uint8(i)
+		B64INDICES[c] = uint8(i)
 	}
 }
 
 func B64CharToIndex(c rune) (uint8, error) {
 	generateb64Indices()
 
-	index, ok := b64Indices[c]
+	index, ok := B64INDICES[c]
 	if !ok {
 		return 0, fmt.Errorf("invalid url-safe base64 character: %c", c)
 	}
@@ -123,7 +123,7 @@ func B64IndexToChar(i uint8) (byte, error) {
 		return 0, fmt.Errorf("programmer error:invalid base64 index: %d", i)
 	}
 
-	return b64Runes[i], nil
+	return B64RUNES[i], nil
 }
 
 func NabSextets(bin []byte, count int) ([]byte, error) {
