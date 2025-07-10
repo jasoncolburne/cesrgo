@@ -23,12 +23,8 @@ jobs:
     - name: Run tests
       run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
 
-    # - name: Upload coverage to Codecov
-    #   uses: codecov/codecov-action@v3
-    #   with:
-    #     file: ./coverage.txt
-    #     flags: unittests
-    #     name: codecov-umbrella
+    - name: Display coverage
+      run: cat coverage.txt
 
   lint:
     runs-on: ubuntu-latest
