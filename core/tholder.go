@@ -528,6 +528,7 @@ func (t *Tholder) processWeighted(thold any) error {
 	return nil
 }
 
+//nolint:gocritic
 func decomposeMapClause(clause map[string]any) (*big.Rat, []*big.Rat, error) {
 	if len(clause) > 1 {
 		return nil, nil, fmt.Errorf("invalid clause, map length > 1")
@@ -610,7 +611,6 @@ func sumClause(clause any, depth int) (*big.Rat, error) {
 	return sum, nil
 }
 
-// this is a bit different than KERIpy in that it
 func satisfyNumeric(t *Tholder, indices []types.Index) bool {
 	tholdInt, ok := t.thold.(int)
 	if !ok {
