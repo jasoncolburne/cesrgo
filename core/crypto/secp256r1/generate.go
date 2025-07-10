@@ -2,8 +2,6 @@ package secp256r1
 
 import (
 	"crypto/ecdh"
-	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
 	"fmt"
 	"math/big"
@@ -12,17 +10,22 @@ import (
 )
 
 func GenerateSeed() (types.Raw, error) {
-	curve := elliptic.P256()
+	curve := ecdh.P256()
 
-	sk, err := ecdsa.GenerateKey(curve, rand.Reader)
+	key, err := curve.GenerateKey(rand.Reader)
 	if err != nil {
 		return nil, err
 	}
 
-	seed := make([]byte, 32)
-	sk.D.FillBytes(seed)
+	seed := [32]byte{}
+	byteLen := len(key.Bytes())
+	if byteLen <= 32 {
+		copy(seed[32-byteLen:], key.Bytes())
+	} else {
+		copy(seed[:], key.Bytes()[byteLen-32:])
+	}
 
-	return types.Raw(seed), nil
+	return types.Raw(seed[:]), nil
 }
 
 func DerivePublicKey(seed types.Raw) (types.Raw, error) {
