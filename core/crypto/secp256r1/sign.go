@@ -35,8 +35,8 @@ func Sign(sk types.Raw, ser []byte) (types.Raw, error) {
 	}
 
 	bytes := make([]byte, 64)
-	copy(bytes[:32], r.Bytes())
-	copy(bytes[32:], s.Bytes())
+	r.FillBytes(bytes[:32])
+	s.FillBytes(bytes[32:])
 
 	return types.Raw(bytes), nil
 }

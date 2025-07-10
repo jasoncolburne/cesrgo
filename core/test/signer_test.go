@@ -55,7 +55,7 @@ func TestSignerDeterminism(t *testing.T) {
 		{
 			Code:          mdex.ECDSA_256r1_Seed,
 			Raw:           types.Raw("\x90\v=\x84?\xdeZ`n\xfex\xd2\xd3ҽ\x15\x04\x03DM\xe2Ď\x02*s%}\xf4\x84\xb0\x02"),
-			NullCigarQb64: types.Qb64("0IDp2liCC2HmkE3TaemOVpL2snwPoCYON58LIDbMOTKYPhDxPW6181HZLdyt6f03pcrtb-f38KLQLjHoCbqR7NIA"),
+			NullCigarQb64: types.Qb64("0IDp2liCC2HmkE3TaemOVpL2snwPoCYON58LIDbMOTKYPgAQ8T1utfNR2S3cren9N6XK7W_n9_Ci0C4x6Am6kezS"),
 		},
 	}
 
