@@ -268,7 +268,8 @@ func (t *Tholder) processSith(sith any) error {
 		err = t.processUnweighted(*x)
 	case string:
 		if !strings.Contains(x, "[") {
-			thold, err := strconv.ParseInt(x, 16, 64)
+			var thold int64
+			thold, err = strconv.ParseInt(x, 16, 64)
 			if err != nil {
 				return err
 			}
@@ -292,7 +293,7 @@ func (t *Tholder) processSith(sith any) error {
 	case []any:
 		err = t.processInternalThold(x)
 	default:
-		return fmt.Errorf("invalid sith type %T", sith)
+		err = fmt.Errorf("invalid sith type %T", sith)
 	}
 
 	return err
@@ -321,7 +322,6 @@ func (t *Tholder) processInternalThold(thold []any) error {
 
 			mask = append(mask, isString || isMap)
 		}
-
 	}
 
 	if slices.Contains(mask, false) {
@@ -399,6 +399,7 @@ func (t *Tholder) processUnweighted(thold big.Int) error {
 	if tholdInt >= 0 {
 		t.thold = tholdInt
 		t.weighted = false
+		//nolint:gosec
 		t.size = types.Size(tholdInt)
 		t.satisfy = satisfyNumeric
 		number, err := NewNumber(&thold, nil)
@@ -462,6 +463,7 @@ func (t *Tholder) processWeighted(thold any) error {
 			}
 		}
 	}
+	//nolint:gosec
 	t.size = types.Size(s)
 	t.satisfy = satisfyWeighted
 
@@ -501,7 +503,6 @@ func (t *Tholder) processWeighted(thold any) error {
 				default:
 					return fmt.Errorf("invalid clause type %T", eType)
 				}
-
 			}
 
 			bc = append(bc, strings.Join(v, "c"))
