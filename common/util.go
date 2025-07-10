@@ -44,7 +44,7 @@ var (
 	SMELLSIZE = MAXVSOFFSET + MAXVERFULLSPAN // # min buffer size to inhale
 )
 
-func Rever() (*regexp.Regexp, error) {
+func ReVer() (*regexp.Regexp, error) {
 	if REVER == nil {
 		var err error
 		REVER, err = regexp.Compile(VEREX1 + "|" + VEREX2)
@@ -294,7 +294,7 @@ func HexToUint32(hex []byte) (uint32, error) {
 
 //nolint:gocritic
 func Smell(raw types.Raw) (types.Proto, types.Version, types.Kind, types.Size, *types.Version, error) {
-	re, err := Rever()
+	re, err := ReVer()
 	if err != nil {
 		return "", types.Version{}, "", 0, nil, err
 	}
@@ -431,7 +431,7 @@ func Sizeify(ked types.Map, kind *types.Kind, version *types.Version) (
 	//nolint:gosec
 	size := types.Size(len(raw))
 
-	re, err := Rever()
+	re, err := ReVer()
 	if err != nil {
 		return nil, "", "", types.Map{}, types.Version{}, err
 	}
@@ -527,7 +527,7 @@ func Deversify(v string) (
 	*types.Version,
 	error,
 ) {
-	re, err := Rever()
+	re, err := ReVer()
 	if err != nil {
 		return "", types.Version{}, "", 0, &types.Version{}, err
 	}
