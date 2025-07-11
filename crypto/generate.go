@@ -3,11 +3,11 @@ package crypto
 import (
 	"fmt"
 
-	"github.com/jasoncolburne/cesrgo/core/crypto/ed25519"
-	"github.com/jasoncolburne/cesrgo/core/crypto/secp256k1"
-	"github.com/jasoncolburne/cesrgo/core/crypto/secp256r1"
 	codex "github.com/jasoncolburne/cesrgo/core/matter"
 	"github.com/jasoncolburne/cesrgo/core/types"
+	"github.com/jasoncolburne/cesrgo/crypto/ed25519"
+	"github.com/jasoncolburne/cesrgo/crypto/secp256k1"
+	"github.com/jasoncolburne/cesrgo/crypto/secp256r1"
 )
 
 func GenerateSeed(code types.Code) (types.Raw, error) {

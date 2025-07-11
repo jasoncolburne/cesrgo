@@ -4,12 +4,12 @@ import (
 	"fmt"
 
 	"github.com/jasoncolburne/cesrgo/common"
-	"github.com/jasoncolburne/cesrgo/core/crypto"
 	idex "github.com/jasoncolburne/cesrgo/core/indexer"
 	iopts "github.com/jasoncolburne/cesrgo/core/indexer/options"
 	mdex "github.com/jasoncolburne/cesrgo/core/matter"
 	mopts "github.com/jasoncolburne/cesrgo/core/matter/options"
 	"github.com/jasoncolburne/cesrgo/core/types"
+	"github.com/jasoncolburne/cesrgo/crypto"
 )
 
 type Signer struct {

@@ -6,10 +6,10 @@ import (
 
 	"github.com/jasoncolburne/cesrgo"
 	"github.com/jasoncolburne/cesrgo/common"
-	"github.com/jasoncolburne/cesrgo/core/crypto"
 	codex "github.com/jasoncolburne/cesrgo/core/matter"
 	"github.com/jasoncolburne/cesrgo/core/matter/options"
 	"github.com/jasoncolburne/cesrgo/core/types"
+	"github.com/jasoncolburne/cesrgo/crypto"
 )
 
 type Saider struct {

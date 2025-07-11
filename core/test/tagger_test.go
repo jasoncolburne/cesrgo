@@ -1,7 +1,6 @@
 package test
 
 import (
-	"fmt"
 	"testing"
 
 	cesr "github.com/jasoncolburne/cesrgo/core"
@@ -112,8 +111,6 @@ func TestTaggerRoundTrip(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to get qb64: %v", err)
 			}
-
-			fmt.Printf("qb64: %s\n", qb64)
 
 			qb64Tagger, err := cesr.NewTagger(nil, options.WithQb64(qb64))
 			if err != nil {

@@ -5,6 +5,8 @@ import (
 	"github.com/jasoncolburne/cesrgo/core/types"
 )
 
+const SEED_BYTES = 32
+
 func GenerateSeed() (types.Raw, error) {
 	priv, err := secp256k1.GeneratePrivateKey()
 	if err != nil {

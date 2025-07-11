@@ -8,6 +8,8 @@ import (
 	"github.com/jasoncolburne/cesrgo/core/types"
 )
 
+const SEED_BYTES = 32
+
 func GenerateSeed() (types.Raw, error) {
 	_, priv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
