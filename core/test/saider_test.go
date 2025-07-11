@@ -12,8 +12,10 @@ import (
 )
 
 func TestSaiderSaidification(t *testing.T) {
-	sad := types.NewMap()
-	sad.Set("d", "")
+	sad := types.NewMap(
+		[]string{"d"},
+		[]any{""},
+	)
 
 	saider, err := cesr.NewSaider(&sad, nil, nil)
 	if err != nil {
