@@ -8,10 +8,10 @@ import (
 )
 
 func TestSadderMarshalling(t *testing.T) {
-	ked := types.NewMap()
-
-	ked.Set("v", "KERICAACAAJSONAAAA.")
-	ked.Set("d", "")
+	ked := types.NewMap(
+		[]string{"v", "d"},
+		[]any{"KERICAACAAJSONAAAA.", ""},
+	)
 
 	sadder, err := cesr.NewSadder(nil, nil, &ked, nil, true)
 	if err != nil {

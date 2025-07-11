@@ -31,6 +31,7 @@ type (
 	Ilk   string
 	Trait string
 	Tier  string
+	Field string
 
 	DateTime string
 
@@ -39,8 +40,19 @@ type (
 	Qb2   []byte
 )
 
-func NewMap() Map {
-	return Map(*orderedmap.New[string, any]())
+func NewMap(keys []string, values []any) Map {
+	pairs := []orderedmap.Pair[string, any]{}
+
+	if len(keys) != len(values) {
+		panic("keys and values must have the same length")
+	}
+
+	for i, key := range keys {
+		value := values[i]
+		pairs = append(pairs, orderedmap.Pair[string, any]{Key: key, Value: value})
+	}
+
+	return Map(*orderedmap.New[string, any](orderedmap.WithInitialData(pairs...)))
 }
 
 func (m Map) _map() orderedmap.OrderedMap[string, any] {
@@ -48,10 +60,15 @@ func (m Map) _map() orderedmap.OrderedMap[string, any] {
 }
 
 func (m Map) Clone() Map {
-	newMap := NewMap()
+	newMap := NewMap(nil, nil)
 	om := m._map()
 	for pair := om.Oldest(); pair != nil; pair = pair.Next() {
-		newMap.Set(pair.Key, pair.Value)
+		value := pair.Value
+		if toClone, ok := value.(Map); ok {
+			value = toClone.Clone()
+		}
+
+		newMap.Set(pair.Key, value)
 	}
 	return newMap
 }

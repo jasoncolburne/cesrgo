@@ -15,6 +15,9 @@ const (
 	Kind_MGPK = types.Kind("MGPK")
 	Kind_CESR = types.Kind("CESR")
 
+	// special ilk used to select an acdc message
+	Ilk_NONE = types.Ilk("")
+
 	Ilk_ICP = types.Ilk("icp")
 	Ilk_ROT = types.Ilk("rot")
 	Ilk_IXN = types.Ilk("ixn")
@@ -45,6 +48,9 @@ const (
 	Ilk_AGG = types.Ilk("agg")
 	Ilk_EDG = types.Ilk("edg")
 	Ilk_RUL = types.Ilk("rul")
+
+	SAID_D = types.Field("d")
+	SAID_I = types.Field("i")
 
 	Trait_EstOnly             = types.Trait("EO")
 	Trait_DoNotDelay          = types.Trait("DND")
@@ -98,6 +104,11 @@ var (
 		Ilk_AGG,
 		Ilk_EDG,
 		Ilk_RUL,
+	}
+
+	SAIDS = []types.Field{
+		SAID_D,
+		SAID_I,
 	}
 
 	TRAITS = []types.Trait{
