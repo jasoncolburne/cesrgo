@@ -10,7 +10,7 @@ go get github.com/jasoncolburne/cesrgo
 
 ## Status
 
-Work in progress. Initial phase.
+**Under active development.** Best not to use this in production yet.
 
 ## Contributing
 
