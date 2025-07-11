@@ -19,6 +19,7 @@ build:
 # Clean build artifacts
 clean:
 	go clean
+	go clean -testcache
 	rm -f coverage.out coverage.html
 
 # Run linter
