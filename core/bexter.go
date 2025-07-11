@@ -96,6 +96,11 @@ func debrawify(raw types.Raw, code types.Code) (string, error) {
 		ws = (int(szg.Ls) + 1) % 4
 	}
 
+	// the keripy code doesn't need to handle this, since ""[x:] == "" always
+	if len(bext) < ws {
+		return "", nil
+	}
+
 	return bext[ws:], nil
 }
 

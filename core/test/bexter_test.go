@@ -9,6 +9,7 @@ import (
 
 func TestBexterRoundTrip(t *testing.T) {
 	testCases := []string{
+		"",
 		"1234ABCD",
 		"1234ABCDE",
 		"1234ABCDEF",

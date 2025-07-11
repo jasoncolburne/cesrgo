@@ -10,6 +10,7 @@ import (
 
 func TestTexterRoundTrip(t *testing.T) {
 	testCases := []string{
+		"",
 		"K",
 		"KE",
 		"KER",
