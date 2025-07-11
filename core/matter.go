@@ -1,0 +1,547 @@
+package cesr
+
+import (
+	"encoding/base64"
+	"fmt"
+	"math"
+	"math/big"
+	"slices"
+	"strings"
+
+	"github.com/jasoncolburne/cesrgo/common"
+	codex "github.com/jasoncolburne/cesrgo/core/matter"
+	"github.com/jasoncolburne/cesrgo/core/matter/options"
+	"github.com/jasoncolburne/cesrgo/core/types"
+)
+
+const (
+	Pad = "_"
+)
+
+type matter struct {
+	code types.Code
+	size *types.Size
+	raw  types.Raw
+	soft *string
+}
+
+type UndifferentiatedMatter struct {
+	matter
+}
+
+func (m *matter) SetCode(code types.Code) {
+	m.code = code
+}
+
+func (m *matter) GetCode() types.Code {
+	return m.code
+}
+
+func (m *matter) SetRaw(raw types.Raw) {
+	m.raw = raw
+}
+
+func (m *matter) GetRaw() types.Raw {
+	return m.raw
+}
+
+func (m *matter) SetSize(size *types.Size) {
+	m.size = size
+}
+
+func (m *matter) GetSize() *types.Size {
+	return m.size
+}
+
+func (m *matter) Hard() string {
+	return string(m.code)
+}
+
+func (m *matter) SetSoft(soft *string) {
+	m.soft = soft
+}
+
+func (m *matter) GetSoft() string {
+	if m.soft == nil {
+		return ""
+	}
+
+	return *m.soft
+}
+
+func (m *matter) Both() (string, error) {
+	szg, ok := codex.Sizes[m.GetCode()]
+	if !ok {
+		return "", fmt.Errorf("unknown code: %s", m.GetCode())
+	}
+
+	return fmt.Sprintf("%s%s%s", m.Hard(), strings.Repeat(Pad, int(szg.Xs)), m.GetSoft()), nil
+}
+
+func (m *matter) Qb2() (types.Qb2, error) {
+	return mbinfil(m)
+}
+
+func (m *matter) Qb64() (types.Qb64, error) {
+	qb64b, err := minfil(m)
+	if err != nil {
+		return types.Qb64(""), err
+	}
+
+	return types.Qb64(qb64b), nil
+}
+
+func (m *matter) Qb64b() (types.Qb64b, error) {
+	return minfil(m)
+}
+
+func mbinfil(m types.Matter) (types.Qb2, error) {
+	code := m.GetCode()
+	both, err := m.Both()
+	if err != nil {
+		return types.Qb2{}, err
+	}
+	raw := m.GetRaw()
+
+	szg, ok := codex.Sizes[code]
+	if !ok {
+		return types.Qb2{}, fmt.Errorf("unknown code: %s", code)
+	}
+	cs := szg.Hs + szg.Ss
+
+	bigNum, err := common.B64ToBigInt(both)
+	if err != nil {
+		return types.Qb2{}, err
+	}
+
+	bcs := int(math.Ceil(float64(cs) * 3 / 4))
+	bigNum.Lsh(bigNum, uint(2*(cs%4)))
+	bcode := make([]byte, bcs)
+	bigNum.FillBytes(bcode)
+
+	full := make([]byte, len(bcode)+int(szg.Ls)+len(raw))
+	copy(full[:len(bcode)], bcode)
+	copy(full[len(bcode):len(bcode)+int(szg.Ls)], slices.Repeat([]byte{0}, int(szg.Ls)))
+	copy(full[len(bcode)+int(szg.Ls):], raw)
+
+	bfs := len(full)
+	var fs uint32
+	if szg.Fs == nil {
+		i := int(szg.Hs+szg.Ss) + (len(raw)+int(szg.Ls))*4/3
+		if i > 1<<32-1 {
+			return types.Qb2{}, fmt.Errorf("size too large")
+		}
+
+		//nolint:gosec
+		fs = uint32(i)
+	} else {
+		fs = *szg.Fs
+	}
+
+	if bfs%3 != 0 || (bfs*4/3) != int(fs) {
+		return types.Qb2{}, fmt.Errorf("invalid full code '%s' with raw size %d (bfs = %d, fs = %d)", both, len(raw), bfs, fs)
+	}
+
+	return types.Qb2(full), nil
+}
+
+func minfil(m types.Matter) (types.Qb64b, error) {
+	code := m.GetCode()
+	both, err := m.Both()
+	if err != nil {
+		return types.Qb64b{}, err
+	}
+	raw := m.GetRaw()
+	rs := len(raw)
+	szg, ok := codex.Sizes[code]
+	if !ok {
+		return types.Qb64b{}, fmt.Errorf("unknown code: %s", code)
+	}
+
+	cs := szg.Hs + szg.Ss
+
+	if int(cs) != len(both) {
+		return types.Qb64b{}, fmt.Errorf("both length mismatch: cs = %d, both = '%s'", cs, both)
+	}
+
+	var full string
+	if szg.Fs == nil {
+		if (int(szg.Ls)+rs)%3 != 0 || cs%4 != 0 {
+			return types.Qb64b{}, fmt.Errorf("invalid full code '%s' with variable size rs = %d", both, rs)
+		}
+
+		bytes := make([]byte, int(szg.Ls)+rs)
+
+		copy(bytes[:int(szg.Ls)], slices.Repeat([]byte{0}, int(szg.Ls)))
+		copy(bytes[int(szg.Ls):], raw)
+
+		full = both + base64.URLEncoding.EncodeToString(bytes)
+	} else {
+		ps := (3 - ((rs + int(szg.Ls)) % 3)) % 3
+		if ps != int(cs)%4 {
+			return types.Qb64b{}, fmt.Errorf("invalid full code '%s' with fixed size rs = %d", both, rs)
+		}
+
+		bytes := make([]byte, ps+int(szg.Ls)+rs)
+
+		copy(bytes[:ps+int(szg.Ls)], slices.Repeat([]byte{0}, ps+int(szg.Ls)))
+		copy(bytes[ps+int(szg.Ls):], raw)
+
+		full = both + base64.URLEncoding.EncodeToString(bytes)[ps:]
+	}
+
+	if (len(full)%4 != 0) || (szg.Fs != nil && len(full) != int(*szg.Fs)) {
+		return types.Qb64b{}, fmt.Errorf("invalid full size given code '%s' with rs = %d", both, rs)
+	}
+
+	return types.Qb64b(full), nil
+}
+
+func mbexfil(m types.Matter, qb2 types.Qb2) error {
+	if len(qb2) == 0 {
+		return fmt.Errorf("qb2 is empty")
+	}
+
+	sextets, err := common.NabSextets(qb2, 1)
+	if err != nil {
+		return err
+	}
+
+	first := sextets[0]
+	hs, ok := codex.Bardage(first)
+	if !ok {
+		return fmt.Errorf("unknown bard: %x", first)
+	}
+
+	bhs := int(math.Ceil(float64(hs) * 3 / 4))
+	if len(qb2) < bhs {
+		return fmt.Errorf("insufficient material for hard part of code: qb2 size = %d, bhs = %d", len(qb2), bhs)
+	}
+
+	hard, err := common.CodeB2ToB64(qb2, hs)
+	if err != nil {
+		return err
+	}
+
+	szg, ok := codex.Sizes[types.Code(hard)]
+	if !ok {
+		return fmt.Errorf("unknown hard: %s", hard)
+	}
+
+	cs := szg.Hs + szg.Ss
+
+	bcs := int(math.Ceil(float64(cs) * 3 / 4))
+	if len(qb2) < bcs {
+		return fmt.Errorf("insufficient material: qb2 size = %d, bcs = %d", len(qb2), bcs)
+	}
+
+	both, err := common.CodeB2ToB64(qb2, int(cs))
+	if err != nil {
+		return err
+	}
+
+	soft := both[int(szg.Hs):int(szg.Hs+szg.Ss)]
+	xtra := soft[:int(szg.Xs)]
+	soft = soft[int(szg.Xs):]
+
+	if xtra != strings.Repeat(Pad, int(szg.Xs)) {
+		return fmt.Errorf("invalid prepad extra material: xtra = %s", xtra)
+	}
+
+	var fs uint32
+	if szg.Fs == nil {
+		if len(qb2) < bcs {
+			return fmt.Errorf("insufficient material for code: qb2 size = %d, bcs = %d", len(qb2), bcs)
+		}
+
+		// u32 safe here, max length is 4 b64 octets
+		i, err := common.B64ToU32(soft)
+		if err != nil {
+			return err
+		}
+		fs = i*4 + cs
+	} else {
+		fs = *szg.Fs
+	}
+
+	bfs := int(math.Ceil((float64(fs) * 3) / 4))
+	if len(qb2) < bfs {
+		return fmt.Errorf("insufficient material: qb2 size = %d, bfs = %d", len(qb2), bfs)
+	}
+
+	qb2 = qb2[:bfs]
+
+	ps := cs % 4
+	pbs := 2 * ps
+
+	pi := int(qb2[bcs-1 : bcs][0])
+	pi &= 1<<pbs - 1
+	if pi != 0 {
+		return fmt.Errorf("non-zeroed code midpad bits")
+	}
+
+	li := common.BytesToBigInt(qb2[bcs : bcs+int(szg.Ls)])
+	if li.Cmp(big.NewInt(0)) != 0 {
+		return fmt.Errorf("non-zeroed lead midpad bytes")
+	}
+
+	raw := types.Raw(qb2[bcs+int(szg.Ls):])
+
+	if len(raw) != len(qb2)-bcs-int(szg.Ls) {
+		return fmt.Errorf("improperly qualified material: qb2 = %s", qb2)
+	}
+
+	m.SetCode(types.Code(hard))
+	if szg.Fs == nil {
+		size := types.Size(fs / 4)
+		m.SetSize(&size)
+	}
+
+	m.SetRaw(raw)
+	if soft != "" {
+		m.SetSoft(&soft)
+	}
+
+	return nil
+}
+
+func mexfil(m types.Matter, qb64 types.Qb64) error {
+	if len(qb64) == 0 {
+		return fmt.Errorf("qb64 is empty")
+	}
+
+	first := qb64[0]
+	hs, ok := codex.Hardage(first)
+	if !ok {
+		return fmt.Errorf("unknown hard: %x", first)
+	}
+
+	if len(qb64) < hs {
+		return fmt.Errorf("insufficient material for hard part of code: qb64 size = %d, hs = %d", len(qb64), hs)
+	}
+
+	hard := qb64[:hs]
+
+	szg, ok := codex.Sizes[types.Code(hard)]
+	if !ok {
+		return fmt.Errorf("unknown code: %s", hard)
+	}
+
+	cs := szg.Hs + szg.Ss
+	soft := qb64[hs : hs+int(szg.Ss)]
+	xtra := soft[:szg.Xs]
+	soft = soft[szg.Xs:]
+
+	if string(xtra) != strings.Repeat(Pad, int(szg.Xs)) {
+		return fmt.Errorf("invalid prepad extra material: xtra = %s", xtra)
+	}
+
+	var fs uint32
+	if szg.Fs == nil {
+		// u32 safe here, max length is 4 b64 octets
+		i, err := common.B64ToU32(string(soft))
+		if err != nil {
+			return err
+		}
+		fs = i*4 + cs
+	} else {
+		fs = *szg.Fs
+	}
+
+	if len(qb64) < int(fs) {
+		return fmt.Errorf("insufficient material: qb64 size = %d, fs = %d", len(qb64), fs)
+	}
+
+	qb64 = qb64[:fs]
+
+	ps := cs % 4
+	base := strings.Repeat("A", int(ps)) + string(qb64[int(cs):])
+	paw, err := base64.URLEncoding.DecodeString(base)
+	if err != nil {
+		return err
+	}
+	raw := paw[int(ps+szg.Ls):]
+
+	// ensure midpad bytes are zero
+	pi := common.BytesToBigInt(paw[:int(ps+szg.Ls)])
+	if pi.Cmp(big.NewInt(0)) != 0 {
+		return fmt.Errorf("nonzero midpad bytes=0x%x", pi)
+	}
+
+	if len(raw) != ((len(qb64)-int(cs))*3/4)-int(szg.Ls) {
+		return fmt.Errorf("improperly qualified material: qb64 = %s", qb64)
+	}
+
+	m.SetCode(types.Code(hard))
+	if len(soft) > 0 {
+		softStr := string(soft)
+		m.SetSoft(&softStr)
+	}
+	m.SetRaw(types.Raw(raw))
+
+	length := len(raw)
+	if length > 1<<32-1 {
+		return fmt.Errorf("size too large")
+	}
+
+	if szg.Fs == nil {
+		size := types.Size(fs / 4)
+		m.SetSize(&size)
+	}
+
+	return nil
+}
+
+func NewMatter(m types.Matter, opts ...options.MatterOption) error {
+	config := &options.MatterOptions{}
+
+	for _, opt := range opts {
+		opt(config)
+	}
+
+	if config.Code != nil && (config.Raw != nil || config.Soft != nil) {
+		if config.Qb2 != nil || config.Qb64 != nil || config.Qb64b != nil {
+			return fmt.Errorf("code and raw cannot be used with qb2, qb64, or qb64b")
+		}
+
+		code := *config.Code
+
+		var raw types.Raw
+		if config.Raw != nil {
+			raw = *config.Raw
+		} else {
+			raw = types.Raw{}
+		}
+
+		szg, ok := codex.Sizes[*config.Code]
+		if !ok {
+			return fmt.Errorf("unknown code: %s", *config.Code)
+		}
+
+		var (
+			soft string
+			err  error
+			cs   int
+		)
+		if szg.Fs != nil {
+			cs = len(code)
+			if config.Soft != nil {
+				soft = *config.Soft
+				cs += len(*config.Soft) + int(szg.Xs)
+			}
+
+			expectedRawSize := (int(*szg.Fs) - cs) * 3 / 4
+			if len(raw) != expectedRawSize {
+				return fmt.Errorf("raw size mismatch: expected = %d, actual = %d", expectedRawSize, len(*config.Raw))
+			}
+		} else {
+			rize := len(raw)
+
+			ls := (3 - (rize % 3)) % 3
+			size := (rize + ls) / 3
+
+			var ss int
+
+			if slices.Contains(codex.SMALL_VRZ_DEX, rune(code[0])) {
+				if size <= 1<<12-1 {
+					hs := 2
+					s := codex.SMALL_VRZ_DEX[ls]
+					code = types.Code(fmt.Sprintf("%c%s", s, code[1:hs]))
+					ss = 2
+				} else if size <= 1<<24-1 {
+					hs := 4
+					s := codex.LARGE_VRZ_DEX[ls]
+					code = types.Code(fmt.Sprintf("%c%s%s", s, strings.Repeat("A", hs-2), code[1:]))
+					soft, err = common.BigIntToB64(big.NewInt(int64(size)), 4)
+					if err != nil {
+						return err
+					}
+					ss = 4
+				} else {
+					return fmt.Errorf("unsupported raw size for %s", code)
+				}
+			} else if slices.Contains(codex.LARGE_VRZ_DEX, rune(code[0])) {
+				if size <= 1<<24-1 {
+					hs := 4
+					s := codex.LARGE_VRZ_DEX[ls]
+					code = types.Code(fmt.Sprintf("%c%s", s, code[1:hs]))
+					ss = 4
+				} else {
+					return fmt.Errorf("unsupported raw size for large %s. %d <= %d", code, size, 1<<24-1)
+				}
+			} else {
+				return fmt.Errorf("unsupported variable raw size, code=%c, size=%d", code[0], size)
+			}
+
+			var err error
+			soft, err = common.BigIntToB64(big.NewInt(int64(size)), ss)
+			if err != nil {
+				return err
+			}
+
+			cs = len(code)
+		}
+
+		rize := len(raw)
+		ls := (3 - (rize % 3)) % 3
+		fs := cs + ls + rize
+
+		m.SetCode(code)
+		m.SetRaw(raw)
+
+		if szg.Fs == nil {
+			//nolint:gosec
+			size := types.Size(fs / 4)
+			m.SetSize(&size)
+		}
+
+		if soft != "" {
+			m.SetSoft(&soft)
+		}
+
+		return nil
+	}
+
+	if config.Qb2 != nil {
+		if config.Code != nil || config.Raw != nil || config.Qb64 != nil || config.Qb64b != nil {
+			return fmt.Errorf("qb2 cannot be used with code, raw, qb64, or qb64b")
+		}
+
+		return mbexfil(m, *config.Qb2)
+	}
+
+	if config.Qb64 != nil {
+		if config.Code != nil || config.Raw != nil || config.Qb2 != nil || config.Qb64b != nil {
+			return fmt.Errorf("qb64 cannot be used with code, raw, qb2, or qb64b")
+		}
+
+		return mexfil(m, *config.Qb64)
+	}
+
+	if config.Qb64b != nil {
+		if config.Code != nil || config.Raw != nil || config.Qb2 != nil || config.Qb64 != nil {
+			return fmt.Errorf("qb64b cannot be used with code, raw, qb2, or qb64")
+		}
+
+		return mexfil(m, types.Qb64(*config.Qb64b))
+	}
+
+	return fmt.Errorf("no inputs provided")
+}
+
+func rawSize(code types.Code) (uint32, error) {
+	szg, ok := codex.Sizes[code]
+	if !ok {
+		return 0, fmt.Errorf("unknown code: %s", code)
+	}
+
+	if szg.Fs == nil {
+		return 0, fmt.Errorf("non-fixed raw size for code: %s", code)
+	}
+
+	cs := szg.Hs + szg.Ss
+	fs := *szg.Fs
+	ls := szg.Ls
+
+	return (fs-cs)*3/4 - ls, nil
+}
